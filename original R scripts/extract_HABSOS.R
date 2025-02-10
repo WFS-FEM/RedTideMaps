@@ -1,4 +1,4 @@
-
+#load library
 library('rvest')
 
 #find most recent data product
@@ -46,7 +46,7 @@ csv_url <- paste0(data_url,csv_files)
 destination_file <- csv_files
 
 # Download the file
-download.file(url = file_url, destfile = destination_file, mode = "wb")
+download.file(url = csv_url, destfile = destination_file, mode = "wb")
 
 # Confirm completion
 cat("File downloaded successfully to", destination_file, "\n")
