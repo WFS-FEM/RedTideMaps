@@ -393,7 +393,7 @@ for (iyear in 1985:max(yr)) {
       #if month has data and has 3 fit files
       for (i in ifiles) {
         
-        #i=ifiles[3]
+        #i=ifiles[2]
         
         #subset by month
         mdf<-subset(ydf,month==imonth)
@@ -417,6 +417,17 @@ for (iyear in 1985:max(yr)) {
           
           #get fit objected
           fit<-get(modname)
+          vcov(fit)
+          se<-sqrt(diag(vcov(fit)))
+          fit$sd_report
+          fit$sd_report$
+          #b_j      10.691409  0.6741630 #intercept vector
+          #ln_tau_O  2.887421        NaN #SD spatial
+          #ln_kappa  3.763843        NaN #spatial decorrelation rate
+          #thetaf    1.282290  0.3864381 #temporal autorocrrelation???
+          #ln_phi    5.246758  0.5108104 #dispersion ???
+          #Hessian
+          #gradient
           
           # Create prediction grid for each month
           prediction_data <- data.frame(
@@ -493,13 +504,20 @@ for (iyear in 1985:max(yr)) {
 setwd(mydir)
 save(pred_array, file = './ST drivers/red tides/data/processed/pred_SDMs_RT.RData') #paste(yrs_region,collapse = "")
 
+#load array
+load(file = '/Users/daniel/Work/WFS_DV2/WFS-FEM/ST drivers/red tides/data/processed/pred_SDMs_RT.RData') #pred_array
+
+# #same scale for all years and both approaches
+# pred_max<-max(pred_array[])
+# max_index <- which(pred_array == max(pred_array), arr.ind = TRUE)
+
 # Set up the PDF device
-pdf(paste0(mydir,"/ST drivers/red tides/outputs/RT OM prediction maps.pdf"), width = 11, height = 6)  # Landscape: Width > Height
+pdf(paste0(mydir,"/ST drivers/red tides/outputs/RT OM prediction maps_scale.pdf"), width = 11, height = 6)  # Landscape: Width > Height
 
 # Plot predictions ####
 for (iyear in 1985:max(yr)) {
   
-  #iyear=1985
+  #iyear=1994
   
   #year predictions
   ypred<-pred_array[,,,as.character(iyear)]
@@ -585,7 +603,7 @@ for (iyear in 1985:max(yr)) {
   #plot sdmTMB
   plot_sdmTMB1<-
     ggplot() +
-    geom_tile(data = sf_df, aes(x = X, y = Y, fill = log(cells_sdmTMB1)), height = res(depth)[2], width = res(depth)[1]) +  # Use clipped predictions
+    geom_tile(data = sf_df, aes(x = X, y = Y, fill = cells_sdmTMB1), height = res(depth)[2], width = res(depth)[1]) +  # Use clipped predictions
     #geom_raster(data = sf_df, aes(x = X, y = Y, fill = log(cells_sdmTMB1))) +  # Use clipped predictions
     coord_sf(crs = crs(depth),
              xlim = c(-87.99999, -80.49999), ylim = c(24.51496, 30.5)) +
@@ -594,7 +612,9 @@ for (iyear in 1985:max(yr)) {
     theme() +
     labs(x='',y='',title='sdmTMB')+
     theme_minimal() +
-    scale_fill_gradient(low = "white", high = "red", na.value = 'transparent') +
+    scale_fill_gradient(low = "white", high = "red", na.value = 'transparent',
+                        limits = c(0, 10000000),  # Ensure max cap
+                        oob = scales::squish  ) +# Ensures values > 1,000,000 stay at max color
     scale_x_continuous(breaks = c(-86, -82), expand = c(0, 0)) +
     scale_y_continuous(breaks = c(30, 28, 26), expand = c(0, 0)) +
     labs(fill = "log(cells/L)") +
@@ -621,7 +641,7 @@ for (iyear in 1985:max(yr)) {
   #plot VAST
   plot_VAST<-
     ggplot() +
-    geom_tile(data = sf_df, aes(x = X, y = Y, fill = log(cells_VAST)), height = res(depth)[2], width = res(depth)[1]) +  # Use clipped predictions
+    geom_tile(data = sf_df, aes(x = X, y = Y, fill = cells_VAST), height = res(depth)[2], width = res(depth)[1]) +  # Use clipped predictions
     #geom_raster(data = sf_df, aes(x = X, y = Y, fill = log(cells_VAST))) +  # Use clipped predictions
     coord_sf(crs = crs(depth), 
              xlim = c(-87.99999, -80.49999), ylim = c(24.51496, 30.5)) +
@@ -630,7 +650,9 @@ for (iyear in 1985:max(yr)) {
     theme() +
     labs(x='',y='',title='VAST')+
     theme_minimal() +
-    scale_fill_gradient(low = "white", high = "red", na.value = 'transparent') +
+    scale_fill_gradient(low = "white", high = "red", na.value = 'transparent',
+                        limits = c(0, 10000000),  # Ensure max cap
+                        oob = scales::squish  ) +# Ensures values > 1,000,000 stay at max color
     scale_x_continuous(breaks = c(-86, -82), expand = c(0, 0)) +
     scale_y_continuous(breaks = c(30, 28, 26), expand = c(0, 0)) + 
     labs(fill = "log(cells/L)") +
@@ -670,6 +692,12 @@ for (iyear in 1985:max(yr)) {
 
 #close pdf
 dev.off()
+
+# #variances
+# sigma_G	IID random intercept variance
+# sigma_E	Spatiotemporal random field marginal variance
+# sigma_O	Spatial random field marginal variance
+# sigma_Z	Spatially varying coefficient random field marginal variance
 
 #create rasters (ascii file) to input Ecospace
 
