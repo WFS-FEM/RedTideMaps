@@ -17,6 +17,10 @@ if (Sys.info()['user']=='daniel') {
   #mydir<-'/Users/daniel/Work/VAST_DC/'
   mydir<-'/Users/daniel/Work/WFS_DV2/WFS-FEM/'
   setwd(mydir)
+} else if (Sys.info()['user']=='dvilasgonzalez') {
+  #mydir<-'/Users/daniel/Work/VAST_DC/'
+    mydir<-'C:/Users/dvilasgonzalez/Documents/WFS_DV2/WFS-FEM/'
+  setwd(mydir)
 } else {
   if (.Platform$OS.type == "windows") {setwd(choose.dir())} else {setwd(tcltk::tk_choose.dir())}
 }
@@ -505,11 +509,22 @@ setwd(mydir)
 save(pred_array, file = './ST drivers/red tides/data/processed/pred_SDMs_RT.RData') #paste(yrs_region,collapse = "")
 
 #load array
-load(file = '/Users/daniel/Work/WFS_DV2/WFS-FEM/ST drivers/red tides/data/processed/pred_SDMs_RT.RData') #pred_array
+setwd(mydir)
+load(file = './ST drivers/red tides/data/processed/pred_SDMs_RT.RData') #pred_array
 
 # #same scale for all years and both approaches
 # pred_max<-max(pred_array[])
 # max_index <- which(pred_array == max(pred_array), arr.ind = TRUE)
+
+#color scale from previous analysis
+# Set up the color scale and breaks as you already have
+colv.kb <- c("white", "purple", "blue", "darkblue", "cyan", "green", "darkgreen", "yellow", "orange", "red", "darkred")
+funpal.kb <- colorRampPalette(colv.kb, bias = 2)
+
+brks.idw <- c(0, 1e4 - 1, seq(1e4, 4e6, 10000), 1e8)
+nbcols.idw <- length(brks.idw) -1
+color.idw <- funpal.kb(nbcols.idw)
+
 
 # Set up the PDF device
 pdf(paste0(mydir,"/ST drivers/red tides/outputs/RT OM prediction maps_scale.pdf"), width = 11, height = 6)  # Landscape: Width > Height
@@ -517,11 +532,11 @@ pdf(paste0(mydir,"/ST drivers/red tides/outputs/RT OM prediction maps_scale.pdf"
 # Plot predictions ####
 for (iyear in 1985:max(yr)) {
   
-  #iyear=1994
+  iyear=2005
   
   #year predictions
   ypred<-pred_array[,,,as.character(iyear)]
-  summary(ypred)
+  #summary(ypred)
   
   # Get the dimensions of the array
   nrow <- dim(ypred)[1] # 7954
@@ -612,25 +627,31 @@ for (iyear in 1985:max(yr)) {
     theme() +
     labs(x='',y='',title='sdmTMB')+
     theme_minimal() +
-    scale_fill_gradient(low = "white", high = "red", na.value = 'transparent',
-                        limits = c(0, 10000000),  # Ensure max cap
-                        oob = scales::squish  ) +# Ensures values > 1,000,000 stay at max color
+    scale_fill_gradientn(colors = color.idw, na.value = "white",limits = c(0, 10000000),
+                           oob = scales::squish) +
+    #scale_fill_gradientn(colors = color.idw, breaks = brks.idw, labels = c("0", "10K", "100K", "1M", "4M", "10M"), na.value = "white") +
+    # scale_fill_gradient(low = "white", high = "red", na.value = 'transparent',
+    #                     limits = c(0, 10000000),  # Ensure max cap
+    #                     oob = scales::squish  ) +# Ensures values > 1,000,000 stay at max color
     scale_x_continuous(breaks = c(-86, -82), expand = c(0, 0)) +
     scale_y_continuous(breaks = c(30, 28, 26), expand = c(0, 0)) +
-    labs(fill = "log(cells/L)") +
+    labs(fill = "cells/L") +
     theme(panel.grid.major = element_line(color = rgb(235, 235, 235, 100, maxColorValue = 255),
-                                          linetype = 'dashed', size = 0.5),
+                                          linetype = 'dashed', linewidth  = 0.5),
+          legend.position = "right",legend.title = element_text(angle=90,hjust=0.5),
           panel.background = element_rect(fill = NA), panel.ontop = TRUE, text = element_text(size = 10),
           plot.margin = unit(c(0.1, 0.1, 0.1, 0.1), "lines"),
           legend.background = element_rect(fill = "transparent", colour = "transparent"),
           plot.title = element_text(hjust = 0.50, vjust = -1),
           legend.key = element_rect(color = "black"),
           legend.key.size = unit(1, "lines")) +  # Adjusting the legend key contour to black
-    guides(fill = guide_colorbar(size = 0.5, barheight = 4,
-                                 frame.colour = "black", ticks=element_line(color='black'),
+    guides(fill = guide_colorbar(size = 0.5, barwidth = 0.5, barheight = unit(1, "npc"),  # Full height of the plot
+                                 frame.colour = "black", ticks = element_line(color = 'black'),
                                  ticks.colour = "black",
                                  ticks.linewidth = 0.2,
-                                 frame.linewidth=0.2)) +  # Change ticks to black
+                                 title.position = "right",  # Moves the legend title to the right of the color bar
+                                 label.position = "right",  # Ensures the labels are also aligned with the color bar
+                                 frame.linewidth = 0.2)) +  # Change ticks to black
     facet_wrap(~month, ncol = 3)  # Use first three letters of the month
 
   if (nrow(na_tmb1)!=0) {
@@ -650,25 +671,29 @@ for (iyear in 1985:max(yr)) {
     theme() +
     labs(x='',y='',title='VAST')+
     theme_minimal() +
-    scale_fill_gradient(low = "white", high = "red", na.value = 'transparent',
-                        limits = c(0, 10000000),  # Ensure max cap
-                        oob = scales::squish  ) +# Ensures values > 1,000,000 stay at max color
+    scale_fill_gradientn(colors = color.idw, na.value = "white",limits = c(0, 10000000),
+                           oob = scales::squish) +
+    # scale_fill_gradient(low = "white", high = "red", na.value = 'transparent',
+    #                     limits = c(0, 10000000),  # Ensure max cap
+    #                     oob = scales::squish  ) +# Ensures values > 1,000,000 stay at max color
     scale_x_continuous(breaks = c(-86, -82), expand = c(0, 0)) +
     scale_y_continuous(breaks = c(30, 28, 26), expand = c(0, 0)) + 
-    labs(fill = "log(cells/L)") +
+    labs(fill = "cells/L") +
     theme(panel.grid.major = element_line(color = rgb(235, 235, 235, 100, maxColorValue = 255),
-                                          linetype = 'dashed', size = 0.5),  
+                                          linetype = 'dashed', size = 0.5),  legend.position = "right",legend.title = element_text(angle=90,hjust=0.5),
           panel.background = element_rect(fill = NA), panel.ontop = TRUE, text = element_text(size = 10),
           plot.margin = unit(c(0.1, 0.1, 0.1, 0.1), "lines"),
           legend.background = element_rect(fill = "transparent", colour = "transparent"),
           plot.title = element_text(hjust = 0.50, vjust = -1),
           legend.key = element_rect(color = "black"),
           legend.key.size = unit(1, "lines")) +  # Adjusting the legend key contour to black
-    guides(fill = guide_colorbar(size = 0.5, barheight = 4,
-                                 frame.colour = "black", ticks=element_line(color='black'),
-                                 ticks.colour = "black",
-                                 ticks.linewidth = 0.2,
-                                 frame.linewidth=0.2)) +  # Change ticks to black
+      guides(fill = guide_colorbar(size = 0.5, barwidth = 0.5, barheight = unit(1, "npc"),  # Full height of the plot
+                                   frame.colour = "black", ticks = element_line(color = 'black'),
+                                   ticks.colour = "black",
+                                   ticks.linewidth = 0.2,
+                                   title.position = "right",  # Moves the legend title to the right of the color bar
+                                   label.position = "right",  # Ensures the labels are also aligned with the color bar
+                                   frame.linewidth = 0.2)) +  # Change ticks to black
     facet_wrap(~month, ncol = 3)  # Use first three letters of the month   
 
   if (nrow(na_vast)!=0) {
