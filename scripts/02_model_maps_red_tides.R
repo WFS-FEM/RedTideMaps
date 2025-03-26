@@ -95,6 +95,7 @@ all_polygons_single <- st_cast(all_polygons_single, "POLYGON")
 
 # Plot the combined polygons
 plot(st_geometry(all_polygons))
+plot(st_geometry(all_polygons_single))
 
 # Load and process CSV files
 lf <- list.files(mydir, pattern = 'habsos.*\\.csv', recursive = TRUE)
@@ -115,6 +116,7 @@ obs_sf <- st_as_sf(df, coords = c("lon", "lat"), crs = st_crs(depth))
 
 # Use st_within to identify points inside polygons
 inside_polygons <- st_within(obs_sf, all_polygons_single, sparse = FALSE)
+plot(inside_polygons)
 
 # Filter points that are outside the polygons (i.e., where no intersection exists)
 filtered_points_outside <- obs_sf[!apply(inside_polygons, 1, any), ]
@@ -163,6 +165,46 @@ compute_area_km2 <- function(lat, res_x, res_y) {
 
 # Apply function to each row to get area
 input_grid$Area_km2 <- mapply(compute_area_km2, input_grid$Lat, res(depth)[1], res(depth)[2])
+
+
+
+#exclude deep cells for later
+input_grid1<-input_grid
+
+#filtered_points_outside <- obs_sf[!apply(inside_polygons, 1, any), ]
+
+# Convert data frame to sf object
+input_grid1 <- st_as_sf(input_grid1, coords = c("Lon", "Lat"), crs = st_crs(depth))
+
+# Use st_within to identify points inside polygons
+inside_polygons <- st_within(input_grid1, all_polygons_single, sparse = FALSE)
+
+x<-input_grid1[!apply(inside_polygons, 1, any), ]
+x1<-as.data.frame(x,xy=TRUE)
+# Add an ID column to your data
+#df$ID <- seq_len(nrow(df))  # Creates a sequential ID for each row
+
+# Create the plot
+ggplot() +
+  geom_point(color = "blue") +  # Scatter plot
+  geom_sf(data = x1, aes(geometry = geometry), color = 'blue', size = 0.5,alpha=0.5) +
+  #geom_text(aes(label = depth), vjust = -1, size = 3, color = "black") +  # Row number annotation
+  labs(title = "Longitude-Latitude Plot with Row IDs",
+       x = "Longitude",
+       y = "Latitude") +
+  theme_minimal()
+
+#selected cells
+sel_xy<-data.frame(st_coordinates(x))
+
+ggplot() +
+  geom_sf(data = st_as_sf(us_clipped_sf_polygons), fill = 'lightgrey', color = 'black', alpha = 0.5) +
+  geom_point(data=sel_xy,aes(x=X,y=Y))+
+  labs(title = "Filtered RT sampling stations",
+       x = "Longitude",
+       y = "Latitude") +
+  theme_minimal()
+
 
 #rename column
 names(input_grid)[3] <- 'depth'
@@ -368,7 +410,7 @@ pred_array<-array(0,dim = c(nrow(input_grid),5,12,length(1985:max(yr))),
 for (iyear in 1985:max(yr)) {
   
   #select year
-  #iyear=1985
+  iyear=2004
   
   ydf<-subset(filtered_points_df,year==iyear)
   
@@ -380,14 +422,14 @@ for (iyear in 1985:max(yr)) {
   
   for (imonth in 1:12) {
     
-    #imonth<-9
+    #imonth<-10
     
     #print process
     cat(paste('################',iyear,'################\n',
               '################',imonth,'################\n'))
     
     #check files - to see if VAST fit is there
-    ifiles<-list.files(paste0(iyear,sprintf("%02d", imonth)),recursive = TRUE,full.names = TRUE)
+    ifiles<-list.files(paste0(iyear,sprintf("%02d", imonth)),recursive = TRUE,full.names = TRUE,pattern = '.RData$')
     ifiles<-ifiles[grepl("fit_", ifiles) ]
     
     
@@ -423,8 +465,37 @@ for (iyear in 1985:max(yr)) {
           fit<-get(modname)
           vcov(fit)
           se<-sqrt(diag(vcov(fit)))
-          fit$sd_report
-          fit$sd_report$
+          
+          # observed_values <- fit$response #fit$data$cells
+          # predicted_values <- predict(fit, type = "response")[,'est']
+          # residuals<-observed_values-predicted_values
+          # 
+          # residuals(fit)
+          # residuals
+          # 
+          # 
+          # 
+          # plot(residuals)
+          # # Extract residuals
+          # residuals_sdmTMB <- residuals(fit, type = "response")  # Use Pearson residuals
+          # 
+          # # Create a data frame for plotting
+          # qq_data <- data.frame(
+          #   theoretical = qqnorm(residuals_sdmTMB, plot.it = FALSE)$x,
+          #   residuals = residuals_sdmTMB
+          # )
+          # 
+          # ggplot(qq_data, aes(sample = residuals)) +
+          #   stat_qq() + 
+          #   stat_qq_line() +
+          #   labs(title = "QQ Plot of Residuals", x = "Theoretical Quantiles", y = "Residuals") +
+          #   theme_minimal()
+          
+          #pred_obs<-fit$data
+          #pred_obs$response<-fit$response
+          
+          #fit$sd_report
+          #fit$sd_report$
           #b_j      10.691409  0.6741630 #intercept vector
           #ln_tau_O  2.887421        NaN #SD spatial
           #ln_kappa  3.763843        NaN #spatial decorrelation rate
@@ -532,7 +603,7 @@ pdf(paste0(mydir,"/ST drivers/red tides/outputs/RT OM prediction maps_scale.pdf"
 # Plot predictions ####
 for (iyear in 1985:max(yr)) {
   
-  iyear=2005
+  #iyear=2005
   
   #year predictions
   ypred<-pred_array[,,,as.character(iyear)]
@@ -769,4 +840,227 @@ for (iyear in dimnames(pred_array)[[4]]) {
 #check
 plot(raster('./sdmTMB RT rasters/200909_RTsdmTMB.asc'))
 
-   
+#check values and predicted values ####
+
+#load predarray as dataframe
+#load array
+setwd(mydir)
+load(file = './ST drivers/red tides/data/processed/pred_SDMs_RT.RData') #pred_array
+
+# Extract lon and lat (same for all months/years)
+lon_vec <- pred_array[, "lon", 1, 1]  # Take first month/year as reference
+lat_vec <- pred_array[, "lat", 1, 1]
+
+# Extract model prediction data
+selected_columns <- pred_array[, c("cells_sdmTMB0", "cells_sdmTMB1", "cells_VAST"), , ]
+
+# Convert the 4D array into a dataframe
+preds_df <- as.data.frame(as.table(selected_columns))
+
+# Rename columns for clarity
+colnames(preds_df) <- c("id", "mod", "month", "year", "cells")
+
+# Convert id to numeric for merging
+preds_df$id <- as.numeric(as.character(preds_df$id))
+
+# Create a dataframe for lon and lat
+lat_lon_df <- data.frame(
+  id = as.numeric(names(lon_vec)),  # Extract IDs correctly
+  lon = lon_vec,
+  lat = lat_vec
+)
+
+# Merge lat/lon with predictions
+preds_df <- merge(preds_df, lat_lon_df, by = "id")
+
+# View the first rows
+head(preds_df)
+
+df1<-obs_df
+df2<-preds_df
+
+# Combine lat/lon columns into matrix for RANN::nn2
+coords_df1 <- cbind(df1$lat, df1$lon)
+
+for (pr in unique(df2$mod)) {
+  
+  #pr<-unique(df2$mod_pred)[1]
+  df3<-subset(df2,mod==pr)
+  coords_df3 <- cbind(df3$lat, df3$lon)
+
+  if (!'closest_id' %in% names(df1)) {
+    
+  # Use RANN to find the closest matches
+  nearest_neighbors <- RANN::nn2(coords_df3, coords_df1, k = 1)  # k=1 for nearest neighbor
+
+  # Extract the indices of the closest neighbors
+  closest_matches <- nearest_neighbors$nn.idx
+  
+  # Merge the closest match values from df2 into df1
+  df1$closest_id <- closest_matches
+  #names(df1)[ncol(df1)]<-paste0(names(df1)[ncol(df1)],'_',pr)
+  
+  }
+  
+  df1 <- cbind(df1, df3[df1$closest_id, "cells"])
+  
+  # View the merged dataframe
+  #print(df1)
+  names(df1)[ncol(df1)]<-pr
+
+}
+
+#reshape for plotting
+df11<-reshape2::melt(df1,id.vars=c('year', 'month','lon','lat', 'closest_id'))
+df111<-reshape2::melt(df1,id.vars=c('cells_obs','year', 'month','lon','lat', 'closest_id'))
+
+#plot log
+ggplot()+
+  geom_boxplot(data=subset(df11,year>=1985),aes(x=variable,y=log(1+value),color=variable))+
+  facet_wrap(~year,scales='free_y')#+
+#scale_y_continuous(limits = c(0,10000000))
+
+#plot
+ggplot()+
+  geom_boxplot(data=subset(df11,year>=1985 & variable %in% c('cells_obs','cells_sdmTMB1','cells_VAST')),
+               aes(x=variable,y=value,color=variable))+
+  facet_wrap(~year,scales='free_y')#+
+
+#plot
+ggplot() +
+  geom_point(data = subset(df111, year >= 1985), aes(x = cells_obs, y = value, color = variable)) +
+  facet_wrap(~year, scales = 'free_y') +
+  geom_abline(slope = 1, intercept = 0, linetype = "dashed", color = "red") #+  # 1:1 diagonal line
+  #geom_smooth(data = subset(df111, year >= 1985), aes(x = cells_obs, y = value, color = variable), 
+  #            method = "lm", se = FALSE, linetype = "solid")  # Regression line for each facet
+
+# 
+# preds_df[] <- lapply(preds_df, function(x) if (is.factor(x)) as.character(x) else x)
+# obs_df[] <- lapply(obs_df, function(x) if (is.factor(x)) as.character(x) else x)
+# 
+# all_df <- rbind(preds_df, obs_df)
+# 
+# ggplot()+
+#   geom_boxplot(data=subset(all_df,year>=1985),aes(x=mod,y=log(cells),color=mod))+
+#   facet_wrap(~year,scales='free_y')#+
+#   #scale_y_continuous(limits = c(0,10000000))
+# 
+# ggplot()+
+#   geom_boxplot(data=subset(all_df,year>=1985),aes(x=mod,y=cells,color=mod))+
+#   facet_wrap(~year,scales='free_y')+
+#   scale_y_continuous(limits = c(0,10000000))
+#    
+# ggplot()+
+#   geom_boxplot(data=subset(all_df,year>=1985),aes(x=mod,y=cells,color=mod))+
+#   facet_wrap(~year,scales='free_y')+
+#   scale_y_continuous(limits = c(10000000,NA))
+
+
+
+
+
+
+#
+
+
+dff<-pred_array[,,'Oct','2005']
+
+# Convert dff to a data frame
+dff <- as.data.frame(dff)
+
+# Add an ID column
+dff$ID <- seq_len(nrow(dff))
+
+
+# Create the plot
+ggplot(dff, aes(x = lon, y = lat)) +
+  geom_point(color = "blue") +  # Scatter plot
+  geom_text(aes(label = ID), vjust = -1, size = 3, color = "black") +  # Row number annotation
+  labs(title = "Longitude-Latitude Plot with Row IDs",
+       x = "Longitude",
+       y = "Latitude") +
+  theme_minimal()
+
+#
+#dff
+#sel_xy
+
+dff_filtered <- merge(dff, sel_xy, by.x = c("lat", "lon"),by.y=c('Y','X'))
+print(sort(dff_filtered$ID))
+op_cells<-sort(dff_filtered$ID)
+
+# Create the plot
+ggplot(dff_filtered, aes(x = lon, y = lat)) +
+  geom_point(color = "blue") +  # Scatter plot
+  geom_text(aes(label = ID), vjust = -1, size = 3, color = "black") +  # Row number annotation
+  labs(title = "Longitude-Latitude Plot with Row IDs",
+       x = "Longitude",
+       y = "Latitude") +
+  theme_minimal()
+
+
+
+
+# Let's first extract the desired columns and time slice
+selected_columns <- pred_array[op_cells, c("cells_sdmTMB0", "cells_sdmTMB1", "cells_VAST"), ,]
+
+# Convert the 4D array into a dataframe
+preds_df <- as.data.frame(as.table(selected_columns))
+
+# Rename the columns for clarity
+colnames(preds_df) <- c("id", "mod", "month", "year",'cells')
+
+# View the dataframe
+head(df)
+
+preds_df<-
+  data.frame(mod=preds_df$mod,
+             cells=preds_df$cells,
+             year=preds_df$year)
+
+preds_df<-preds_df[which(preds_df$cells!=0),]
+
+
+
+obs_df<-df
+obs_df<-
+  data.frame(mod='obs',
+             cells=obs_df$cells,
+             year=obs_df$year)
+obs_df<-obs_df[which(obs_df$cells!=0),]
+preds_df[] <- lapply(preds_df, function(x) if (is.factor(x)) as.character(x) else x)
+obs_df[] <- lapply(obs_df, function(x) if (is.factor(x)) as.character(x) else x)
+
+all_df <- rbind(preds_df, obs_df)
+
+ggplot()+
+  theme_minimal()+
+  theme(legend.title = element_blank())+
+  scale_x_discrete(labels = function(x) gsub("cells_", "", x)) +
+  ggthemes::scale_fill_tableau()+
+  geom_boxplot(data=subset(all_df,year>=1985 & mod %in% c('cells_sdmTMB1','cells_VAST','obs')),aes(x=mod,y=log(cells),fill=mod),color='black')+
+  facet_wrap(~year,scales='free_y')#+
+#scale_y_continuous(limits = c(0,10000000))
+
+ggplot()+
+  theme_minimal()+
+  theme(legend.title = element_blank())+
+  scale_x_discrete(labels = function(x) gsub("cells_", "", x)) +
+  ggthemes::scale_fill_tableau()+
+  geom_boxplot(data=subset(all_df,year>=1985 & mod %in% c('cells_sdmTMB1','cells_VAST','obs')),aes(x=mod,y=log(cells),fill=mod),color='black')#+
+  #facet_wrap(~year,scales='free_y')#+
+
+
+ggplot()+
+  geom_boxplot(data=subset(all_df,year>=1985),aes(x=mod,y=cells,color=mod),color='black')+
+  facet_wrap(~year,scales='free_y')+
+  theme_minimal()+
+  theme(legend.title = element_blank())+
+  scale_x_discrete(labels = function(x) gsub("cells_", "", x)) +
+  ggthemes::scale_fill_tableau()+
+  scale_y_continuous(limits = c(0,10000000))
+
+ggplot()+
+  geom_boxplot(data=subset(all_df,year>=1985),aes(x=mod,y=cells,color=mod))+
+  facet_wrap(~year,scales='free_y')+
+  scale_y_continuous(limits = c(10000000,NA))
