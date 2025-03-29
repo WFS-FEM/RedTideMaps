@@ -12,6 +12,9 @@ library(sf)
 library(rnaturalearth)
 library(cowplot)
 
+#set.seed
+set.seed(6)
+
 #set directory based on user and OS
 if (Sys.info()['user']=='daniel') {
   #mydir<-'/Users/daniel/Work/VAST_DC/'
@@ -166,8 +169,6 @@ compute_area_km2 <- function(lat, res_x, res_y) {
 # Apply function to each row to get area
 input_grid$Area_km2 <- mapply(compute_area_km2, input_grid$Lat, res(depth)[1], res(depth)[2])
 
-
-
 #exclude deep cells for later
 input_grid1<-input_grid
 
@@ -247,7 +248,7 @@ for (iyear in 1985:max(yr)) {
   
   for (imonth in 1:12) {
     
-    #imonth<-1
+    #imonth<-10
     
     #print process
     cat(paste('################',iyear,'################\n',
@@ -262,6 +263,7 @@ for (iyear in 1985:max(yr)) {
       
       # Assuming mdf is your sf object
       mdf_df <- st_drop_geometry(mdf)
+      mdf_df_pos<- subset(mdf_df,cells!=0)
       
       #create folder
       mdir<-paste0(iyear,sprintf("%02d", imonth))
@@ -276,22 +278,36 @@ for (iyear in 1985:max(yr)) {
       repeat {
         # Run model
       #fit model without intercept
-      fit_sdmTMB0 <- tryCatch({
+      fit_sdmTMBnb <- tryCatch({
         sdmTMB(
-        formula = cells ~ 0,  # Formula for the model (adjust as needed)
+        formula = cells ~ 1,  # Formula for the model (adjust as needed)
         data = mdf_df,
         mesh = sdmTMB::make_mesh(mdf_df, xy_cols = c("lon", "lat"), cutoff = 0.1),
-        family = tweedie(link = "log"),  # Specify distribution family
+        family = nbinom2(),  # Specify distribution family
         spatial = "on",  # Enable spatial effects
         spatiotemporal = "off"  # No temporal effects since you have one time step # Increase iterations if necessary
       )}, error = function(e) {
-        message("Error in fit TMB0")
+        message("Error in fit TMB nb")
         return(NULL)  # Return NULL so we can check and restart the loop
       })
 
+      #fit model without intercept
+      fit_sdmTMBlog <- tryCatch({
+        sdmTMB(
+          formula = cells ~ 1,  # Formula for the model (adjust as needed)
+          data = mdf_df_pos,
+          mesh = sdmTMB::make_mesh(mdf_df_pos, xy_cols = c("lon", "lat"), cutoff = 0.1),
+          family = lognormal(),  # Specify distribution family
+          spatial = "on",  # Enable spatial effects
+          spatiotemporal = "off"  # No temporal effects since you have one time step # Increase iterations if necessary
+        )}, error = function(e) {
+          message("Error in fit TMB log")
+          return(NULL)  # Return NULL so we can check and restart the loop
+        })
+      
         # Run model
       #fit model with intercept
-      fit_sdmTMB1 <- tryCatch({
+      fit_sdmTMBtw <- tryCatch({
         sdmTMB(
         formula = cells ~ 1,  # Formula for the model (adjust as needed)
         data = mdf_df,
@@ -300,13 +316,13 @@ for (iyear in 1985:max(yr)) {
         spatial = "on",  # Enable spatial effects
         spatiotemporal = "off"  # No temporal effects since you have one time step # Increase iterations if necessary
       )}, error = function(e) {
-        message("Error in fit TMB1")
+        message("Error in fit TMB tw")
         return(NULL)  # Return NULL so we can check and restart the loop
       })
       
       
       # Check if fit_VAST is NULL (indicating an error) or if fit_VAST$Report has length 1
-      if (!is.null(fit_sdmTMB1) | !is.null(fit_sdmTMB0)) {
+      if (!is.null(fit_sdmTMBnb) | !is.null(fit_sdmTMBlog) | !is.null(fit_sdmTMBtw)) {
         break  # Exit loop if fit was successful
       } else {
         message("fit_sdmTMB error, restarting loop...")
@@ -321,13 +337,16 @@ for (iyear in 1985:max(yr)) {
       }
       
       #save fit
-      save(fit_sdmTMB0, file = paste0(getwd(),'/',mdir,'/fit_sdmTMB0.RData')) #paste(yrs_region,collapse = "")
+      save(fit_sdmTMBnb, file = paste0(getwd(),'/',mdir,'/fit_sdmTMBnb.RData')) #paste(yrs_region,collapse = "")
       
       #save fit
-      save(fit_sdmTMB1, file = paste0(getwd(),'/',mdir,'/fit_sdmTMB1.RData')) #paste(yrs_region,collapse = "")
+      save(fit_sdmTMBlog, file = paste0(getwd(),'/',mdir,'/fit_sdmTMBlog.RData')) #paste(yrs_region,collapse = "")
+      
+      #save fit
+      save(fit_sdmTMBtw, file = paste0(getwd(),'/',mdir,'/fit_sdmTMBtw.RData')) #paste(yrs_region,collapse = "")
       
       #remove objects
-      rm(fit_sdmTMB0,fit_sdmTMB1)
+      rm(fit_sdmTMBnb,fit_sdmTMBlog,fit_sdmTMBtw)
       gc()
       
       #model settings
@@ -389,7 +408,113 @@ for (iyear in 1985:max(yr)) {
       }
       
       #save fit
-      save(list = "fit_VAST", file = paste0(getwd(),'/',mdir,'/fit_VAST.RData'))
+      save(list = "fit_VAST", file = paste0(getwd(),'/',mdir,'/fit_VASTdeltalog.RData'))
+      
+      #remove objects
+      rm(fit_VAST)
+      
+      # Initialize attempt counter
+      attempt_counter <- 0
+      
+      ## VAST ####
+      
+      repeat {
+        # Increment Newton steps with each attempt
+        newtonsteps <- 1 + attempt_counter
+        
+        #deltagamma
+        settings$bias.correct<-TRUE
+        
+        fit_VAST = tryCatch({
+          fit_model(
+            settings = settings,
+            Lat_i = mdf$lat,
+            Lon_i = mdf$lon,
+            t_i = mdf$month,
+            c_i = rep(0, nrow(mdf)),
+            b_i = mdf$cells,
+            a_i = rep(1, nrow(mdf)),
+            newtonsteps = newtonsteps,
+            test_fit = FALSE,
+            fine_scale = FALSE,
+            input_grid = input_grid,
+            working_dir = paste0(getwd(),'/',mdir)
+          )
+        }, error = function(e) {
+          message("Error in fit_model(): ", e$message)  # Print the error message
+          return(NULL)
+        })
+        
+        # Check if fit_VAST is NULL (indicating an error) or if fit_VAST$Report has length 1
+        if (!is.null(fit_VAST) && length(fit_VAST$Report) > 1) {
+          break  # Exit loop if fit was successful
+        } else {
+          message("fit_VAST$Report has length 1, restarting loop...")
+          attempt_counter <- attempt_counter + 1  # Increment attempt counter
+          
+          # Check if max attempts reached
+          if (attempt_counter >= max_attempts) {
+            message("Maximum number of attempts reached. Passing to the next repeat...")
+            break  # Exit loop after max attempts 
+          }
+        }
+      }
+      
+      #save fit
+      save(list = "fit_VAST", file = paste0(getwd(),'/',mdir,'/fit_VASTbias.RData'))
+      
+      #remove objects
+      rm(fit_VAST)
+      
+      # Initialize attempt counter
+      attempt_counter <- 0
+      
+      ## VAST ####
+      
+      repeat {
+        # Increment Newton steps with each attempt
+        newtonsteps <- 1 + attempt_counter
+        
+        #deltagamma
+        settings$ObsModel<-c(1,0)
+        
+        fit_VAST = tryCatch({
+          fit_model(
+            settings = settings,
+            Lat_i = mdf$lat,
+            Lon_i = mdf$lon,
+            t_i = mdf$month,
+            c_i = rep(0, nrow(mdf)),
+            b_i = mdf$cells,
+            a_i = rep(1, nrow(mdf)),
+            newtonsteps = newtonsteps,
+            test_fit = FALSE,
+            fine_scale = FALSE,
+            input_grid = input_grid,
+            working_dir = paste0(getwd(),'/',mdir)
+          )
+        }, error = function(e) {
+          message("Error in fit_model(): ", e$message)  # Print the error message
+          return(NULL)
+        })
+        
+        # Check if fit_VAST is NULL (indicating an error) or if fit_VAST$Report has length 1
+        if (!is.null(fit_VAST) && length(fit_VAST$Report) > 1) {
+          break  # Exit loop if fit was successful
+        } else {
+          message("fit_VAST$Report has length 1, restarting loop...")
+          attempt_counter <- attempt_counter + 1  # Increment attempt counter
+          
+          # Check if max attempts reached
+          if (attempt_counter >= max_attempts) {
+            message("Maximum number of attempts reached. Passing to the next repeat...")
+            break  # Exit loop after max attempts 
+          }
+        }
+      }
+      
+      #save fit
+      save(list = "fit_VAST", file = paste0(getwd(),'/',mdir,'/fit_VASTdeltagam.RData'))
         
       #remove objects
       rm(fit_VAST)
@@ -402,15 +527,24 @@ for (iyear in 1985:max(yr)) {
     }
 }
 
+
+# Pre-allocate a matrix to store the results (Year, Month, Model, RMSE, MAE, R_squared)
+fit_matrix <- matrix(NA, nrow = 0, ncol = 9)
+colnames(fit_matrix) <- c("year", "month", "model", "RRMSE", "MAE", 'aic',"aicc",'nll','convergence')
+
+#names of model fit files
+mods<-c("fit_sdmTMBlog.RData","fit_sdmTMBnb.RData","fit_sdmTMBtw.RData","fit_VASTbias.RData","fit_VASTdeltagam.RData" ,"fit_VASTdeltalog.RData")
+mods<-gsub('.RData','',mods)
+
 # #array to store predictions
-pred_array<-array(0,dim = c(nrow(input_grid),5,12,length(1985:max(yr))),
-                  dimnames = list(1:nrow(input_grid),c('lon','lat','cells_sdmTMB0',"cells_sdmTMB1",'cells_VAST'),month.abb,1985:max(df$year)))
+pred_array<-array(0,dim = c(nrow(input_grid),8,12,length(1985:max(yr))),
+                  dimnames = list(1:nrow(input_grid),c('lon','lat',mods),month.abb,1985:max(df$year)))
 
 # Loop getting predictions ####
 for (iyear in 1985:max(yr)) {
   
   #select year
-  iyear=2004
+  #iyear=2005
   
   ydf<-subset(filtered_points_df,year==iyear)
   
@@ -430,16 +564,21 @@ for (iyear in 1985:max(yr)) {
     
     #check files - to see if VAST fit is there
     ifiles<-list.files(paste0(iyear,sprintf("%02d", imonth)),recursive = TRUE,full.names = TRUE,pattern = '.RData$')
-    ifiles<-ifiles[grepl("fit_", ifiles) ]
-    
     
     #if month has data
     if (imonth %in% as.numeric(mm)) {
     
+      #filter for selection
+      ifiles<-ifiles[grepl("fit_", ifiles) ]
+      ifiles <- ifiles[sapply(ifiles, function(x) any(sapply(mods, grepl, x)))]
+      
       #if month has data and has 3 fit files
       for (i in ifiles) {
         
-        #i=ifiles[2]
+        #i=ifiles[1]
+        
+        if (exists('fit')) {rm(fit)}
+        if (exists('fit_VAST')) {rm(fit_VAST)}
         
         #subset by month
         mdf<-subset(ydf,month==imonth)
@@ -463,46 +602,6 @@ for (iyear in 1985:max(yr)) {
           
           #get fit objected
           fit<-get(modname)
-          vcov(fit)
-          se<-sqrt(diag(vcov(fit)))
-          
-          # observed_values <- fit$response #fit$data$cells
-          # predicted_values <- predict(fit, type = "response")[,'est']
-          # residuals<-observed_values-predicted_values
-          # 
-          # residuals(fit)
-          # residuals
-          # 
-          # 
-          # 
-          # plot(residuals)
-          # # Extract residuals
-          # residuals_sdmTMB <- residuals(fit, type = "response")  # Use Pearson residuals
-          # 
-          # # Create a data frame for plotting
-          # qq_data <- data.frame(
-          #   theoretical = qqnorm(residuals_sdmTMB, plot.it = FALSE)$x,
-          #   residuals = residuals_sdmTMB
-          # )
-          # 
-          # ggplot(qq_data, aes(sample = residuals)) +
-          #   stat_qq() + 
-          #   stat_qq_line() +
-          #   labs(title = "QQ Plot of Residuals", x = "Theoretical Quantiles", y = "Residuals") +
-          #   theme_minimal()
-          
-          #pred_obs<-fit$data
-          #pred_obs$response<-fit$response
-          
-          #fit$sd_report
-          #fit$sd_report$
-          #b_j      10.691409  0.6741630 #intercept vector
-          #ln_tau_O  2.887421        NaN #SD spatial
-          #ln_kappa  3.763843        NaN #spatial decorrelation rate
-          #thetaf    1.282290  0.3864381 #temporal autorocrrelation???
-          #ln_phi    5.246758  0.5108104 #dispersion ???
-          #Hessian
-          #gradient
           
           # Create prediction grid for each month
           prediction_data <- data.frame(
@@ -511,65 +610,128 @@ for (iyear in 1985:max(yr)) {
             month = imonth  # Add the month variable
           )
           
-          #update pred_array
-          update_predictions <- function(fit, pred_col, pred_data, pred_array, month, year) {
+          # Function to update sdmTMB predictions
+          update_sdmTMB_predictions <- function(fit, modname, pred_data, pred_array, fit_matrix, month, year) {
             if (!is.null(fit)) {
               predictions <- predict(fit, newdata = pred_data, type = 'response', t_i = pred_data$month, se_fit = FALSE)
-              pred_array[, c('lon', 'lat', pred_col), month, year] <- cbind(pred_data$lon, pred_data$lat, predictions$est)
+              pred_array[, c('lon', 'lat', modname), month, year] <- cbind(pred_data$lon, pred_data$lat, predictions$est)
+              
+              # Compute evaluation metrics
+              obs_sdmTMB <- fit$response
+              pred_sdmTMB <- predict(fit, type = "response")[,'est']
+              
+              rrmse <- (sqrt(mean((obs_sdmTMB - pred_sdmTMB)^2))) / mean(obs_sdmTMB)
+              mae <- mean(abs(obs_sdmTMB - pred_sdmTMB))
+              
+              # Total number of parameters (fixed+random)
+              k_value <- length(fit$tmb_obj$par) + length(fit$tmb_obj$env$random)
+              # Number of observations
+              n <- nrow(fit$response)
+              # Calculate AICc
+              aic<-AIC(fit)
+              aicc <- AIC(fit) + (2 * k_value * (k_value + 1)) / (n - k_value - 1)
+              
+              #NLL
+              nll<-fit$model$objective #NLL
+              
+              conv <- fit$model$convergence == 0
+              
+              fit_matrix <- rbind(fit_matrix, c(iyear, imonth, modname, rrmse, mae,aic, aicc,nll, conv))
+              
+              cat(modname, " model Evaluation:\n")
+              cat(" RMSE: ", rrmse, "\n")
+              cat(" MAE: ", mae, "\n")
+              cat(" AIC: ", aic, "\n")
+              cat(" AICc: ", aicc, "\n")
+              cat(" NLL: ", nll, "\n")
             } else {
-              pred_array[, c('lon', 'lat', pred_col), month, year] <- cbind(pred_data$lon, pred_data$lat, rep(0, length(pred_data$lon)))
+              fit_matrix <- rbind(fit_matrix, c(iyear, imonth, modname, NA, NA, NA,NA,NA, 'no model'))
+              pred_array[, c('lon', 'lat', modname), month, year] <- cbind(pred_data$lon, pred_data$lat, rep(0, length(pred_data$lon)))
             }
-            return(pred_array)  # Ensure changes persist
+            
+            return(list(pred_array = pred_array, fit_matrix = fit_matrix))
           }
           
-          #col
-          col_cells<-ifelse(grepl("sdmTMB1", i),'cells_sdmTMB1','cells_sdmTMB0')
-          
-          #append
-          pred_array <- update_predictions(fit, col_cells, prediction_data, pred_array, imonth, match(iyear, 1985:max(df$year)))
-          #head(pred_array[,,month.abb[imonth],as.character(iyear)])
-          
+          #run fxn
+          results <- update_sdmTMB_predictions(fit, modname, prediction_data, pred_array, fit_matrix, imonth, match(iyear, 1985:max(df$year)))
+          pred_array <- results$pred_array
+          fit_matrix <- results$fit_matrix
   
         } else {
           
-          # Function to handle VAST fit and update the array
-          update_vast_predictions <- function(fit, pred_array, month, year) {
+          # Function to update VAST predictions
+          update_vast_predictions <- function(fit, pred_array, fit_matrix, month, year) {
             if (!(length(fit$Report) == 1 || length(fit$Report) == 0)) {
-            
-              #fit<-fit_VAST
-              # Get densities
+              obs_VAST <- fit$data_frame$b_i
+              pred_VAST <- fit$Report$D_i
+              
+              rrmse <- (sqrt(mean((obs_VAST - pred_VAST)^2))) / mean(obs_VAST)
+              mae <- mean(abs(obs_VAST - pred_VAST))
+              #rsq <- 1 - sum((obs_VAST - pred_VAST)^2) / sum((obs_VAST - mean(obs_VAST))^2)
+              
+              # Total number of parameters (fixed+random)
+              #k_value <- fit$parameter_estimates$number_of_coefficients[2] + fit$parameter_estimates$number_of_coefficients[3]
+              k_value <- fit$parameter_estimates$number_of_coefficients[[1]] 
+              
+              #fit_VAST$parameter_estimates$par
+              #fit_VAST$tmb_list
+              #length(unlist(fit_VAST$ParHat))
+              aic<-fit$parameter_estimates$AIC[1]
+              # Number of observations
+              n <- nrow(fit$data_frame)
+              # Calculate AICc
+              aicc <- fit$parameter_estimates$AIC[1] + (2 * k_value * (k_value + 1)) / (n - k_value - 1)
+              
+              #NLL
+              nll<-fit$parameter_estimates$objective[[1]] #NLL
+              
+              conv <- ifelse(class(fit$Report) == 'list', fit$parameter_estimates$Convergence_check, FALSE)
+              
+              fit_matrix <- rbind(fit_matrix, c(iyear, imonth, modname, rrmse, mae,aic,aicc ,nll, conv))
+              
+              cat(modname, " model Evaluation:\n")
+              cat(" RMSE: ", rrmse, "\n")
+              cat(" MAE: ", mae, "\n")
+              cat(" AICc: ", aicc, "\n")
+              cat(" NLL: ", nll, "\n")
+              
               D_gt <- drop_units(fit$Report$D_gct[, 1, ])
               D_gt <- data.frame('cell' = 1:fit$spatial_list$n_g, D_gt)
               colnames(D_gt) <- c('cell', fit$year_labels)
               D_gt1 <- reshape2::melt(D_gt, id = 'cell')
-              
-              # Get spatial info
-              mdl <- make_map_info(Region = fit$settings$Region,
-                                   spatial_list = fit$spatial_list,
-                                   Extrapolation_List = fit$extrapolation_list)
-              
-              # Merge densities and spatial info
+              mdl <- make_map_info(Region = fit$settings$Region, spatial_list = fit$spatial_list, Extrapolation_List = fit$extrapolation_list)
               D <- merge(D_gt1, mdl$PlotDF, by.x = 'cell', by.y = 'x2i')
               
-              # Append results
-              pred_array[, 'cells_VAST', month, year] <- D$value
-              
+              pred_array[, modname, month, year] <- D$value
             } else {
-              # Append results with zeros
-              pred_array[, 'cells_VAST', month, year] <- rep(0, length = nrow(input_grid))
+              fit_matrix <- rbind(fit_matrix, c(iyear, imonth, modname, NA, NA, NA,NA,NA, 'no conv'))
+              pred_array[, modname, month, year] <- rep(0, length = nrow(input_grid))
             }
-            return(pred_array)  # Ensure changes persist
+            
+            return(list(pred_array = pred_array, fit_matrix = fit_matrix))
           }
           
-          # Update VAST predictions
-          pred_array <- update_vast_predictions(fit_VAST, pred_array, imonth, match(iyear, 1985:max(df$year)))
+          #run fxn
+          results <- update_vast_predictions(fit_VAST, pred_array, fit_matrix, imonth, match(iyear, 1985:max(df$year)))
+          pred_array <- results$pred_array
+          fit_matrix <- results$fit_matrix
         }
       } 
       
     } else {
       
+      # Store Year, Month, Model, and metrics in the results matrix
+      fit_matrix <- rbind(fit_matrix,
+                          c(iyear, imonth, modname, NA, NA, NA,NA,NA, 'no model'))
+      
       # Append results with zeros
-      pred_array[,, month.abb[imonth], as.character(iyear)] <- cbind(input_grid$Lon, input_grid$Lat, rep(0, length(input_grid$Lon)), rep(0, length(input_grid$Lon)), rep(0, length(input_grid$Lon)))
+      pred_array[,, month.abb[imonth], as.character(iyear)] <- cbind(input_grid$Lon, input_grid$Lat, 
+                                                                     rep(0, length(input_grid$Lon)), 
+                                                                     rep(0, length(input_grid$Lon)), 
+                                                                     rep(0, length(input_grid$Lon)), 
+                                                                     rep(0, length(input_grid$Lon)), 
+                                                                     rep(0, length(input_grid$Lon)), 
+                                                                     rep(0, length(input_grid$Lon)))
       
     }
   }
@@ -577,7 +739,59 @@ for (iyear in 1985:max(yr)) {
 
 #save array
 setwd(mydir)
+save(fit_matrix, file = './ST drivers/red tides/data/processed/RT_fit_matrix.RData') #paste(yrs_region,collapse = "")
 save(pred_array, file = './ST drivers/red tides/data/processed/pred_SDMs_RT.RData') #paste(yrs_region,collapse = "")
+
+
+
+fit_matrix<-data.frame(fit_matrix)
+table(fit_matrix$year,fit_matrix$month,fit_matrix$convergence)
+
+
+
+
+aggregate(RRMSE~convergence+model,fit_matrix,FUN=length)
+
+ggplot()+
+  geom_boxplot(data = fit_matrix,aes(x=model,y=as.numeric(RRMSE),fill=model))+
+  #facet_wrap(~year)+
+  theme_bw()+
+  labs(y='RRMSE')+
+  scale_y_continuous(limits = c(0,5))
+
+ggplot()+
+  geom_boxplot(data = fit_matrix,aes(x=model,y=as.numeric(nll),fill=model))+
+  #facet_wrap(~year)+
+  theme_bw()+
+  labs(y='NLL')#+
+  #scale_y_continuous(limits = c(0,5))
+
+ggplot()+
+  geom_boxplot(data = fit_matrix,aes(x=model,y=as.numeric(MAE),fill=model),outlier.shape = NA)+
+  #facet_wrap(~year)+
+  theme_bw()+
+  labs(y='MAE')+
+  scale_y_continuous(limits = c(0,200000))
+
+ggplot()+
+  geom_boxplot(data = fit_matrix,aes(x=model,y=as.numeric(aic),fill=model),outlier.shape = NA)+
+  #facet_wrap(~year)+
+  theme_bw()+
+  labs(y='AIC')+
+  scale_y_continuous(limits = c(0,10000))
+
+ggplot()+
+  geom_boxplot(data = fit_matrix,aes(x=model,y=as.numeric(aicc),fill=model),outlier.shape = NA)+
+  #facet_wrap(~year)+
+  theme_bw()+
+  labs(y='AICc')#+
+  #scale_y_continuous(limits = c(0,10000))
+
+
+
+
+
+
 
 #load array
 setwd(mydir)
@@ -838,7 +1052,7 @@ for (iyear in dimnames(pred_array)[[4]]) {
 }
 
 #check
-plot(raster('./sdmTMB RT rasters/200909_RTsdmTMB.asc'))
+#plot(raster('./sdmTMB RT rasters/200909_RTsdmTMB.asc'))
 
 #check values and predicted values ####
 
@@ -846,13 +1060,15 @@ plot(raster('./sdmTMB RT rasters/200909_RTsdmTMB.asc'))
 #load array
 setwd(mydir)
 load(file = './ST drivers/red tides/data/processed/pred_SDMs_RT.RData') #pred_array
+load(file = paste0('./ST drivers/red tides/data/processed/filtered_', namefile, '.RData'))
+obs_df<-filtered_points_df
 
 # Extract lon and lat (same for all months/years)
 lon_vec <- pred_array[, "lon", 1, 1]  # Take first month/year as reference
 lat_vec <- pred_array[, "lat", 1, 1]
 
 # Extract model prediction data
-selected_columns <- pred_array[, c("cells_sdmTMB0", "cells_sdmTMB1", "cells_VAST"), , ]
+selected_columns <- pred_array[, c('fit_sdmTMBlog', 'fit_sdmTMBnb' ,'fit_sdmTMBtw' ,'fit_VASTbias', 'fit_VASTdeltagam','fit_VASTdeltalog'), , ]
 
 # Convert the 4D array into a dataframe
 preds_df <- as.data.frame(as.table(selected_columns))
@@ -877,6 +1093,7 @@ preds_df <- merge(preds_df, lat_lon_df, by = "id")
 head(preds_df)
 
 df1<-obs_df
+df1<-sf::st_drop_geometry(df1)
 df2<-preds_df
 
 # Combine lat/lon columns into matrix for RANN::nn2
@@ -884,7 +1101,7 @@ coords_df1 <- cbind(df1$lat, df1$lon)
 
 for (pr in unique(df2$mod)) {
   
-  #pr<-unique(df2$mod_pred)[1]
+  #pr<-unique(df2$mod)[1]
   df3<-subset(df2,mod==pr)
   coords_df3 <- cbind(df3$lat, df3$lon)
 
@@ -920,11 +1137,24 @@ ggplot()+
   facet_wrap(~year,scales='free_y')#+
 #scale_y_continuous(limits = c(0,10000000))
 
+ggplot()+
+  geom_boxplot(data=subset(df11,year>=1985),aes(x=variable,y=log(1+value),color=variable))#+
+  #facet_wrap(~year,scales='free_y')#+
+
+
 #plot
 ggplot()+
-  geom_boxplot(data=subset(df11,year>=1985 & variable %in% c('cells_obs','cells_sdmTMB1','cells_VAST')),
+  geom_boxplot(data=subset(df11,year>=1985 ), #& variable %in% c('cells_obs','cells_sdmTMB1','cells_VAST')
                aes(x=variable,y=value,color=variable))+
   facet_wrap(~year,scales='free_y')#+
+
+ggplot()+
+  geom_boxplot(data=subset(df11,year>=1985 ), #& variable %in% c('cells_obs','cells_sdmTMB1','cells_VAST')
+               aes(x=variable,y=value,color=variable))+
+  scale_y_continuous(limits = c(0,1000000000))
+
+
+
 
 #plot
 ggplot() +
