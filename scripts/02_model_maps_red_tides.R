@@ -741,6 +741,7 @@ for (iyear in 1985:max(yr)) {
 setwd(mydir)
 save(fit_matrix, file = './ST drivers/red tides/data/processed/RT_fit_matrix.RData') #paste(yrs_region,collapse = "")
 save(pred_array, file = './ST drivers/red tides/data/processed/pred_SDMs_RT.RData') #paste(yrs_region,collapse = "")
+load(file = './ST drivers/red tides/data/processed/RT_fit_matrix.RData') #paste(yrs_region,collapse = "")
 
 
 
@@ -1129,12 +1130,13 @@ for (pr in unique(df2$mod)) {
 
 #reshape for plotting
 df11<-reshape2::melt(df1,id.vars=c('year', 'month','lon','lat', 'closest_id'))
-df111<-reshape2::melt(df1,id.vars=c('cells_obs','year', 'month','lon','lat', 'closest_id'))
+df111<-reshape2::melt(df1,id.vars=c('cells','year', 'month','lon','lat', 'closest_id'))
 
 #plot log
 ggplot()+
   geom_boxplot(data=subset(df11,year>=1985),aes(x=variable,y=log(1+value),color=variable))+
-  facet_wrap(~year,scales='free_y')#+
+  facet_wrap(~year,scales='free_y')+
+  theme(axis.text.x = element_blank())
 #scale_y_continuous(limits = c(0,10000000))
 
 ggplot()+
@@ -1144,21 +1146,20 @@ ggplot()+
 
 #plot
 ggplot()+
-  geom_boxplot(data=subset(df11,year>=1985 ), #& variable %in% c('cells_obs','cells_sdmTMB1','cells_VAST')
+  geom_boxplot(data=subset(df11,year>=1985 & value <100000000000), #& variable %in% c('cells_obs','cells_sdmTMB1','cells_VAST')
                aes(x=variable,y=value,color=variable))+
-  facet_wrap(~year,scales='free_y')#+
-
-ggplot()+
-  geom_boxplot(data=subset(df11,year>=1985 ), #& variable %in% c('cells_obs','cells_sdmTMB1','cells_VAST')
-               aes(x=variable,y=value,color=variable))+
-  scale_y_continuous(limits = c(0,1000000000))
-
-
+  facet_wrap(~year,scales='free_y')+
+  theme(axis.text.x = element_blank())
 
 
 #plot
+ggplot()+
+  geom_boxplot(data=subset(df11,year>=1985 & value <100000000000), #& variable %in% c('cells_obs','cells_sdmTMB1','cells_VAST')
+               aes(x=variable,y=value,color=variable))
+
+#plot
 ggplot() +
-  geom_point(data = subset(df111, year >= 1985), aes(x = cells_obs, y = value, color = variable)) +
+  geom_point(data = subset(df111, year >= 1985), aes(x = cells, y = value, color = variable)) +
   facet_wrap(~year, scales = 'free_y') +
   geom_abline(slope = 1, intercept = 0, linetype = "dashed", color = "red") #+  # 1:1 diagonal line
   #geom_smooth(data = subset(df111, year >= 1985), aes(x = cells_obs, y = value, color = variable), 
