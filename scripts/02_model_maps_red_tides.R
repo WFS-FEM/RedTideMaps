@@ -540,11 +540,15 @@ mods<-gsub('.RData','',mods)
 pred_array<-array(0,dim = c(nrow(input_grid),8,12,length(1985:max(yr))),
                   dimnames = list(1:nrow(input_grid),c('lon','lat',mods),month.abb,1985:max(df$year)))
 
+# #array to store predictions
+pred_obs<-
+
+
 # Loop getting predictions ####
 for (iyear in 1985:max(yr)) {
   
   #select year
-  #iyear=2005
+  iyear=2005
   
   ydf<-subset(filtered_points_df,year==iyear)
   
@@ -1055,7 +1059,71 @@ for (iyear in dimnames(pred_array)[[4]]) {
 #check
 #plot(raster('./sdmTMB RT rasters/200909_RTsdmTMB.asc'))
 
-#check values and predicted values ####
+#VIIRS ####
+
+lf<-list.files('./ST drivers/red tides/data/raw/VIIRS_redtide_maps_0.1degree/redtide_maps_0.1degree/',pattern = 'tif',full.names = TRUE)
+
+
+for (f in lf) {
+  
+  f<-lf[1]
+  
+  r<-raster(f)
+  
+  y<-substr(names(r),2,5)
+  m<-substr(names(r),7,8)
+  
+  # Set the extent manually
+  extent(r) <- c(-87.5, -81, 25, 30.5)
+  
+  # Set the CRS manually
+  crs(r) <- "+proj=longlat +datum=WGS84 +no_defs"
+  
+  # Flip the raster vertically
+  r1 <- flip(r, direction = "y")
+  
+  # Convert the raster to a dataframe
+  r_df <- as.data.frame(r, xy = TRUE)
+  
+  # Combine lat/lon columns into matrix for RANN::nn2
+  coords_r <- cbind(r_df$x, r_df$y)
+  
+  for (pr in unique(df2$mod)) {
+    
+    #pr<-unique(df2$mod)[1]
+    df3<-subset(df2,mod==pr)
+    coords_df3 <- cbind(df3$lat, df3$lon)
+    
+    if (!'closest_id' %in% names(df1)) {
+      
+      # Use RANN to find the closest matches
+      nearest_neighbors <- RANN::nn2(coords_df3, coords_df1, k = 1)  # k=1 for nearest neighbor
+      
+      # Extract the indices of the closest neighbors
+      closest_matches <- nearest_neighbors$nn.idx
+      
+      # Merge the closest match values from df2 into df1
+      df1$closest_id <- closest_matches
+      #names(df1)[ncol(df1)]<-paste0(names(df1)[ncol(df1)],'_',pr)
+      
+    }
+    
+    df1 <- cbind(df1, df3[df1$closest_id, "cells"])
+    
+    # View the merged dataframe
+    #print(df1)
+    names(df1)[ncol(df1)]<-pr
+    
+  }
+  
+  
+  
+}
+
+
+
+
+#check value#check value#check values and predicted values ####
 
 #load predarray as dataframe
 #load array
@@ -1102,7 +1170,10 @@ coords_df1 <- cbind(df1$lat, df1$lon)
 
 for (pr in unique(df2$mod)) {
   
-  #pr<-unique(df2$mod)[1]
+  pr<-unique(df2$mod)[1]
+  
+  
+  
   df3<-subset(df2,mod==pr)
   coords_df3 <- cbind(df3$lat, df3$lon)
 
