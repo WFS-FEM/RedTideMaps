@@ -541,14 +541,14 @@ pred_array<-array(0,dim = c(nrow(input_grid),8,12,length(1985:max(yr))),
                   dimnames = list(1:nrow(input_grid),c('lon','lat',mods),month.abb,1985:max(df$year)))
 
 # #array to store predictions
-pred_obs<-
-
+pred_obs<- matrix(NA, nrow = 0, ncol = 5)
+colnames(pred_obs) <- c("year", "month", 'obs','pred','mod')
 
 # Loop getting predictions ####
 for (iyear in 1985:max(yr)) {
   
   #select year
-  iyear=2005
+  #iyear=2005
   
   ydf<-subset(filtered_points_df,year==iyear)
   
@@ -624,6 +624,15 @@ for (iyear in 1985:max(yr)) {
               obs_sdmTMB <- fit$response
               pred_sdmTMB <- predict(fit, type = "response")[,'est']
               
+              pred_obs<-
+              rbind(pred_obs, 
+              data.frame("year"=iyear, 
+                         "month"=imonth,
+                         'obs'=obs_sdmTMB,
+                         'pred'=pred_sdmTMB,
+                         'mod'=modname))
+              
+              
               rrmse <- (sqrt(mean((obs_sdmTMB - pred_sdmTMB)^2))) / mean(obs_sdmTMB)
               mae <- mean(abs(obs_sdmTMB - pred_sdmTMB))
               
@@ -653,14 +662,14 @@ for (iyear in 1985:max(yr)) {
               pred_array[, c('lon', 'lat', modname), month, year] <- cbind(pred_data$lon, pred_data$lat, rep(0, length(pred_data$lon)))
             }
             
-            return(list(pred_array = pred_array, fit_matrix = fit_matrix))
+            return(list(pred_array = pred_array, fit_matrix = fit_matrix,pred_obs=pred_obs))
           }
           
           #run fxn
           results <- update_sdmTMB_predictions(fit, modname, prediction_data, pred_array, fit_matrix, imonth, match(iyear, 1985:max(df$year)))
           pred_array <- results$pred_array
           fit_matrix <- results$fit_matrix
-  
+          pred_obs <- results$pred_obs  
         } else {
           
           # Function to update VAST predictions
@@ -668,6 +677,14 @@ for (iyear in 1985:max(yr)) {
             if (!(length(fit$Report) == 1 || length(fit$Report) == 0)) {
               obs_VAST <- fit$data_frame$b_i
               pred_VAST <- fit$Report$D_i
+              
+              pred_obs<-
+                rbind(pred_obs, 
+                      data.frame("year"=iyear, 
+                                 "month"=imonth,
+                                 'obs'=obs_VAST,
+                                 'pred'=pred_VAST,
+                                 'mod'=modname))
               
               rrmse <- (sqrt(mean((obs_VAST - pred_VAST)^2))) / mean(obs_VAST)
               mae <- mean(abs(obs_VAST - pred_VAST))
@@ -712,13 +729,14 @@ for (iyear in 1985:max(yr)) {
               pred_array[, modname, month, year] <- rep(0, length = nrow(input_grid))
             }
             
-            return(list(pred_array = pred_array, fit_matrix = fit_matrix))
+            return(list(pred_array = pred_array, fit_matrix = fit_matrix,pred_obs=pred_obs))
           }
           
           #run fxn
           results <- update_vast_predictions(fit_VAST, pred_array, fit_matrix, imonth, match(iyear, 1985:max(df$year)))
           pred_array <- results$pred_array
           fit_matrix <- results$fit_matrix
+          pred_obs <- results$pred_obs
         }
       } 
       
@@ -745,8 +763,8 @@ for (iyear in 1985:max(yr)) {
 setwd(mydir)
 save(fit_matrix, file = './ST drivers/red tides/data/processed/RT_fit_matrix.RData') #paste(yrs_region,collapse = "")
 save(pred_array, file = './ST drivers/red tides/data/processed/pred_SDMs_RT.RData') #paste(yrs_region,collapse = "")
+save(pred_obs, file = './ST drivers/red tides/data/processed/pred_obs_RT.RData') #paste(yrs_region,collapse = "")
 load(file = './ST drivers/red tides/data/processed/RT_fit_matrix.RData') #paste(yrs_region,collapse = "")
-
 
 
 fit_matrix<-data.frame(fit_matrix)
