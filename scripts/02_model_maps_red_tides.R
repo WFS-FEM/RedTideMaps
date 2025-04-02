@@ -775,41 +775,101 @@ table(fit_matrix$year,fit_matrix$month,fit_matrix$convergence)
 
 aggregate(RRMSE~convergence+model,fit_matrix,FUN=length)
 
-ggplot()+
-  geom_boxplot(data = fit_matrix,aes(x=model,y=as.numeric(RRMSE),fill=model))+
-  #facet_wrap(~year)+
-  theme_bw()+
-  labs(y='RRMSE')+
-  scale_y_continuous(limits = c(0,5))
+
+# Change the value of x1 in the convergence column
+fit_matrix$convergence <- ifelse(fit_matrix$convergence == "The model is likely not converged", "FALSE", fit_matrix$convergence)
+fit_matrix$convergence <- ifelse(fit_matrix$convergence == "There is no evidence that the model is not converged", "TRUE", fit_matrix$convergence)
+fit_matrix$convergence <- ifelse(fit_matrix$convergence == "no conv", "FALSE", fit_matrix$convergence)
+Nno<-as.data.frame(table(fit_matrix$convergence))[2,'Freq']
+tot<-sum(as.data.frame(table(fit_matrix$convergence))['Freq'])
+fit_matrix<-fit_matrix[which(fit_matrix$convergence!='no model'),]
+
+
+
+
+
+# Count the occurrences of TRUE and FALSE in the convergence column
+counts <- as.data.frame(table(fit_matrix$convergence,fit_matrix$model))
+
+# Calculate the percentage
+counts$percentage <- (counts$Freq / sum(counts$Freq)) * 100
+
+# Rename columns for clarity
+colnames(counts) <- c("convergence",'model', "count", "percentage")
+
+#count
+library('ggh4x')
+
+counts$approach<-ifelse(grepl('VAST',counts$model),'VAST','sdmTMB')
+counts$submodel<-gsub('fit_VAST','',counts$model)
+counts$submodel<-gsub('fit_sdmTMB','',counts$submodel)
+fit_matrix$approach<-ifelse(grepl('VAST',fit_matrix$model),'VAST','sdmTMB')
+fit_matrix$submodel<-gsub('fit_VAST','',fit_matrix$model)
+fit_matrix$submodel<-gsub('fit_sdmTMB','',fit_matrix$submodel)
+# Create a boxplot using ggplot2
+ggplot(counts, aes(x = convergence, y = percentage, fill = convergence)) +
+  geom_bar(stat = "identity") +
+  scale_x_discrete(guide = guide_axis_nested(angle=0),labels = function(x) gsub("\\+", "\n", x))+
+  labs(title = paste0("Convergence SDM RT"),
+       x = "",
+       y = "") +
+  theme_minimal()
+
+ggplot(counts, aes(x = interaction(approach, submodel), y = count, fill = convergence)) +
+  geom_bar(stat = "identity") +
+  geom_text(aes(label = ifelse(convergence == TRUE, count, "")), 
+            vjust = -0.5) +
+  scale_x_discrete(guide = guide_axis_nested(angle = 0)) +
+  labs(title = "Convergence SDM RT",
+       x = "",
+       y = "") +
+  theme_minimal()
+
 
 ggplot()+
-  geom_boxplot(data = fit_matrix,aes(x=model,y=as.numeric(nll),fill=model))+
+  geom_boxplot(data = fit_matrix,aes(x=interaction(approach, submodel),y=as.numeric(RRMSE),fill=interaction(approach, submodel)),outlier.shape = NA)+
   #facet_wrap(~year)+
   theme_bw()+
-  labs(y='NLL')#+
-  #scale_y_continuous(limits = c(0,5))
+  scale_x_discrete(guide = guide_axis_nested(angle = 0)) +
+  labs(y='RRMSE',fill='SDM',x='')+
+  ggthemes::scale_fill_tableau()+
+  scale_y_continuous(limits = c(0,15))
+
 
 ggplot()+
-  geom_boxplot(data = fit_matrix,aes(x=model,y=as.numeric(MAE),fill=model),outlier.shape = NA)+
+  geom_boxplot(data = fit_matrix,
+               aes(x=interaction(approach, submodel),y=as.numeric(nll),fill=interaction(approach, submodel)),
+               outlier.shape = NA)+
   #facet_wrap(~year)+
   theme_bw()+
-  labs(y='MAE')+
+  scale_x_discrete(guide = guide_axis_nested(angle = 0)) +
+  labs(y='NLL',fill='SDM',x='')+
+  ggthemes::scale_fill_tableau()+
+  scale_y_continuous(limits = c(0,6000))
+
+
+ggplot()+
+  geom_boxplot(data = fit_matrix,
+               aes(x=interaction(approach, submodel),y=as.numeric(MAE),fill=interaction(approach, submodel)),
+               outlier.shape = NA)+
+  #facet_wrap(~year)+
+  theme_bw()+
+  scale_x_discrete(guide = guide_axis_nested(angle = 0)) +
+  labs(y='MAE',fill='SDM',x='')+
+  ggthemes::scale_fill_tableau()+
   scale_y_continuous(limits = c(0,200000))
 
+
 ggplot()+
-  geom_boxplot(data = fit_matrix,aes(x=model,y=as.numeric(aic),fill=model),outlier.shape = NA)+
+  geom_boxplot(data = fit_matrix,
+               aes(x=interaction(approach, submodel),y=as.numeric(aic),fill=interaction(approach, submodel)),
+               outlier.shape = NA)+
   #facet_wrap(~year)+
   theme_bw()+
-  labs(y='AIC')+
+  scale_x_discrete(guide = guide_axis_nested(angle = 0)) +
+  labs(y='AIC',fill='SDM',x='')+
+  ggthemes::scale_fill_tableau()+
   scale_y_continuous(limits = c(0,10000))
-
-ggplot()+
-  geom_boxplot(data = fit_matrix,aes(x=model,y=as.numeric(aicc),fill=model),outlier.shape = NA)+
-  #facet_wrap(~year)+
-  theme_bw()+
-  labs(y='AICc')#+
-  #scale_y_continuous(limits = c(0,10000))
-
 
 
 
@@ -1079,17 +1139,33 @@ for (iyear in dimnames(pred_array)[[4]]) {
 
 #VIIRS ####
 
+setwd(mydir)
 lf<-list.files('./ST drivers/red tides/data/raw/VIIRS_redtide_maps_0.1degree/redtide_maps_0.1degree/',pattern = 'tif',full.names = TRUE)
+#load(file = './ST drivers/red tides/data/processed/pred_obs_RT.RData') #pred_obs
+load(file = paste0('./data/processed/filtered_', namefile, '.RData')) #filtered_points_df
+
+
+# Ensure month column is two digits
+filtered_points_df$month <- sprintf("%02d", filtered_points_df$month)
+
+# #array to store predictions
+viirs_obs<- matrix(NA, nrow = 0, ncol = 4)
+colnames(viirs_obs) <- c("year", "month", 'viirs','obs')
 
 
 for (f in lf) {
   
-  f<-lf[1]
+  #f<-lf[1]
   
+  #get raster
   r<-raster(f)
   
+  #year and month
   y<-substr(names(r),2,5)
   m<-substr(names(r),7,8)
+  
+  #print
+  cat(paste0('################## ',y,m,'###\n'))
   
   # Set the extent manually
   extent(r) <- c(-87.5, -81, 25, 30.5)
@@ -1099,49 +1175,131 @@ for (f in lf) {
   
   # Flip the raster vertically
   r1 <- flip(r, direction = "y")
+  #plot(r1)
+
+  ivalues<-c(values(r1))
   
-  # Convert the raster to a dataframe
-  r_df <- as.data.frame(r, xy = TRUE)
+  na.omit(ivalues)
   
-  # Combine lat/lon columns into matrix for RANN::nn2
-  coords_r <- cbind(r_df$x, r_df$y)
   
-  for (pr in unique(df2$mod)) {
-    
-    #pr<-unique(df2$mod)[1]
-    df3<-subset(df2,mod==pr)
-    coords_df3 <- cbind(df3$lat, df3$lon)
-    
-    if (!'closest_id' %in% names(df1)) {
-      
-      # Use RANN to find the closest matches
-      nearest_neighbors <- RANN::nn2(coords_df3, coords_df1, k = 1)  # k=1 for nearest neighbor
-      
-      # Extract the indices of the closest neighbors
-      closest_matches <- nearest_neighbors$nn.idx
-      
-      # Merge the closest match values from df2 into df1
-      df1$closest_id <- closest_matches
-      #names(df1)[ncol(df1)]<-paste0(names(df1)[ncol(df1)],'_',pr)
-      
-    }
-    
-    df1 <- cbind(df1, df3[df1$closest_id, "cells"])
-    
-    # View the merged dataframe
-    #print(df1)
-    names(df1)[ncol(df1)]<-pr
-    
+  if (mean(ivalues,na.rm=TRUE)==0) {
+    cat("### JUMPING -------")
+    next
   }
   
+  # Convert all 0 values to NA
+  r2<-r1
+  r2[r2 == 0] <- NA
+
+  # Convert raster cells with values to polygons
+  r2pol <- rasterToPolygons(r2, fun = function(x) !is.na(x) & x != 0, dissolve = TRUE)
+  # Convert to sf object
+  r2pol <- st_as_sf(r2pol)
+  # Merge all polygons into a single polygon
+  r2pol <- st_union(r2pol)
   
+  #plot
+  plot(r2)
+  plot(r2pol,add=T)
+  
+  #filter by month and year obs samples
+  ydf<-subset(filtered_points_df,year==y & month ==m)
+  
+  # Filter rows where cells >= 1000
+  #filt_ydf <- ydf[ydf$cells >= 1000, ]
+  
+  #coordinates
+  icoords <- data.frame(lon=ydf$lon, lat=ydf$lat)
+  coordinates(icoords) <- ~lon+lat
+  
+  #extract values from raster
+  values <- raster::extract(r1, icoords)
+  
+  #append results
+  viirs_obs<-rbind(viirs_obs,
+                  data.frame(year=y,
+                             month=m,
+                             viirs=values,
+                             obs=ydf$cells))
   
 }
+  
+  
+  viirs_obs1<-na.omit(viirs_obs)
+
+  second_max<-sort(viirs_obs1$obs, decreasing = TRUE)[2]
+  first_max<-max(viirs_obs1$obs)  
+  
+  library(scales)
+  
+  # Normalize viirs values between 0 and 1
+  #viirs_obs1$obs <- rescale(viirs_obs1$obs, to = c(0, 1))
+  viirs_obs1$obs <- viirs_obs1$obs/first_max
+  viirs_obs1$obs<-ifelse(viirs_obs1$obs>1,1,viirs_obs1$obs)
+  viirs_obs1$viirs <- rescale(viirs_obs1$viirs, to = c(0, 1)) 
+  
+  library(tidyr)
+  
+  # Reshape the data to long format
+  viirs_obs_long <- reshape(viirs_obs1,
+                            varying = list(c("viirs", "obs")),
+                            v.names = "value",
+                            timevar = "variable",
+                            times = c("viirs", "obs"),
+                            direction = "long")
+  
+
+  ggplot(viirs_obs_long, aes(x = variable, y = value, fill = variable)) +
+    geom_boxplot(alpha = 0.5) +
+    labs(title = "Boxplot of Normalized VIIRS and Observations by Year",
+         x = "Variable",
+         y = "Value",
+         fill = "Variable") +
+    theme_minimal() +
+    facet_wrap(~year, scales = 'free_y')
+  
+  
+#check value
 
 
+#check values and predicted values ####
+
+setwd(mydir)
+load(file = './ST drivers/red tides/data/processed/pred_obs_RT.RData') #pred_obs
+
+head(pred_obs)
+
+obs1<-subset(pred_obs,mod=='fit_sdmTMBlog')[,c('year','month','obs')]
+pred_obs1<-pred_obs[,c("year","month","pred","mod")]
+
+obs2<-
+data.frame('year'=obs1$year,
+           'month'=obs1$month,
+           'pred'=obs1$obs,
+           'mod'='obs')
 
 
-#check value#check value#check values and predicted values ####
+pred_obs2<-rbind(obs2,pred_obs1)
+
+
+ggplot()+
+  geom_boxplot(data=pred_obs2,aes(x=mod,y=pred),fill=mod)+
+  scale_y_continuous(limits=c(0,100000000))+
+  facet_wrap(~year,scales='free_y')
+
+ggplot()+
+  geom_boxplot(data=pred_obs2,aes(x=mod,y=pred,fill=mod))+
+  scale_y_continuous(limits=c(0,1000000000))
+
+ggplot()+
+  geom_boxplot(data=pred_obs2,aes(x=mod,y=log(1+pred),fill=mod))+
+  #scale_y_continuous(limits=c(0,100000000))
+  facet_wrap(~year,scales='free_y')
+
+ggplot()+
+  geom_boxplot(data=pred_obs2,aes(x=mod,y=log(1+pred),fill=mod))#+
+  #scale_y_continuous(limits=c(0,100000000))
+
 
 #load predarray as dataframe
 #load array
@@ -1276,13 +1434,6 @@ ggplot() +
 #   scale_y_continuous(limits = c(10000000,NA))
 
 
-
-
-
-
-#
-
-
 dff<-pred_array[,,'Oct','2005']
 
 # Convert dff to a data frame
@@ -1317,8 +1468,6 @@ ggplot(dff_filtered, aes(x = lon, y = lat)) +
        x = "Longitude",
        y = "Latitude") +
   theme_minimal()
-
-
 
 
 # Let's first extract the desired columns and time slice
