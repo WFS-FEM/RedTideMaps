@@ -1151,7 +1151,7 @@ filtered_points_df$month <- sprintf("%02d", filtered_points_df$month)
 # #array to store predictions
 viirs_obs<- matrix(NA, nrow = 0, ncol = 4)
 colnames(viirs_obs) <- c("year", "month", 'viirs','obs')
-
+library(sf)
 
 for (f in lf) {
   
@@ -1227,34 +1227,34 @@ for (f in lf) {
   
   viirs_obs1<-na.omit(viirs_obs)
 
-  second_max<-sort(viirs_obs1$obs, decreasing = TRUE)[2]
+  #second_max<-sort(viirs_obs1$obs, decreasing = TRUE)[5]
   first_max<-max(viirs_obs1$obs)  
   
   library(scales)
   
   # Normalize viirs values between 0 and 1
   #viirs_obs1$obs <- rescale(viirs_obs1$obs, to = c(0, 1))
-  viirs_obs1$obs <- viirs_obs1$obs/first_max
-  viirs_obs1$obs<-ifelse(viirs_obs1$obs>1,1,viirs_obs1$obs)
-  viirs_obs1$viirs <- rescale(viirs_obs1$viirs, to = c(0, 1)) 
+  viirs_obs1$obs_scaled <- viirs_obs1$obs/first_max
+  viirs_obs1$obs_scaled<-ifelse(viirs_obs1$obs_scaled>1,1,viirs_obs1$obs_scaled)
+  viirs_obs1$viirs <- scales::rescale(viirs_obs1$viirs, to = c(0, 1)) 
   
-  library(tidyr)
   
   # Reshape the data to long format
   viirs_obs_long <- reshape(viirs_obs1,
-                            varying = list(c("viirs", "obs")),
+                            varying = list(c("viirs", "obs_scaled")),
                             v.names = "value",
                             timevar = "variable",
-                            times = c("viirs", "obs"),
+                            times = c("viirs", "obs_scaled"),
                             direction = "long")
   
 
   ggplot(viirs_obs_long, aes(x = variable, y = value, fill = variable)) +
     geom_boxplot(alpha = 0.5) +
-    labs(title = "Boxplot of Normalized VIIRS and Observations by Year",
-         x = "Variable",
-         y = "Value",
-         fill = "Variable") +
+    labs(#title = "Boxplot of Normalized VIIRS and Observations by Year",
+         x = "",
+         y = "",
+         fill = "") +
+    ggthemes::scale_fill_tableau()+
     theme_minimal() +
     facet_wrap(~year, scales = 'free_y')
   
