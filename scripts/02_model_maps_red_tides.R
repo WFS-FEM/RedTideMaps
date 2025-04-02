@@ -220,6 +220,13 @@ ggplot() +
   geom_point(data = input_grid, aes(x = Lon, y = Lat), color = "black", size = 0.8,alpha=0.3) +  # Overlay points
   theme_minimal()
 
+#check data
+ggplot() +  
+  geom_boxplot(data = filtered_points_df, aes(x = year, y = cells,group=year)) +  # Depth raster
+  theme_minimal()
+
+
+
 #create a dataframe from the minimum to the maximum order at monthly steps
 yr<-rep(c(range(filtered_points_df$year)[1]:range(filtered_points_df$year)[2]),each=12)
 month<-rep(1:12,times=length(c(range(filtered_points_df$year)[1]:range(filtered_points_df$year)[2])))
@@ -241,7 +248,7 @@ for (iyear in 1985:max(yr)) {
   ydf<-subset(filtered_points_df,year==iyear)
   
   # Filter rows where cells >= 1000
-  filt_ydf <- ydf[ydf$cells >= 1000, ]
+  filt_ydf <- ydf[ydf$cells > 0, ]
   
   # Count the number of rows (observations) for each month
   mm <- names(table(filt_ydf$month)[table(filt_ydf$month) > 5])
@@ -268,6 +275,9 @@ for (iyear in 1985:max(yr)) {
       #create folder
       mdir<-paste0(iyear,sprintf("%02d", imonth))
       dir.create(mdir)
+      
+      #remove previous fit files
+      file.remove(paste0(mdir,c("/fit_sdmTMB0.RData", "/fit_sdmTMB1.RData",'/fit_VAST.RData')))
       
       # Initialize attempt counter
       attempt_counter <- 0
