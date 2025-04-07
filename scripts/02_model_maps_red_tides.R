@@ -11,6 +11,7 @@ library(raster)
 library(sf)
 library(rnaturalearth)
 library(cowplot)
+library(scales)
 
 #set.seed
 set.seed(6)
@@ -182,6 +183,7 @@ inside_polygons <- st_within(input_grid1, all_polygons_single, sparse = FALSE)
 
 x<-input_grid1[!apply(inside_polygons, 1, any), ]
 x1<-as.data.frame(x,xy=TRUE)
+total_area<-sum(na.omit(x1)[,'Area_km2'])
 # Add an ID column to your data
 #df$ID <- seq_len(nrow(df))  # Creates a sequential ID for each row
 
@@ -1152,7 +1154,7 @@ for (iyear in dimnames(pred_array)[[4]]) {
 setwd(mydir)
 lf<-list.files('./ST drivers/red tides/data/raw/VIIRS_redtide_maps_0.1degree/redtide_maps_0.1degree/',pattern = 'tif',full.names = TRUE)
 #load(file = './ST drivers/red tides/data/processed/pred_obs_RT.RData') #pred_obs
-load(file = paste0('./data/processed/filtered_', namefile, '.RData')) #filtered_points_df
+load(file = paste0('./ST drivers/red tides/data/processed/filtered_', namefile, '.RData')) #filtered_points_df
 
 
 # Ensure month column is two digits
@@ -1161,7 +1163,9 @@ filtered_points_df$month <- sprintf("%02d", filtered_points_df$month)
 # #array to store predictions
 viirs_obs<- matrix(NA, nrow = 0, ncol = 4)
 colnames(viirs_obs) <- c("year", "month", 'viirs','obs')
-library(sf)
+
+#list
+plot_list<-list()
 
 for (f in lf) {
   
@@ -1209,17 +1213,67 @@ for (f in lf) {
   r2pol <- st_union(r2pol)
   
   #plot
-  plot(r2)
-  plot(r2pol,add=T)
+  #plot(r2)
+  #plot(r2pol,add=T)
+  
+  # Ensure r2pol is an sf object
+  r2pol <- st_sf(geometry = r2pol)
+  
+  # Assign the CRS from r2 (assuming r2 has a CRS)
+  st_crs(r2pol) <- st_crs(r2)
   
   #filter by month and year obs samples
   ydf<-subset(filtered_points_df,year==y & month ==m)
   
+  if (nrow(ydf)==0) {
+    next
+  }
   # Filter rows where cells >= 1000
   #filt_ydf <- ydf[ydf$cells >= 1000, ]
   
   #coordinates
-  icoords <- data.frame(lon=ydf$lon, lat=ydf$lat)
+  icoords <- data.frame(lon=ydf$lon, lat=ydf$lat,cells=ydf$cells)
+  
+  # Convert raster to data frame for ggplot
+  raster_df <- as.data.frame(rasterToPoints(r2))
+  colnames(raster_df)[ncol(raster_df)]<-'freq'
+  
+  # Reorder points based on cells values to plot higher values on top
+  icoords <- icoords[order(icoords$cells), ]
+  
+  # Create the plot
+  p<-
+  ggplot() +
+    geom_raster(data = raster_df, aes(x = x, y = y, fill = freq)) +
+    geom_sf(data = r2pol, fill = NA, color = "black", linewidth = 0.7) +  # Add polygon with red outline
+    geom_point(data = icoords, aes(x = lon, y = lat, color = cells), 
+               shape = 19, size = 3, stroke = 0.5) +
+    scale_x_continuous(expand=c(0,0))+
+    scale_y_continuous(expand=c(0,0))+
+    scale_fill_gradient(low = "white", high = "#AEC936") +  
+    scale_color_gradient(low = "white", high = "#5136C9") +  
+    geom_sf(data = st_as_sf(us_clipped_sf_polygons), fill = 'lightgrey', color = 'black', alpha = 0.5) +
+    theme_minimal() +
+    labs(x='',y='')+
+    # Move the title inside the plot using annotate
+    annotate("text", x = -82, y = 30, 
+             label = paste0(m, ' - ', y), hjust = 1, size = 5, fontface = "bold") +
+    
+    theme(legend.position = c(0.15, 0.4)) +  
+    guides(fill = guide_colorbar(ticks = TRUE, 
+                                 ticks.colour = "black", 
+                                 frame.colour = "black",title='freq (VIIRS)'),  
+           color = guide_colorbar(ticks = TRUE, 
+                                  ticks.colour = "black", 
+                                  frame.colour = "black",title='cells/L (obs)')) +  
+    theme(legend.box = "vertical", 
+          legend.spacing.x = unit(0.5, 'cm'))  
+  
+  
+  plot_list[[paste0(m,y)]]<-p
+  
+  
+  #spatial coords
   coordinates(icoords) <- ~lon+lat
   
   #extract values from raster
@@ -1234,13 +1288,21 @@ for (f in lf) {
   
 }
   
-  
+#example
+y<-'2018'
+ilist<-plot_list[grepl(paste0(y), names(plot_list))]
+
+do.call(gridExtra::grid.arrange, c(ilist, ncol = 3))  # Adjust ncol as needed
+
+
+
+
+
   viirs_obs1<-na.omit(viirs_obs)
 
   #second_max<-sort(viirs_obs1$obs, decreasing = TRUE)[5]
   first_max<-max(viirs_obs1$obs)  
-  
-  library(scales)
+
   
   # Normalize viirs values between 0 and 1
   #viirs_obs1$obs <- rescale(viirs_obs1$obs, to = c(0, 1))
@@ -1282,24 +1344,54 @@ head(pred_obs)
 obs1<-subset(pred_obs,mod=='fit_sdmTMBlog')[,c('year','month','obs')]
 pred_obs1<-pred_obs[,c("year","month","pred","mod")]
 
+pred_obs1$approach<-ifelse(grepl('VAST',pred_obs1$mod),'VAST','sdmTMB')
+pred_obs1$submodel<-gsub('fit_VAST','',pred_obs1$mod)
+pred_obs1$submodel<-gsub('fit_sdmTMB','',pred_obs1$submodel)
+
 obs2<-
 data.frame('year'=obs1$year,
            'month'=obs1$month,
            'pred'=obs1$obs,
-           'mod'='obs')
+           'mod'='obs',
+           'approach'='obs',
+           'submodel'='')
 
 
 pred_obs2<-rbind(obs2,pred_obs1)
 
+library(ggh4x)
+
+# Define colors: Tableau for all except "obs" (which is grey)
+color_palette <- tableau_color_pal()(7)  # Get a Tableau color palette
+custom_colors <- setNames(c("grey30", color_palette), c("obs.", setdiff(unique(interaction(pred_obs2$approach,pred_obs2$submodel)), "obs.")[c(4,5,6,1,2,3)]))
+
 
 ggplot()+
-  geom_boxplot(data=pred_obs2,aes(x=mod,y=pred),fill=mod)+
-  scale_y_continuous(limits=c(0,100000000))+
-  facet_wrap(~year,scales='free_y')
+  geom_boxplot(data=pred_obs2,aes(x=interaction(approach,submodel),y=log(pred+1),fill=interaction(approach,submodel)))+
+  #scale_y_continuous(limits=c(0,100000000))+
+  #ggthemes::scale_fill_tableau()+
+  scale_fill_manual(values = custom_colors,name='') +
+  scale_x_discrete(guide = guide_axis_nested(angle=0))+
+  facet_wrap(~year,scales='free_y',ncol=4)+
+  labs(y='log(cells+1)',x='')+
+  theme_bw()+
+  theme(strip.background = element_blank())
+
+ggplot()+
+  geom_boxplot(data=pred_obs2,aes(x=interaction(approach,submodel),y=log(pred+1),fill=interaction(approach,submodel)))+
+  scale_y_continuous(limits=c(0,30))+
+  #ggthemes::scale_fill_tableau()+
+  scale_fill_manual(values = custom_colors,name='') +
+  scale_x_discrete(guide = guide_axis_nested(angle=0))+
+  #facet_wrap(~year,scales='free_y',ncol=4)+
+  labs(y='log(cells+1)',x='')+
+  theme_bw()+
+  theme(strip.background = element_blank())
 
 ggplot()+
   geom_boxplot(data=pred_obs2,aes(x=mod,y=pred,fill=mod))+
-  scale_y_continuous(limits=c(0,1000000000))
+  scale_y_continuous(limits=c(0,100000000))+
+facet_wrap(~year,scales='free_y')
 
 ggplot()+
   geom_boxplot(data=pred_obs2,aes(x=mod,y=log(1+pred),fill=mod))+
@@ -1309,6 +1401,84 @@ ggplot()+
 ggplot()+
   geom_boxplot(data=pred_obs2,aes(x=mod,y=log(1+pred),fill=mod))#+
   #scale_y_continuous(limits=c(0,100000000))
+
+#rank years based on mean year severity over obs and pred data
+aggregate(pred ~ year + mod + approach + submodel,pred_obs2,FUN=mean)
+head(pred_obs2)
+
+library(ggplot2)
+
+# Aggregate data
+ranked_data <- aggregate(pred ~ year + mod + approach + submodel, pred_obs2, FUN=mean)
+
+# Create a unique identifier for each (mod, approach, submodel) combination
+ranked_data$group <- with(ranked_data, paste(mod, approach, submodel, sep = "_"))
+
+# Rank years within each group based on pred values
+ranked_data <- ranked_data[order(ranked_data$group, ranked_data$pred), ]  # Sort within groups
+ranked_data$year <- factor(ranked_data$year, levels = unique(ranked_data$year))  # Convert to factor
+
+# Reorder year within each group
+ranked_data$year <- ave(ranked_data$year, ranked_data$group, 
+                        FUN = function(x) factor(x, levels = x[order(ranked_data$pred[ranked_data$group == unique(ranked_data$group[x])])]))
+
+# Plot
+ggplot(ranked_data, aes(x = year, y = pred, fill = mod)) +
+  geom_bar(stat = "identity") +
+  facet_wrap(~ group, scales = "free_x") +  # Separate panels for each group
+  coord_flip() +  # Flip for better readability
+  labs(x = "Year (Ranked)", y = "Predicted Value", title = "Yearly Rank by Model, Approach, and Submodel") +
+  theme_minimal()
+
+library(ggplot2)
+library(ggplot2)
+
+# Aggregate data
+ranked_data <- aggregate(pred ~ year + mod + approach + submodel, pred_obs2, FUN=mean)
+
+# Create a unique identifier for each (mod, approach, submodel) combination
+ranked_data$group <- with(ranked_data, paste(mod, approach, submodel, sep = "_"))
+
+# Rank years within each group based on pred values (higher pred gets lower rank)
+ranked_data$rank <- ave(ranked_data$pred, ranked_data$group, FUN = function(x) rank(-x, ties.method = "average"))
+
+# Step 1: Filter the data for the 'obs' group
+obs_data <- ranked_data[ranked_data$mod == "obs", ]
+
+# Step 2: Calculate the median rank for each year in the 'obs' group
+median_ranks <- tapply(obs_data$rank, obs_data$year, median)
+
+# Step 3: Reorder the 'year' factor based on the median ranks in the 'obs' group
+ranked_data$year <- factor(ranked_data$year, 
+                           levels = names(sort(median_ranks)))
+# Calculate the mean rank for each year
+mean_rank <- aggregate(rank ~ year, data = ranked_data, FUN=mean)
+mean_rank <- merge(mean_rank, ranked_data[, c("year", "approach", "submodel")], by = "year")
+
+# Define colors: Tableau for all except "obs" (which is grey)
+color_palette <- tableau_color_pal()(7)  # Get a Tableau color palette
+custom_colors <- setNames(c("grey30", color_palette), c("obs.", setdiff(unique(interaction(mean_rank$approach,mean_rank$submodel)), "obs.")[c(5,6,4,1,3,2)]))
+
+# Plot
+ggplot(ranked_data, aes(x = year, y = rank, group = interaction(approach, submodel))) +
+  # Points
+  geom_point(aes(fill = interaction(approach, submodel)), shape = 21, size = 3) +
+  # Lines connecting points with the same color as the fill
+  geom_line(aes(color = interaction(approach, submodel)), size = 0.7) +
+  # Custom colors for fill and line
+  scale_fill_manual(values = custom_colors, name = '') +
+  scale_color_manual(values = custom_colors, name = '') +
+  # Add text annotation for mean rank
+  geom_text(data = mean_rank, aes(x = year, y = rank, label = round(rank, 1)), 
+            size = 4, hjust = -1, 
+            color = 'black') +  
+  # Flip for better readability
+  coord_flip() +  
+  # Labels and formatting
+  labs(x = "", y = "Severity Annual Rank") +
+  scale_y_continuous(limits = c(1, length(unique(ranked_data$year))), breaks = c(1, 5, 10, 15, 20, 25, 30, 35, 40)) +
+  theme_minimal() +
+  theme(axis.text.y = element_text(face = "bold"))  # Bold y-axis text
 
 
 #load predarray as dataframe
