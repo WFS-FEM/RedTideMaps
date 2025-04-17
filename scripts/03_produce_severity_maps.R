@@ -4,7 +4,6 @@ rm(list=ls());gc()
 
 #load libraries
 library(sdmTMB)
-library(VAST)
 library(lubridate)
 library(ggplot2)
 library(raster)
@@ -12,6 +11,9 @@ library(sf)
 library(rnaturalearth)
 library(cowplot)
 library(scales)
+library(ggh4x)
+library(viridis)
+library(terra)
 
 #set.seed
 set.seed(6)
@@ -29,27 +31,27 @@ if (Sys.info()['user']=='daniel') {
   if (.Platform$OS.type == "windows") {setwd(choose.dir())} else {setwd(tcltk::tk_choose.dir())}
 }
 
-# Prepare red tides dataset #####
-# Load depth and exclusion depth rasters to be used as a sample raster
+#Prepare red tides dataset #####
+#load depth and exclusion depth rasters to be used as a sample raster
 depth <- raster('./static drivers/depth/depth 4min 82x97.asc')
 excl_depth <- raster('./static drivers/depth/excl layer 4min 82x97.asc')
 
-# Get US polygon as an sf object
+#get US polygon as an sf object
 us <- ne_countries(country = "united states of america", scale = 10, returnclass = "sf")
 
-# Plot original US polygon
+#plot original US polygon
 plot(us$geometry)
 
 # Remove all non-geometry columns
 us <- us["geometry"]
 
-# Convert raster extent to an sf-compatible bounding box
+#convert raster extent to an sf-compatible bounding box
 us_bbox <- st_as_sfc(st_bbox(depth))
 
-# Crop to U.S. region using sf functions
+#crop to U.S. region using sf functions
 us_cropped <- st_crop(us, us_bbox)
 us_cropped <- st_cast(us_cropped, "POLYGON")
-# Plot cropped version
+#plot cropped version
 plot(us_cropped$geometry)
 
 #create data folder
@@ -57,17 +59,17 @@ dir.create('./ST drivers/red tides/',showWarnings = FALSE)
 dir.create('./ST drivers/red tides/data/processed',showWarnings = FALSE)
 setwd('./ST drivers/red tides/')
 
-# Convert extent(depth) to an sf polygon
+#convert extent(depth) to an sf polygon
 depth_extent <- st_as_sf(st_as_sfc(st_bbox(depth)))
 
-# Convert exclusion depth raster to polygons and then to sf object
+#convert exclusion depth raster to polygons and then to sf object
 excl_depth <- rasterToPolygons(excl_depth, dissolve = TRUE)
 excl_depth_sf <- st_as_sf(excl_depth)
 
-# Perform intersection
+#perform intersection
 us_clipped_sf <- st_intersection(us_cropped, depth_extent)
 
-# Define coordinates of polygon, ensuring the first point is repeated as the last
+#define coordinates of polygon, ensuring the first point is repeated as the last
 coords <- matrix(c(-82, 28.5, 
                    -80.5, 28.5, 
                    -80.5, 31, 
@@ -75,10 +77,10 @@ coords <- matrix(c(-82, 28.5,
                    -82, 28.5),  # Explicitly repeat the first point to close the polygon
                  ncol = 2, byrow = TRUE)
 
-# Create the polygon (now properly closed)
+#create the polygon (now properly closed)
 Ps2_sf <- st_sf(geometry = st_sfc(st_polygon(list(coords))), crs = st_crs(depth))
 
-# Ensure all geometries are in the same CRS
+#ensure all geometries are in the same CRS
 us_clipped_sf <- st_transform(us_clipped_sf, st_crs(depth))
 excl_depth_sf <- st_transform(excl_depth_sf, st_crs(depth))
 Ps2_sf <- st_transform(Ps2_sf, st_crs(depth))
@@ -87,7 +89,7 @@ Ps2_sf <- st_transform(Ps2_sf, st_crs(depth))
 us_clipped_sf <- st_make_valid(us_clipped_sf)
 us_clipped_sf_polygons <- st_cast(us_clipped_sf, "POLYGON")
 
-# Combine polygons sequentially using st_union
+#combine polygons sequentially using st_union
 combined_polygons_1 <- st_union(us_clipped_sf, Ps2_sf)
 all_polygons <- st_union(combined_polygons_1, excl_depth_sf)
 
@@ -97,44 +99,44 @@ all_polygons_single <- st_union(all_polygons_single, excl_depth_sf)
 all_polygons_single <- st_combine(all_polygons_single)
 all_polygons_single <- st_cast(all_polygons_single, "POLYGON")
 
-# Plot the combined polygons
+#plot the combined polygons
 plot(st_geometry(all_polygons))
 plot(st_geometry(all_polygons_single))
 
-# Load and process CSV files
+#load and process CSV files
 lf <- list.files(mydir, pattern = 'habsos.*\\.csv', recursive = TRUE)
 df <- read.csv(paste0(mydir,lf[length(lf)]))
-# Convert SAMPLE_DATE to Date format
+#convert SAMPLE_DATE to Date format
 df$SAMPLE_DATE <- as.Date(df$SAMPLE_DATE)
 
-# Extract year and month
+#extract year and month
 df$year <- as.numeric(format(df$SAMPLE_DATE, "%Y"))
 df$month <- as.numeric(format(df$SAMPLE_DATE, "%m"))
 
-# Select and rename columns
+#select and rename columns
 df <- df[, c("LATITUDE", "LONGITUDE", "year", "CELLCOUNT", "month")]
 colnames(df) <- c("lat", "lon", "year", "cells", "month")
 
-# Convert data frame to sf object
+#convert data frame to sf object
 obs_sf <- st_as_sf(df, coords = c("lon", "lat"), crs = st_crs(depth))
 
-# Use st_within to identify points inside polygons
+#use st_within to identify points inside polygons
 inside_polygons <- st_within(obs_sf, all_polygons_single, sparse = FALSE)
 plot(inside_polygons)
 
-# Filter points that are outside the polygons (i.e., where no intersection exists)
+#filter points that are outside the polygons (i.e., where no intersection exists)
 filtered_points_outside <- obs_sf[!apply(inside_polygons, 1, any), ]
 
-# Apply another filter based on the raster extent
+#apply another filter based on the raster extent
 raster_extent <- st_as_sfc(st_bbox(depth))
-# Precompute the bounding box of the raster extent
+#precompute the bounding box of the raster extent
 bbox_raster <- st_bbox(raster_extent)
-# Apply st_crop once with the precomputed bounding box
+#apply st_crop once with the precomputed bounding box
 filtered_points_outside <- st_crop(filtered_points_outside, bbox_raster)
-# Extract coordinates and add them as columns
+#extract coordinates and add them as columns
 filtered_points_df <- cbind(filtered_points_outside, st_coordinates(filtered_points_outside))
 
-# Create a ggplot of the filtered points and polygons
+#create a ggplot of the filtered points and polygons
 p<-
   ggplot() +
   geom_sf(data = st_as_sf(us_clipped_sf_polygons), fill = 'lightgrey', color = 'black', alpha = 0.5) +
@@ -149,14 +151,14 @@ p<-
 
 #plot ts effort
 sampling_effort<-as.data.frame(filtered_points_df)
-# Create a full sequence of monthly dates from Jan 1985 to the latest in the data
+#create a full sequence of monthly dates from Jan 1985 to the latest in the data
 full_dates <- data.frame(
   date = seq(as.Date("1985-01-01"), 
              as.Date(paste(max(sampling_effort$year), 12, "01", sep = "-")), 
              by = "month")
 )
 
-# Create a date column in your data
+#create a date column in your data
 sampling_effort$date <- as.Date(paste(sampling_effort$year, sampling_effort$month, "01", sep = "-"))
 
 ggplot(sampling_effort, aes(x = cells)) +
@@ -164,8 +166,7 @@ ggplot(sampling_effort, aes(x = cells)) +
   labs(x = "Cells", y = "Proportion", title = "Proportional Distribution of Cells") +
   theme_minimal()
 
-
-# Count rows per month (using base R)
+#count rows per month (using base R)
 monthly_counts <- as.data.frame(table(sampling_effort$date))
 colnames(monthly_counts) <- c("date", "n")
 monthly_counts$date <- as.Date(monthly_counts$date)
@@ -174,8 +175,7 @@ monthly_counts$date <- as.Date(monthly_counts$date)
 plot_data <- merge(full_dates, monthly_counts, by = "date", all.x = TRUE)
 plot_data$n[is.na(plot_data$n)] <- 0
 
-# Now plot
-library(ggplot2)
+#plot
 ggplot(plot_data, aes(x = date, y = n)) +
   geom_line() +
   labs(x = "time", y = "n samples") +
@@ -185,7 +185,7 @@ ggplot(plot_data, aes(x = date, y = n)) +
 #rename
 names(filtered_points_df)<-c('year','cells','month','lon','lat','geometry')
 
-# Save filtered observations
+#save filtered observations
 namefile <- sub("\\.csv$", "", basename(lf[length(lf)]))
 save(filtered_points_df, file = paste0('./data/processed/filtered_', namefile, '.RData'))
 
@@ -194,10 +194,10 @@ save(filtered_points_df, file = paste0('./data/processed/filtered_', namefile, '
 input_grid <- as.data.frame(depth, xy = TRUE)  # Extract Lon & Lat
 names(input_grid)[1:2] <- c("Lon", "Lat")  # Rename columns
 
-# Compute area per cell based on latitude
+#compute area per cell based on latitude
 earth_radius_km <- 6371  # Earth radius in km
 
-# Function to compute cell area based on latitude
+#function to compute cell area based on latitude
 compute_area_km2 <- function(lat, res_x, res_y) {
   lat_rad <- lat * pi / 180  # Convert latitude to radians
   cell_width_km <- res_x * (pi / 180) * earth_radius_km * cos(lat_rad)  # Adjust longitude width
@@ -205,7 +205,7 @@ compute_area_km2 <- function(lat, res_x, res_y) {
   return(cell_width_km * cell_height_km)
 }
 
-# Apply function to each row to get area
+#apply function to each row to get area
 input_grid$Area_km2 <- mapply(compute_area_km2, input_grid$Lat, res(depth)[1], res(depth)[2])
 
 #exclude deep cells for later
@@ -213,10 +213,10 @@ input_grid1<-input_grid
 
 #filtered_points_outside <- obs_sf[!apply(inside_polygons, 1, any), ]
 
-# Convert data frame to sf object
+#convert data frame to sf object
 input_grid1 <- st_as_sf(input_grid1, coords = c("Lon", "Lat"), crs = st_crs(depth))
 
-# Use st_within to identify points inside polygons
+#use st_within to identify points inside polygons
 inside_polygons <- st_within(input_grid1, all_polygons_single, sparse = FALSE)
 
 x<-input_grid1[!apply(inside_polygons, 1, any), ]
@@ -225,7 +225,7 @@ total_area<-sum(na.omit(x1)[,'Area_km2'])
 # Add an ID column to your data
 #df$ID <- seq_len(nrow(df))  # Creates a sequential ID for each row
 
-# Create the plot
+#create the plot
 ggplot() +
   geom_point(color = "blue") +  # Scatter plot
   geom_sf(data = x1, aes(geometry = geometry), color = 'blue', size = 0.5,alpha=0.5) +
@@ -238,6 +238,7 @@ ggplot() +
 #selected cells
 sel_xy<-data.frame(st_coordinates(x))
 
+#plot
 ggplot() +
   geom_sf(data = st_as_sf(us_clipped_sf_polygons), fill = 'lightgrey', color = 'black', alpha = 0.5) +
   geom_point(data=sel_xy,aes(x=X,y=Y))+
@@ -264,8 +265,6 @@ ggplot() +
 ggplot() +  
   geom_boxplot(data = filtered_points_df, aes(x = year, y = cells,group=year)) +  # Depth raster
   theme_minimal()
-
-
 
 #create a dataframe from the minimum to the maximum order at monthly steps
 yr<-rep(c(range(filtered_points_df$year)[1]:range(filtered_points_df$year)[2]),each=12)
@@ -388,7 +387,6 @@ for (iyear in 1985:max(yr)) {
   }
 }
 
-
 # Pre-allocate a matrix to store the results (Year, Month, Model, RMSE, MAE, R_squared)
 fit_matrix <- matrix(NA, nrow = 0, ncol = 9)
 colnames(fit_matrix) <- c("year", "month", "model", "RRMSE", "MAE", 'aic',"aicc",'nll','convergence')
@@ -482,6 +480,7 @@ for (iyear in 1985:max(yr)) {
               obs_sdmTMB <- fit$response
               pred_sdmTMB <- predict(fit, type = "response")[,'est']
               
+              #df
               pred_obs<-
                 rbind(pred_obs, 
                       data.frame("year"=iyear, 
@@ -490,7 +489,7 @@ for (iyear in 1985:max(yr)) {
                                  'pred'=pred_sdmTMB,
                                  'mod'=modname))
               
-              
+              #calculate RRMSE and MAE
               rrmse <- (sqrt(mean((obs_sdmTMB - pred_sdmTMB)^2))) / mean(obs_sdmTMB)
               mae <- mean(abs(obs_sdmTMB - pred_sdmTMB))
               
@@ -542,7 +541,6 @@ for (iyear in 1985:max(yr)) {
   }
 }
 
-
 #save array
 setwd(mydir)
 save(fit_matrix, file = './ST drivers/red tides/data/processed/RT_fit_matrix.RData') #paste(yrs_region,collapse = "")
@@ -550,15 +548,9 @@ save(pred_array, file = './ST drivers/red tides/data/processed/pred_SDMs_RT.RDat
 save(pred_obs, file = './ST drivers/red tides/data/processed/pred_obs_RT.RData') #paste(yrs_region,collapse = "")
 load(file = './ST drivers/red tides/data/processed/RT_fit_matrix.RData') #paste(yrs_region,collapse = "")
 
-
+#check matrix
 fit_matrix<-data.frame(fit_matrix)
-table(fit_matrix$year,fit_matrix$month,fit_matrix$convergence)
-
-
-
-
-aggregate(RRMSE~convergence+model,fit_matrix,FUN=length)
-
+table(fit_matrix$convergence)
 
 # Change the value of x1 in the convergence column
 fit_matrix$convergence <- ifelse(fit_matrix$convergence == "The model is likely not converged", "FALSE", fit_matrix$convergence)
@@ -567,10 +559,6 @@ fit_matrix$convergence <- ifelse(fit_matrix$convergence == "no conv", "FALSE", f
 Nno<-as.data.frame(table(fit_matrix$convergence))[2,'Freq']
 tot<-sum(as.data.frame(table(fit_matrix$convergence))['Freq'])
 fit_matrix<-fit_matrix[which(fit_matrix$convergence!='no model'),]
-
-
-
-
 
 # Count the occurrences of TRUE and FALSE in the convergence column
 counts <- as.data.frame(table(fit_matrix$convergence,fit_matrix$model))
@@ -582,15 +570,14 @@ counts$percentage <- (counts$Freq / sum(counts$Freq)) * 100
 colnames(counts) <- c("convergence",'model', "count", "percentage")
 
 #count
-library('ggh4x')
-
 counts$approach<-ifelse(grepl('VAST',counts$model),'VAST','sdmTMB')
 counts$submodel<-gsub('fit_VAST','',counts$model)
 counts$submodel<-gsub('fit_sdmTMB','',counts$submodel)
 fit_matrix$approach<-ifelse(grepl('VAST',fit_matrix$model),'VAST','sdmTMB')
 fit_matrix$submodel<-gsub('fit_VAST','',fit_matrix$model)
 fit_matrix$submodel<-gsub('fit_sdmTMB','',fit_matrix$submodel)
-# Create a boxplot using ggplot2
+
+#plot
 ggplot(counts, aes(x = convergence, y = percentage, fill = convergence)) +
   geom_bar(stat = "identity") +
   scale_x_discrete(guide = guide_axis_nested(angle=0),labels = function(x) gsub("\\+", "\n", x))+
@@ -599,6 +586,7 @@ ggplot(counts, aes(x = convergence, y = percentage, fill = convergence)) +
        y = "") +
   theme_minimal()
 
+#plot
 ggplot(counts, aes(x = interaction(approach, submodel), y = count, fill = convergence)) +
   geom_bar(stat = "identity") +
   geom_text(aes(label = ifelse(convergence == TRUE, count, "")), 
@@ -609,7 +597,7 @@ ggplot(counts, aes(x = interaction(approach, submodel), y = count, fill = conver
        y = "") +
   theme_minimal()
 
-
+#plot
 ggplot()+
   geom_boxplot(data = na.omit(fit_matrix),aes(x=interaction(approach, submodel),y=as.numeric(RRMSE),fill=interaction(approach, submodel)),outlier.shape = NA)+
   #facet_wrap(~year)+
@@ -619,7 +607,7 @@ ggplot()+
   ggthemes::scale_fill_tableau()+
   scale_y_continuous(limits = c(0,15))
 
-
+#plot
 ggplot()+
   geom_boxplot(data = fit_matrix,
                aes(x=interaction(approach, submodel),y=as.numeric(nll),fill=interaction(approach, submodel)),
@@ -631,7 +619,7 @@ ggplot()+
   ggthemes::scale_fill_tableau()+
   scale_y_continuous(limits = c(0,6000))
 
-
+#plot
 ggplot()+
   geom_boxplot(data = fit_matrix,
                aes(x=interaction(approach, submodel),y=as.numeric(MAE),fill=interaction(approach, submodel)),
@@ -643,7 +631,7 @@ ggplot()+
   ggthemes::scale_fill_tableau()+
   scale_y_continuous(limits = c(0,200000))
 
-
+#plot
 ggplot()+
   geom_boxplot(data = fit_matrix,
                aes(x=interaction(approach, submodel),y=as.numeric(aic),fill=interaction(approach, submodel)),
@@ -654,187 +642,6 @@ ggplot()+
   labs(y='AIC',fill='SDM',x='')+
   ggthemes::scale_fill_tableau()+
   scale_y_continuous(limits = c(0,10000))
-
-
-
-
-
-
-#load array
-setwd(mydir)
-load(file = './ST drivers/red tides/data/processed/pred_SDMs_RT.RData') #pred_array
-
-# #same scale for all years and both approaches
-# pred_max<-max(pred_array[])
-# max_index <- which(pred_array == max(pred_array), arr.ind = TRUE)
-
-#color scale from previous analysis
-# Set up the color scale and breaks as you already have
-colv.kb <- c("white", "purple", "blue", "darkblue", "cyan", "green", "darkgreen", "yellow", "orange", "red", "darkred")
-funpal.kb <- colorRampPalette(colv.kb, bias = 2)
-
-brks.idw <- c(0, 1e4 - 1, seq(1e4, 4e6, 10000), 1e8)
-nbcols.idw <- length(brks.idw) -1
-color.idw <- funpal.kb(nbcols.idw)
-
-
-# Set up the PDF device
-pdf(paste0(mydir,"/ST drivers/red tides/outputs/RT OM prediction maps_scale.pdf"), width = 11, height = 6)  # Landscape: Width > Height
-
-# Plot predictions ####
-for (iyear in 1985:max(yr)) {
-  
-  iyear=2005
-  
-  #year predictions
-  ypred<-pred_array[,,,as.character(iyear)]
-  #summary(ypred)
-  
-  # Get the dimensions of the array
-  nrow <- dim(ypred)[1] # 7954
-  ncol <- dim(ypred)[2] # 5
-  nslice <- dim(ypred)[3] # 12
-  
-  # Create a dataframe
-  dfpred <- data.frame(
-    lon = as.vector(ypred[, 1, ]),      # Extract lat
-    lat = as.vector(ypred[, 2, ]),      # Extract lon
-    sdmTMBlog = as.vector(ypred[, 3, ]),   # Extract cells1
-    sdmTMBnb = as.vector(ypred[, 4, ]),   # Extract cells1
-    month = rep(month.abb, each = nrow)  # Add slice (time) column
-  )
-  
-  #sums for annotation 
-  sumdf<-aggregate(cbind(sdmTMBlog,sdmTMBnb) ~ month,dfpred,FUN=sum)
-  # Ensure the 'month' column is a factor with levels in month.abb order
-  sumdf$month <- factor(sumdf$month, levels = month.abb)
-  # Sort the dataframe based on month order
-  sumdf <- sumdf[order(sumdf$month), ]
-  na_log<-sumdf[which(sumdf$sdmTMBlog==0),]
-  na_nb<-sumdf[which(sumdf$sdmTMBnb==0),]
-  
-  
-  # Ensure predictions are in the correct sf format
-  predictions_sf <- st_as_sf(dfpred, coords = c("lon", "lat"), crs = 4326)
-  
-  # Assuming `sf_object` is your sf object
-  sf_df <- st_as_sf(predictions_sf)  # Ensure it is an sf object if not already
-  
-  # Extract the coordinates (Lon, Lat) as a data frame
-  sf_df_coords <- st_coordinates(sf_df)
-  
-  # # Convert to a data frame and add it to the original sf object
-  sf_df <- cbind(as.data.frame(sf_df), sf_df_coords)
-  
-  # #sort factors just in case
-  sf_df$month<-factor(sf_df$month,levels=c(month.abb))
-  
-  # Generate plot
-  plot_sdmTMB1 <- 
-    ggplot() +
-    geom_tile(data = sf_df, aes(x = X, y = Y, fill = sdmTMBlog), height = res(depth)[2], width = res(depth)[1]) +  # Use clipped predictions
-    #geom_raster(data = sf_df, aes(x = X, y = Y, fill = log(cells_sdmTMB1))) +  # Use clipped predictions
-    coord_sf(crs = crs(depth),
-             xlim = c(-87.99999, -80.49999), ylim = c(24.51496, 30.5)) +
-    geom_sf(data = us_clipped_sf,
-            fill = 'grey60', size = 1) +
-    theme() +
-    labs(x='',y='',title='sdmTMB LOG')+
-    theme_minimal() +
-    scale_fill_gradientn(colors = color.idw, na.value = "white",limits = c(0, 10000000),
-                         oob = scales::squish) +
-    #scale_fill_gradientn(colors = color.idw, breaks = brks.idw, labels = c("0", "10K", "100K", "1M", "4M", "10M"), na.value = "white") +
-    # scale_fill_gradient(low = "white", high = "red", na.value = 'transparent',
-    #                     limits = c(0, 10000000),  # Ensure max cap
-    #                     oob = scales::squish  ) +# Ensures values > 1,000,000 stay at max color
-    scale_x_continuous(breaks = c(-86, -82), expand = c(0, 0)) +
-    scale_y_continuous(breaks = c(30, 28, 26), expand = c(0, 0)) +
-    labs(fill = "cells/L") +
-    theme(panel.grid.major = element_line(color = rgb(235, 235, 235, 100, maxColorValue = 255),
-                                          linetype = 'dashed', linewidth  = 0.5),
-          legend.position = "right",legend.title = element_text(angle=90,hjust=0.5),
-          panel.background = element_rect(fill = NA), panel.ontop = TRUE, text = element_text(size = 10),
-          plot.margin = unit(c(0.1, 0.1, 0.1, 0.1), "lines"),
-          legend.background = element_rect(fill = "transparent", colour = "transparent"),
-          plot.title = element_text(hjust = 0.50, vjust = -1),
-          legend.key = element_rect(color = "black"),
-          legend.key.size = unit(1, "lines")) +  # Adjusting the legend key contour to black
-    guides(fill = guide_colorbar(size = 0.5, barwidth = 0.5, barheight = unit(1, "npc"),  # Full height of the plot
-                                 frame.colour = "black", ticks = element_line(color = 'black'),
-                                 ticks.colour = "black",
-                                 ticks.linewidth = 0.2,
-                                 title.position = "right",  # Moves the legend title to the right of the color bar
-                                 label.position = "right",  # Ensures the labels are also aligned with the color bar
-                                 frame.linewidth = 0.2)) +  # Change ticks to black
-    facet_wrap(~month, ncol = 3)  # Use first three letters of the month
-  
-  # Generate plot
-  plot_sdmTMB2 <- 
-    ggplot() +
-    geom_tile(data = sf_df, aes(x = X, y = Y, fill = sdmTMBnb), height = res(depth)[2], width = res(depth)[1]) +  # Use clipped predictions
-    #geom_raster(data = sf_df, aes(x = X, y = Y, fill = log(cells_sdmTMB1))) +  # Use clipped predictions
-    coord_sf(crs = crs(depth),
-             xlim = c(-87.99999, -80.49999), ylim = c(24.51496, 30.5)) +
-    geom_sf(data = us_clipped_sf,
-            fill = 'grey60', size = 1) +
-    theme() +
-    labs(x='',y='',title='sdmTMB NB')+
-    theme_minimal() +
-    scale_fill_gradientn(colors = color.idw, na.value = "white",limits = c(0, 10000000),
-                         oob = scales::squish) +
-    #scale_fill_gradientn(colors = color.idw, breaks = brks.idw, labels = c("0", "10K", "100K", "1M", "4M", "10M"), na.value = "white") +
-    # scale_fill_gradient(low = "white", high = "red", na.value = 'transparent',
-    #                     limits = c(0, 10000000),  # Ensure max cap
-    #                     oob = scales::squish  ) +# Ensures values > 1,000,000 stay at max color
-    scale_x_continuous(breaks = c(-86, -82), expand = c(0, 0)) +
-    scale_y_continuous(breaks = c(30, 28, 26), expand = c(0, 0)) +
-    labs(fill = "cells/L") +
-    theme(panel.grid.major = element_line(color = rgb(235, 235, 235, 100, maxColorValue = 255),
-                                          linetype = 'dashed', linewidth  = 0.5),
-          legend.position = "right",legend.title = element_text(angle=90,hjust=0.5),
-          panel.background = element_rect(fill = NA), panel.ontop = TRUE, text = element_text(size = 10),
-          plot.margin = unit(c(0.1, 0.1, 0.1, 0.1), "lines"),
-          legend.background = element_rect(fill = "transparent", colour = "transparent"),
-          plot.title = element_text(hjust = 0.50, vjust = -1),
-          legend.key = element_rect(color = "black"),
-          legend.key.size = unit(1, "lines")) +  # Adjusting the legend key contour to black
-    guides(fill = guide_colorbar(size = 0.5, barwidth = 0.5, barheight = unit(1, "npc"),  # Full height of the plot
-                                 frame.colour = "black", ticks = element_line(color = 'black'),
-                                 ticks.colour = "black",
-                                 ticks.linewidth = 0.2,
-                                 title.position = "right",  # Moves the legend title to the right of the color bar
-                                 label.position = "right",  # Ensures the labels are also aligned with the color bar
-                                 frame.linewidth = 0.2)) +  # Change ticks to black
-    facet_wrap(~month, ncol = 3)  # Use first three letters of the month
-  
-  # Add "NO FIT" label to months where predictions are 0 for this layer
-  na_df <- na_rows[[paste0("na_", target_col)]]
-  if (nrow(na_df) != 0) {
-    plot_sdmTMB1 <- plot_sdmTMB1 +
-      geom_text(data = na_df, aes(x = -86, y = 25.7, label = 'NO FIT'),
-                color = "black", size = 3, fontface = "bold")
-    plot_sdmTMB2 <- plot_sdmTMB2 +
-      geom_text(data = na_df, aes(x = -86, y = 25.7, label = 'NO FIT'),
-                color = "black", size = 3, fontface = "bold")
-  }
-
-  
-  # Create the combined plot
-  final_plot <- plot_grid(
-    ggdraw() + 
-      draw_label(iyear, 
-                 fontface = "bold", size = 16, hjust = 0.5), # Title
-    plot_grid(plot_sdmTMB1,plot_sdmTMB2,nrow = 1),           # Combined plots
-    ncol = 1,                                              # Arrange title and plots vertically
-    rel_heights = c(0.1, 1)                                # Adjust title-to-plot height ratio
-  )
-  
-  # Print the final combined plot
-  print(final_plot)
-}
-
-#close pdf
-dev.off()
 
 # #variances
 # sigma_G	IID random intercept variance
@@ -847,26 +654,27 @@ dev.off()
 #setwd
 setwd(paste0(mydir,'/ST drivers/red tides/'))
 dir.create('./sdmTMB RT rasters/')
-dir.create('./VAST RT rasters/')
+#dir.create('./VAST RT rasters/')
 
-# Loop over years and months
+#loop over years and months
 for (iyear in dimnames(pred_array)[[4]]) {
   for (imonth in dimnames(pred_array)[[3]]) {
     
+    #print
     cat(paste('################',iyear,'################\n',
               '################',imonth,'################\n'))
     
-    iyear<-2018
-    imonth<-'Sep'
+    #iyear<-2018
+    #imonth<-'Sep'
     
-    # Extract prediction
+    #extract prediction
     ypred <- pred_array[,,imonth,as.character(iyear)]
     ypred1 <- as.data.frame(ypred)
     
-    # Create raster template based on depth raster
+    #create raster template based on depth raster
     r_template <- raster(extent(depth), resolution = res(depth), crs = crs(depth))
     
-    # Remove NAs and check spatial coverage
+    #remove NAs and check spatial coverage
     ypred1 <- ypred1[complete.cases(ypred1[, c("lon", "lat", "fit_sdmTMBlog", "fit_sdmTMBnb")]), ]
     
     if (nrow(ypred1) < 2 || length(unique(ypred1$lon)) < 2 || length(unique(ypred1$lat)) < 2) {
@@ -874,46 +682,49 @@ for (iyear in dimnames(pred_array)[[4]]) {
       r.sdmTMB1 <- setValues(r_template, NA)
       r.sdmTMB2 <- setValues(r_template, NA)
     } else {
-      # Convert to spatial points
+      #convert to spatial points
       coordinates(ypred1) <- ~ lon + lat
       gridded(ypred1) <- TRUE
       
-      # Rasterize
+      #rasterize
       r.sdmTMB1 <- rasterize(ypred1, r_template, field = 'fit_sdmTMBlog', fun = mean)
       r.sdmTMB2 <- rasterize(ypred1, r_template, field = 'fit_sdmTMBnb', fun = mean)
     }
     
-    # Save rasters
-    writeRaster(r.sdmTMB1, paste0('./sdmTMB RT rasters/',iyear,sprintf("%02d", match(imonth, month.abb)),'_RTsdmTMBlog.asc'), format="ascii", overwrite=TRUE)
-    writeRaster(r.sdmTMB2, paste0('./sdmTMB RT rasters/',iyear,sprintf("%02d", match(imonth, month.abb)),'_RTsdmTMBnb.asc'), format="ascii", overwrite=TRUE)
+    #save rasters
+    writeRaster(r.sdmTMB1, paste0('./sdmTMB RT rasters/',iyear,sprintf("%02d", match(imonth, month.abb)),'_predsdmTMBlog.asc'), format="ascii", overwrite=TRUE)
+    writeRaster(r.sdmTMB2, paste0('./sdmTMB RT rasters/',iyear,sprintf("%02d", match(imonth, month.abb)),'_predsdmTMBnb.asc'), format="ascii", overwrite=TRUE)
   }
 }
 
-
 #check
-#plot(raster('./sdmTMB RT rasters/200909_RTsdmTMB.asc'))
+#plot(raster('./sdmTMB RT rasters/200909_predsdmTMBlog.asc'))
 
-#VIIRS ####
+#VIIRS, severity RT rasters and plot ####
+#create folder
+setwd(paste0(mydir,'/ST drivers/red tides/'))
+dir.create('./RT severity rasters/')
 
+#set wd and load files
 setwd(mydir)
 lf<-list.files('./ST drivers/red tides/data/raw/VIIRS_redtide_maps_0.1degree/redtide_maps_0.1degree/',pattern = 'tif',full.names = TRUE)
 #load(file = './ST drivers/red tides/data/processed/pred_obs_RT.RData') #pred_obs
 load(file = paste0('./ST drivers/red tides/data/processed/filtered_', namefile, '.RData')) #filtered_points_df
 
-
-# Ensure month column is two digits
+#ensure month column is two digits
 filtered_points_df$month <- sprintf("%02d", filtered_points_df$month)
 
-# #array to store predictions
+#array to store predictions
 viirs_obs<- matrix(NA, nrow = 0, ncol = 4)
 colnames(viirs_obs) <- c("year", "month", 'viirs','obs')
 
 #list
 plot_list<-list()
 
+#loop
 for (f in lf) {
   
-  f<-lf[81]
+  #f<-lf[81]
   
   #get raster
   r<-raster(f)
@@ -936,34 +747,30 @@ for (f in lf) {
   #plot(r1)
   
   ivalues<-c(values(r1))
-  
-  na.omit(ivalues)
-  
-  
   if (mean(ivalues,na.rm=TRUE)==0) {
     cat("### JUMPING -------")
     next
   }
   
-  # Convert all 0 values to NA
+  #convert all 0 values to NA
   r2<-r1
   r2[r2 == 0] <- NA
   
-  # Convert raster cells with values to polygons
+  #convert raster cells with values to polygons
   r2pol <- rasterToPolygons(r2, fun = function(x) !is.na(x) & x != 0, dissolve = TRUE)
-  # Convert to sf object
+  #convert to sf object
   r2pol <- st_as_sf(r2pol)
-  # Merge all polygons into a single polygon
+  #merge all polygons into a single polygon
   r2pol <- st_union(r2pol)
   
   #plot
   #plot(r2)
   #plot(r2pol,add=T)
   
-  # Ensure r2pol is an sf object
+  #ensure r2pol is an sf object
   r2pol <- st_sf(geometry = r2pol)
   
-  # Assign the CRS from r2 (assuming r2 has a CRS)
+  #assign the CRS from r2 (assuming r2 has a CRS)
   st_crs(r2pol) <- st_crs(r2)
   
   #filter by month and year obs samples
@@ -972,153 +779,96 @@ for (f in lf) {
   if (nrow(ydf)==0) {
     next
   }
-  # Filter rows where cells >= 1000
+  #filter rows where cells >= 1000
   #filt_ydf <- ydf[ydf$cells >= 1000, ]
   
   #coordinates
   icoords <- data.frame(lon=ydf$lon, lat=ydf$lat,cells=ydf$cells)
   
-  # Convert raster to data frame for ggplot
+  #convert raster to data frame for ggplot
   raster_df <- as.data.frame(rasterToPoints(r2))
   colnames(raster_df)[ncol(raster_df)]<-'freq'
   
-  # Reorder points based on cells values to plot higher values on top
+  #reorder points based on cells values to plot higher values on top
   icoords <- icoords[order(icoords$cells), ]
   
-  # Create the plot
-  p<-
-    ggplot() +
-    geom_raster(data = raster_df, aes(x = x, y = y, fill = freq)) +
-    geom_sf(data = r2pol, fill = NA, color = "black", linewidth = 0.7) +  # Add polygon with red outline
-    geom_point(data = icoords, aes(x = lon, y = lat, color = cells), 
-               shape = 19, size = 3, stroke = 0.5) +
-    scale_x_continuous(expand=c(0,0))+
-    scale_y_continuous(expand=c(0,0))+
-    scale_fill_gradient(low = "white", high = "#AEC936") +  
-    scale_color_gradient(low = "white", high = "#5136C9") +  
-    geom_sf(data = st_as_sf(us_clipped_sf_polygons), fill = 'lightgrey', color = 'black', alpha = 0.5) +
-    theme_minimal() +
-    labs(x='',y='')+
-    # Move the title inside the plot using annotate
-    annotate("text", x = -82, y = 30, 
-             label = paste0(m, ' - ', y), hjust = 1, size = 5, fontface = "bold") +
-    
-    theme(legend.position = c(0.15, 0.4)) +  
-    guides(fill = guide_colorbar(ticks = TRUE, 
-                                 ticks.colour = "black", 
-                                 frame.colour = "black",title='freq (VIIRS)'),  
-           color = guide_colorbar(ticks = TRUE, 
-                                  ticks.colour = "black", 
-                                  frame.colour = "black",title='cells/L (obs)')) +  
-    theme(legend.box = "vertical", 
-          legend.spacing.x = unit(0.5, 'cm'))  
-  
-  
-  plot_list[[paste0(m,y)]]<-p
-  
-  
   #add raster data
-  r.sdmTMB1<-raster(paste0('./sdmTMB RT rasters/',y,m,'_RTsdmTMBlog.asc'))
+  ifile<-list.files(path = mydir,pattern = paste0(y,m,'_predsdmTMBlog.asc'),recursive = TRUE)
+  r.sdmTMB1<-raster(ifile)
   
   # Convert raster to data frame for ggplot
   raster_cells1 <- as.data.frame(rasterToPoints(r.sdmTMB1))
   colnames(raster_cells1)[ncol(raster_cells1)]<-'cells'
   
   #add raster data
-  r.sdmTMB2<-raster(paste0('./sdmTMB RT rasters/',y,m,'_RTsdmTMBnb.asc'))
+  ifile<-list.files(path = mydir,pattern = paste0(y,m,'_predsdmTMBnb.asc'),recursive = TRUE)
+  r.sdmTMB2<-raster(ifile)
   
-  # Convert raster to data frame for ggplot
+  #convert raster to data frame for ggplot
   raster_cells2 <- as.data.frame(rasterToPoints(r.sdmTMB2))
   colnames(raster_cells2)[ncol(raster_cells2)]<-'cells'
   
-  ggplot() +
-    geom_raster(data = raster_cells2, aes(x = x, y = y, fill = cells)) +
-    geom_sf(data = r2pol, fill = NA, color = "black", linewidth = 0.7) +  # Add polygon with red outline
-    geom_point(data = icoords, aes(x = lon, y = lat, color = cells), 
-               shape = 19, size = 3, stroke = 0.5) +
-    geom_point(data = subset(icoords,cells==0), aes(x = lon, y = lat), 
-               shape = 4, size = 3, stroke = 0.5,color='black') +
-    geom_point(data = icoords, aes(x = lon, y = lat), 
-               shape = 1, size = 3, stroke = 0.5,color='black') +
-    scale_x_continuous(expand=c(0,0))+
-    scale_y_continuous(expand=c(0,0))+
-    scale_fill_gradient(low = "white", high = "#C93671") +  
-    scale_color_gradient(low = "white", high = "#5136C9") +  
-    geom_sf(data = st_as_sf(us_clipped_sf_polygons), fill = 'grey80', color = 'black') +
-    theme_minimal() +
-    labs(x='',y='')+
-    # Move the title inside the plot using annotate
-    annotate("text", x = -82, y = 30, 
-             label = paste0(m, ' - ', y), hjust = 1, size = 5, fontface = "bold") +
-    
-    theme(legend.position = c(0.15, 0.4)) +  
-    guides(fill = guide_colorbar(ticks = TRUE, 
-                                 ticks.colour = "black", 
-                                 frame.colour = "black",title='cells/L (pred)'),  
-           color = guide_colorbar(ticks = TRUE, 
-                                  ticks.colour = "black", 
-                                  frame.colour = "black",title='cells/L (obs)')) +  
-    theme(legend.box = "vertical", 
-          legend.spacing.x = unit(0.5, 'cm'))  
-  
-  
-  
-  
-  library(viridis)
-  
-  # Create a color palette with white at the start
+  #create a color palette with white at the start
   my_magma <- viridis::magma(100, direction = -1)
   my_colors <- c("white", my_magma)
-  # Prepare point type for shape mapping
+  #prepare point type for shape mapping
   icoords$point_type <- ifelse(icoords$cells == 0, "Zero cell count (X)", "Sampled (O)")
   
-  # Define color breaks
+  #define color breaks
   n_breaks <- 5
   max_fill <- max(raster_cells2$cells, na.rm = TRUE)
   max_color <- max(icoords$cells, na.rm = TRUE)
   common_breaks <- pretty(c(0, max(max_fill, max_color)), n = n_breaks)
   
-
-  # Convert RasterLayer to SpatRaster
+  #convert RasterLayer to SpatRaster
   r.sdmTMB1_terra <- rast(r.sdmTMB1)
   r.sdmTMB2_terra <- rast(r.sdmTMB2)
   
-  # Reproject polygon to match the raster CRS if needed
+  #reproject polygon to match the raster CRS if needed
   r2pol <- st_transform(r2pol, crs(r.sdmTMB1_terra))
   
-  # Convert the polygon to a SpatVector object
+  #convert the polygon to a SpatVector object
   r2pol_vect <- vect(r2pol)
   
-  # Apply mask using terra package
+  #apply mask using terra package
   r.sdmTMB1_clipped <- mask(r.sdmTMB1_terra, r2pol_vect)
   r.sdmTMB2_clipped <- mask(r.sdmTMB2_terra, r2pol_vect)
     
-  # Set values outside the polygon to zero
+  #set values outside the polygon to zero
   r.sdmTMB1_clipped[is.na(r.sdmTMB1_clipped)] <- 0
   r.sdmTMB2_clipped[is.na(r.sdmTMB2_clipped)] <- 0
   
+  # Save as .asc file
+  writeRaster(r.sdmTMB1_clipped, 
+              filename = paste0("./ST drivers/red tides/RT severity rasters/", y, m, "_RTsevlog.asc"), 
+              filetype = "AAIGrid", 
+              overwrite = TRUE)
   
+  # Save as .asc file
+  writeRaster(r.sdmTMB2_clipped, 
+              filename = paste0("./ST drivers/red tides/RT severity rasters/", y, m, "_RTsevnb.asc"), 
+              filetype = "AAIGrid", 
+              overwrite = TRUE)
   
-  # Convert raster to data frame for ggplot
+  #convert raster to data frame for ggplot
   sev_cells1 <- as.data.frame(r.sdmTMB1_clipped, xy = TRUE)
   colnames(sev_cells1)[ncol(sev_cells1)]<-'cells'
-  # Convert raster to data frame for ggplot
+  #convert raster to data frame for ggplot
   sev_cells2 <- as.data.frame(r.sdmTMB2_clipped, xy = TRUE)
   colnames(sev_cells2)[ncol(sev_cells2)]<-'cells'
-  # Convert raster to data frame for ggplot
+  #convert raster to data frame for ggplot
   pred_cells1 <- as.data.frame(r.sdmTMB1_terra, xy = TRUE)
   colnames(pred_cells1)[ncol(pred_cells1)]<-'cells'
-  # Convert raster to data frame for ggplot
+  #convert raster to data frame for ggplot
   pred_cells2 <- as.data.frame(r.sdmTMB2_terra, xy = TRUE)
   colnames(pred_cells2)[ncol(pred_cells2)]<-'cells'
   
-  # Load the scales package
-  library(scales)
-  
+  #plot
+  p<-
   ggplot() +
     # Raster layer
-    geom_raster(data = pred_cells2, aes(x = x, y = y, fill = cells)) +
-    #geom_raster(data = sev_cells2, aes(x = x, y = y, fill = cells)) +
+    #geom_raster(data = pred_cells2, aes(x = x, y = y, fill = cells)) +
+    geom_raster(data = sev_cells2, aes(x = x, y = y, fill = cells)) +
     # Polygon border
     #geom_raster(data = raster_df, aes(x = x, y = y, fill = freq)) +
     #geom_sf(data = r2pol, fill = 'transparent', color = 'darkblue', linewidth = 0.7) +  # r2pol filled with color
@@ -1145,7 +895,7 @@ for (f in lf) {
     scale_color_gradientn(
       colors = my_colors,
       values = scales::rescale(common_breaks),  # Use scales::rescale
-      breaks = common_breaks,
+      #breaks = common_breaks,
       labels = scales::scientific_format(),
       name = "cells/L (obs)"
     ) +
@@ -1184,7 +934,9 @@ for (f in lf) {
       shape = guide_legend(order = 3, override.aes = list(size = 3))
     )
   
-
+  plot_list[[paste0(m,y)]]<-p
+  
+  
   
   
   #spatial coords
@@ -1202,11 +954,172 @@ for (f in lf) {
   
 }
 
-#example
-y<-'2018'
-ilist<-plot_list[grepl(paste0(y), names(plot_list))]
 
-do.call(gridExtra::grid.arrange, c(ilist, ncol = 3))  # Adjust ncol as needed
+#check example to see 2018 severity maps
+#y<-'2018'
+#ilist<-plot_list[grepl(paste0(y), names(plot_list))]
+#do.call(gridExtra::grid.arrange, c(ilist, ncol = 3))  # Adjust ncol as needed
 
+# Plot predictions ####
+#color scale from previous analysis
+# Set up the color scale and breaks as you already have
+colv.kb <- c("white", "purple", "blue", "darkblue", "cyan", "green", "darkgreen", "yellow", "orange", "red", "darkred")
+funpal.kb <- colorRampPalette(colv.kb, bias = 2)
 
+brks.idw <- c(0, 1e4 - 1, seq(1e4, 4e6, 10000), 1e8)
+nbcols.idw <- length(brks.idw) -1
+color.idw <- funpal.kb(nbcols.idw)
 
+# Set up the PDF device
+dir.create(paste0(mydir,"/ST drivers/red tides/outputs/"))
+pdf(paste0(mydir,"/ST drivers/red tides/outputs/RT OM prediction maps_scale.pdf"), width = 11, height = 6)  # Landscape: Width > Height
+
+#loop
+for (iyear in 2012:max(yr)) {
+  
+  #iyear=2013
+
+  cat(paste0("############# ",iyear,' \n' ))
+  # List months you want (example: January to December)
+  months <- sprintf("%02d", 1:12)  # "01", "02", ..., "12"
+  
+  # Build expected filenames
+  files1 <-  paste0("./ST drivers/red tides/RT severity rasters/", iyear, months, "_RTsevlog.asc")
+  files2 <-  paste0("./ST drivers/red tides/RT severity rasters/", iyear, months, "_RTsevnb.asc")
+  
+  names(files1) <- months  # Name them by month
+  names(files2) <- months  # Name them by month
+  
+  # Load rasters into a list (some might not exist)
+  raster_list1 <- lapply(files1, function(f) {
+    if (file.exists(f)) {
+      rast(f)
+    } else {
+      NULL  # If not found, keep NULL
+    }
+  })
+  
+  # Load rasters into a list (some might not exist)
+  raster_list2 <- lapply(files2, function(f) {
+    if (file.exists(f)) {
+      rast(f)
+    } else {
+      NULL  # If not found, keep NULL
+    }
+  })
+  
+  # Function to convert raster to dataframe for ggplot
+  raster_to_df <- function(r, month) {
+    if (is.null(r)) {
+      return(data.frame(x = NA, y = NA, value = NA, month = month))
+    } else {
+      df <- as.data.frame(r, xy = TRUE, na.rm = FALSE)
+      names(df) <- c("x", "y", "value")
+      df$month <- month
+      return(df)
+    }
+  }
+  
+  # Apply to all rasters
+  df_list1 <- Map(raster_to_df, raster_list1, names(raster_list1))
+  df_list2 <- Map(raster_to_df, raster_list2, names(raster_list2))
+  
+  # Combine all into one big dataframe
+  all_df1 <- dplyr::bind_rows(df_list1)
+  all_df2 <- dplyr::bind_rows(df_list2)
+
+  #generate plot
+  plot_sdmTMB1 <- 
+    ggplot() +
+    geom_raster(data=all_df1, aes(x = x, y = y, fill = value),na.rm = TRUE) +
+    #geom_tile(data = sf_df, aes(x = X, y = Y, fill = sdmTMBlog), height = res(depth)[2], width = res(depth)[1]) +  # Use clipped predictions
+    #geom_raster(data = sf_df, aes(x = X, y = Y, fill = log(cells_sdmTMB1))) +  # Use clipped predictions
+    coord_sf(crs = crs(depth),
+             xlim = c(-87.99999, -80.49999), ylim = c(24.51496, 30.5)) +
+    geom_sf(data = us_clipped_sf,
+            fill = 'grey60', size = 1) +
+    theme() +
+    labs(x='',y='',title='sdmTMB LOG')+
+    theme_minimal() +
+    scale_fill_gradientn(colors = color.idw, na.value = "white",limits = c(0, 10000000),
+                         oob = scales::squish) +
+    #scale_fill_gradientn(colors = color.idw, breaks = brks.idw, labels = c("0", "10K", "100K", "1M", "4M", "10M"), na.value = "white") +
+    # scale_fill_gradient(low = "white", high = "red", na.value = 'transparent',
+    #                     limits = c(0, 10000000),  # Ensure max cap
+    #                     oob = scales::squish  ) +# Ensures values > 1,000,000 stay at max color
+    scale_x_continuous(breaks = c(-86, -82), expand = c(0, 0)) +
+    scale_y_continuous(breaks = c(30, 28, 26), expand = c(0, 0)) +
+    labs(fill = "cells/L") +
+    theme(panel.grid.major = element_line(color = rgb(235, 235, 235, 100, maxColorValue = 255),
+                                          linetype = 'dashed', linewidth  = 0.5),
+          legend.position = "right",legend.title = element_text(angle=90,hjust=0.5),
+          panel.background = element_rect(fill = NA), panel.ontop = TRUE, text = element_text(size = 10),
+          plot.margin = unit(c(0.1, 0.1, 0.1, 0.1), "lines"),
+          legend.background = element_rect(fill = "transparent", colour = "transparent"),
+          plot.title = element_text(hjust = 0.50, vjust = -1),
+          legend.key = element_rect(color = "black"),
+          legend.key.size = unit(1, "lines")) +  # Adjusting the legend key contour to black
+    guides(fill = guide_colorbar(size = 0.5, barwidth = 0.5, barheight = unit(1, "npc"),  # Full height of the plot
+                                 frame.colour = "black", ticks = element_line(color = 'black'),
+                                 ticks.colour = "black",
+                                 ticks.linewidth = 0.2,
+                                 title.position = "right",  # Moves the legend title to the right of the color bar
+                                 label.position = "right",  # Ensures the labels are also aligned with the color bar
+                                 frame.linewidth = 0.2)) +  # Change ticks to black
+    facet_wrap(~month, ncol = 3)  # Use first three letters of the month
+  
+  plot_sdmTMB2 <- 
+    ggplot() +
+    geom_raster(data=all_df2, aes(x = x, y = y, fill = value),na.rm = TRUE) +
+    #geom_tile(data = sf_df, aes(x = X, y = Y, fill = sdmTMBlog), height = res(depth)[2], width = res(depth)[1]) +  # Use clipped predictions
+    #geom_raster(data = sf_df, aes(x = X, y = Y, fill = log(cells_sdmTMB1))) +  # Use clipped predictions
+    coord_sf(crs = crs(depth),
+             xlim = c(-87.99999, -80.49999), ylim = c(24.51496, 30.5)) +
+    geom_sf(data = us_clipped_sf,
+            fill = 'grey60', size = 1) +
+    theme() +
+    labs(x='',y='',title='sdmTMB NB')+
+    theme_minimal() +
+    scale_fill_gradientn(colors = color.idw, na.value = "white",limits = c(0, 10000000),
+                         oob = scales::squish) +
+    #scale_fill_gradientn(colors = color.idw, breaks = brks.idw, labels = c("0", "10K", "100K", "1M", "4M", "10M"), na.value = "white") +
+    # scale_fill_gradient(low = "white", high = "red", na.value = 'transparent',
+    #                     limits = c(0, 10000000),  # Ensure max cap
+    #                     oob = scales::squish  ) +# Ensures values > 1,000,000 stay at max color
+    scale_x_continuous(breaks = c(-86, -82), expand = c(0, 0)) +
+    scale_y_continuous(breaks = c(30, 28, 26), expand = c(0, 0)) +
+    labs(fill = "cells/L") +
+    theme(panel.grid.major = element_line(color = rgb(235, 235, 235, 100, maxColorValue = 255),
+                                          linetype = 'dashed', linewidth  = 0.5),
+          legend.position = "right",legend.title = element_text(angle=90,hjust=0.5),
+          panel.background = element_rect(fill = NA), panel.ontop = TRUE, text = element_text(size = 10),
+          plot.margin = unit(c(0.1, 0.1, 0.1, 0.1), "lines"),
+          legend.background = element_rect(fill = "transparent", colour = "transparent"),
+          plot.title = element_text(hjust = 0.50, vjust = -1),
+          legend.key = element_rect(color = "black"),
+          legend.key.size = unit(1, "lines")) +  # Adjusting the legend key contour to black
+    guides(fill = guide_colorbar(size = 0.5, barwidth = 0.5, barheight = unit(1, "npc"),  # Full height of the plot
+                                 frame.colour = "black", ticks = element_line(color = 'black'),
+                                 ticks.colour = "black",
+                                 ticks.linewidth = 0.2,
+                                 title.position = "right",  # Moves the legend title to the right of the color bar
+                                 label.position = "right",  # Ensures the labels are also aligned with the color bar
+                                 frame.linewidth = 0.2)) +  # Change ticks to black
+    facet_wrap(~month, ncol = 3)  # Use first three letters of the month
+  
+  # Create the combined plot
+  final_plot <- plot_grid(
+    ggdraw() + 
+      draw_label(iyear, 
+                 fontface = "bold", size = 16, hjust = 0.5), # Title
+    plot_grid(plot_sdmTMB1,plot_sdmTMB2,nrow = 1),           # Combined plots
+    ncol = 1,                                              # Arrange title and plots vertically
+    rel_heights = c(0.1, 1)                                # Adjust title-to-plot height ratio
+  )
+  
+  # Print the final combined plot
+  print(final_plot)
+}
+
+#close pdf
+dev.off()
