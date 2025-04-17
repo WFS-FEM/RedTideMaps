@@ -135,14 +135,52 @@ filtered_points_outside <- st_crop(filtered_points_outside, bbox_raster)
 filtered_points_df <- cbind(filtered_points_outside, st_coordinates(filtered_points_outside))
 
 # Create a ggplot of the filtered points and polygons
+p<-
 ggplot() +
   geom_sf(data = st_as_sf(us_clipped_sf_polygons), fill = 'lightgrey', color = 'black', alpha = 0.5) +
-  geom_sf(data = filtered_points_df, aes(geometry = geometry), color = 'blue', size = 0.5,alpha=0.5) +
-  labs(title = "Filtered RT sampling stations",
-       x = "Longitude",
-       y = "Latitude") +
+  geom_sf(data = subset(filtered_points_df,year >= 1985), aes(geometry = geometry), color = 'blue', size = 0.5,alpha=0.5) +
+  labs(#title = "Filtered RT sampling stations",
+       x = "longitude",
+       y = "latitude") +
   theme_minimal()+
-  facet_wrap((~year))
+  scale_y_continuous(breaks=c(30,28,26))+
+  scale_x_continuous(breaks=c(-86,-84,-82))+
+  facet_wrap((~year),ncol=8)
+
+#plot ts effort
+sampling_effort<-as.data.frame(filtered_points_df)
+# Create a full sequence of monthly dates from Jan 1985 to the latest in the data
+full_dates <- data.frame(
+  date = seq(as.Date("1985-01-01"), 
+             as.Date(paste(max(sampling_effort$year), 12, "01", sep = "-")), 
+             by = "month")
+)
+
+# Create a date column in your data
+sampling_effort$date <- as.Date(paste(sampling_effort$year, sampling_effort$month, "01", sep = "-"))
+
+ggplot(sampling_effort, aes(x = cells)) +
+  geom_histogram(aes(y = after_stat(density)), fill = "skyblue", color = "white", bins = 30000) +
+  labs(x = "Cells", y = "Proportion", title = "Proportional Distribution of Cells") +
+  theme_minimal()
+
+
+# Count rows per month (using base R)
+monthly_counts <- as.data.frame(table(sampling_effort$date))
+colnames(monthly_counts) <- c("date", "n")
+monthly_counts$date <- as.Date(monthly_counts$date)
+
+# Merge with full date sequence to fill missing months with 0
+plot_data <- merge(full_dates, monthly_counts, by = "date", all.x = TRUE)
+plot_data$n[is.na(plot_data$n)] <- 0
+
+# Now plot
+library(ggplot2)
+ggplot(plot_data, aes(x = date, y = n)) +
+  geom_line() +
+  labs(x = "time", y = "n samples") +
+  theme_minimal()
+
 
 #rename
 names(filtered_points_df)<-c('year','cells','month','lon','lat','geometry')
@@ -565,7 +603,7 @@ for (iyear in 1985:max(yr)) {
   ydf<-subset(filtered_points_df,year==iyear)
   
   # Filter rows where cells >= 1000
-  filt_ydf <- ydf[ydf$cells >= 1000, ]
+  filt_ydf <- ydf[ydf$cells > 0, ]
   
   # Count the number of rows (observations) for each month
   mm <- names(table(filt_ydf$month)[table(filt_ydf$month) > 5])
@@ -1713,3 +1751,213 @@ ggplot()+
   geom_boxplot(data=subset(all_df,year>=1985),aes(x=mod,y=cells,color=mod))+
   facet_wrap(~year,scales='free_y')+
   scale_y_continuous(limits = c(10000000,NA))
+
+
+
+#check models with a without pseudoabsences ####
+
+
+yy<-c(2018,2019,2022)
+
+rrmse_df <- data.frame(
+  year = integer(),
+  month = integer(),
+  model = character(),
+  rrmse = numeric(),
+  mae = numeric(),
+  stringsAsFactors = FALSE
+)
+
+
+# Loop fitting sdmTMB and VAST models #####
+for (iyear in yy) {
+  
+  #select year
+  #iyear=2018
+  
+  ydf<-subset(filtered_points_df,year==iyear)
+  
+  # Filter rows where cells >= 1000
+  filt_ydf <- ydf[ydf$cells > 0, ]
+  
+  # Count the number of rows (observations) for each month
+  mm <- names(table(filt_ydf$month)[table(filt_ydf$month) > 5])
+  
+  for (imonth in 1:12) {
+    
+    #imonth<-10
+    
+    #print process
+    cat(paste('################',iyear,'################\n',
+              '################',imonth,'################\n'))
+    
+    
+    #if month has data
+    if (imonth %in% as.numeric(mm)) {
+      
+      #subset by month
+      mdf<-subset(ydf,month==imonth)
+      
+      # Assuming mdf is your sf object
+      mdf_df <- st_drop_geometry(mdf)
+      mdf_df_pos<- subset(mdf_df,cells!=0)
+      
+      imonth2<-sprintf("%02d", imonth)
+      
+      rname<-paste0(iyear,"_",imonth2,'_','month_frequency_noaa_resize.tif')
+      
+      #get raster
+      r<-raster(paste0('./ST drivers/red tides/data/raw/VIIRS_redtide_maps_0.1degree/redtide_maps_0.1degree/',rname))
+      
+      # Set the extent manually
+      extent(r) <- c(-87.5, -81, 25, 30.5)
+      
+      # Set the CRS manually
+      crs(r) <- "+proj=longlat +datum=WGS84 +no_defs"
+      
+      # Flip the raster vertically
+      r1 <- flip(r, direction = "y")
+      #plot(r1)
+      
+      r1_df<-as.data.frame(r1,xy=TRUE)
+      names(r1_df)[ncol(r1_df)]<-'freq'
+      r1_df<-subset(r1_df,freq==0)
+      
+      
+      r1_df1<-data.frame(year=unique(mdf_df$year),
+                         cells=0,
+                         month=unique(mdf_df$month),
+                         lon=r1_df$x,
+                         lat=r1_df$y)
+      mdf_df0<-rbind(mdf_df,r1_df1)
+      ## sdmTMB ####
+        # Run model
+        #fit model without intercept
+        fit_abs <- tryCatch({
+          sdmTMB(
+            formula = cells ~ 1,  # Formula for the model (adjust as needed)
+            data = mdf_df0,
+            mesh = sdmTMB::make_mesh(mdf_df0, xy_cols = c("lon", "lat"), cutoff = 0.1),
+            family = nbinom2(),  # Specify distribution family
+            spatial = "on",  # Enable spatial effects
+            spatiotemporal = "off"  # No temporal effects since you have one time step # Increase iterations if necessary
+          )}, error = function(e) {
+            message("Error in fit TMB nb")
+            return(NULL)  # Return NULL so we can check and restart the loop
+          })
+        
+      fit <- tryCatch({
+        sdmTMB(
+          formula = cells ~ 1,  # Formula for the model (adjust as needed)
+          data = mdf_df,
+          mesh = sdmTMB::make_mesh(mdf_df, xy_cols = c("lon", "lat"), cutoff = 0.1),
+          family = nbinom2(),  # Specify distribution family
+          spatial = "on",  # Enable spatial effects
+          spatiotemporal = "off"  # No temporal effects since you have one time step # Increase iterations if necessary
+        )}, error = function(e) {
+          message("Error in fit TMB nb")
+          return(NULL)  # Return NULL so we can check and restart the loop
+        })
+      
+        #fit model without intercept
+        fit_log <- tryCatch({
+          sdmTMB(
+            formula = cells ~ 1,  # Formula for the model (adjust as needed)
+            data = mdf_df_pos,
+            mesh = sdmTMB::make_mesh(mdf_df_pos, xy_cols = c("lon", "lat"), cutoff = 0.1),
+            family = lognormal(),  # Specify distribution family
+            spatial = "on",  # Enable spatial effects
+            spatiotemporal = "off"  # No temporal effects since you have one time step # Increase iterations if necessary
+          )}, error = function(e) {
+            message("Error in fit TMB log")
+            return(NULL)  # Return NULL so we can check and restart the loop
+          })
+        
+
+
+        # Compute evaluation metrics
+        obsabs_sdmTMB <- fit_abs$response
+        obs_sdmTMB <- fit$response
+        obslog_sdmTMB <- fit_log$response
+        
+        
+        
+        
+        pred_abs <- predict(fit_abs, type = "response")[,'est']
+        pred <- predict(fit, type = "response")[,'est']
+        pred_log <- predict(fit_log, type = "response")[,'est']
+
+        rrmse_abs <- (sqrt(mean((obsabs_sdmTMB - pred_abs)^2))) / mean(obsabs_sdmTMB)
+        rrmse<- (sqrt(mean((obs_sdmTMB - pred)^2))) / mean(obs_sdmTMB)
+        rrmse_log<- (sqrt(mean((obslog_sdmTMB - pred_log)^2))) / mean(obslog_sdmTMB)
+        
+        mae_abs <- mean(abs(obsabs_sdmTMB - pred_abs))
+        mae <- mean(abs(obs_sdmTMB - pred))
+        mae_log <- mean(abs(obslog_sdmTMB - pred_log))
+        
+        # Append rrmse for abs model
+        rrmse_df <- rbind(rrmse_df, data.frame(
+          year = iyear,
+          month = imonth,
+          model = "abs",
+          rrmse = rrmse_abs,
+          mae=mae_abs
+        ))
+        
+        # Append rrmse for nb model
+        rrmse_df <- rbind(rrmse_df, data.frame(
+          year = iyear,
+          month = imonth,
+          model = "nb",
+          rrmse = rrmse,
+          mae=mae
+        ))
+        
+        # Append rrmse for lognormal model
+        rrmse_df <- rbind(rrmse_df, data.frame(
+          year = iyear,
+          month = imonth,
+          model = "log",
+          rrmse = rrmse_log,
+          mae=mae_log
+        ))
+      }
+    }
+}
+
+
+library(ggplot2)
+
+ggplot(rrmse_df, aes(x = month, y = mae, fill = model)) +
+  geom_bar(stat = "identity", position = position_dodge(width = 0.7)) +
+  labs(x = "", y = "MAE") +
+  ggthemes::scale_fill_tableau(
+    name = "Model",
+    labels = c("abs" = "NB (with zeros)", "nb" = "NB", "log" = "Lognormal")
+  ) +
+  facet_wrap(~ year, ncol = 1, scales = 'free_y') +
+  theme_minimal() +
+  scale_x_continuous(breaks = 1:12)
+
+ggplot(rrmse_df, aes(x = model, y = log(mae), fill = model)) +
+  geom_boxplot() +
+  labs(x = "", y = "log(MAE)") +
+  theme_minimal() +
+  theme(axis.text.x = element_blank())+
+  
+  ggthemes::scale_fill_tableau(
+    name = "Model",
+    labels = c("abs" = "NB (with zeros)", "nb" = "NB", "log" = "Lognormal")
+  )
+
+ggplot(rrmse_df, aes(x = model, y = log(rrmse), fill = model)) +
+  geom_boxplot() +
+  labs(x = "", y = "log(RRMSE)") +
+  theme_minimal() +
+  theme(axis.text.x = element_blank())+
+  ggthemes::scale_fill_tableau(
+    name = "Model",
+    labels = c("abs" = "NB (with zeros)", "nb" = "NB", "log" = "Lognormal")
+  )
+
+  
