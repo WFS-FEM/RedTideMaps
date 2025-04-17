@@ -960,9 +960,9 @@ for (f in lf) {
 #ilist<-plot_list[grepl(paste0(y), names(plot_list))]
 #do.call(gridExtra::grid.arrange, c(ilist, ncol = 3))  # Adjust ncol as needed
 
-# Plot predictions ####
+#Plot predictions ####
 #color scale from previous analysis
-# Set up the color scale and breaks as you already have
+#set up the color scale and breaks as you already have
 colv.kb <- c("white", "purple", "blue", "darkblue", "cyan", "green", "darkgreen", "yellow", "orange", "red", "darkred")
 funpal.kb <- colorRampPalette(colv.kb, bias = 2)
 
@@ -970,7 +970,7 @@ brks.idw <- c(0, 1e4 - 1, seq(1e4, 4e6, 10000), 1e8)
 nbcols.idw <- length(brks.idw) -1
 color.idw <- funpal.kb(nbcols.idw)
 
-# Set up the PDF device
+#set up the PDF device
 dir.create(paste0(mydir,"/ST drivers/red tides/outputs/"))
 pdf(paste0(mydir,"/ST drivers/red tides/outputs/RT OM prediction maps_scale.pdf"), width = 11, height = 6)  # Landscape: Width > Height
 
@@ -980,17 +980,17 @@ for (iyear in 2012:max(yr)) {
   #iyear=2013
 
   cat(paste0("############# ",iyear,' \n' ))
-  # List months you want (example: January to December)
+  #list months you want (example: January to December)
   months <- sprintf("%02d", 1:12)  # "01", "02", ..., "12"
   
-  # Build expected filenames
+  #build expected filenames
   files1 <-  paste0("./ST drivers/red tides/RT severity rasters/", iyear, months, "_RTsevlog.asc")
   files2 <-  paste0("./ST drivers/red tides/RT severity rasters/", iyear, months, "_RTsevnb.asc")
   
   names(files1) <- months  # Name them by month
   names(files2) <- months  # Name them by month
   
-  # Load rasters into a list (some might not exist)
+  #load rasters into a list (some might not exist)
   raster_list1 <- lapply(files1, function(f) {
     if (file.exists(f)) {
       rast(f)
@@ -999,7 +999,7 @@ for (iyear in 2012:max(yr)) {
     }
   })
   
-  # Load rasters into a list (some might not exist)
+  #load rasters into a list (some might not exist)
   raster_list2 <- lapply(files2, function(f) {
     if (file.exists(f)) {
       rast(f)
@@ -1008,7 +1008,7 @@ for (iyear in 2012:max(yr)) {
     }
   })
   
-  # Function to convert raster to dataframe for ggplot
+  #function to convert raster to dataframe for ggplot
   raster_to_df <- function(r, month) {
     if (is.null(r)) {
       return(data.frame(x = NA, y = NA, value = NA, month = month))
@@ -1020,7 +1020,7 @@ for (iyear in 2012:max(yr)) {
     }
   }
   
-  # Apply to all rasters
+  #apply to all rasters
   df_list1 <- Map(raster_to_df, raster_list1, names(raster_list1))
   df_list2 <- Map(raster_to_df, raster_list2, names(raster_list2))
   
@@ -1107,7 +1107,7 @@ for (iyear in 2012:max(yr)) {
                                  frame.linewidth = 0.2)) +  # Change ticks to black
     facet_wrap(~month, ncol = 3)  # Use first three letters of the month
   
-  # Create the combined plot
+  #create the combined plot
   final_plot <- plot_grid(
     ggdraw() + 
       draw_label(iyear, 
@@ -1117,7 +1117,7 @@ for (iyear in 2012:max(yr)) {
     rel_heights = c(0.1, 1)                                # Adjust title-to-plot height ratio
   )
   
-  # Print the final combined plot
+  #print the final combined plot
   print(final_plot)
 }
 
