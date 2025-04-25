@@ -1,39 +1,60 @@
-# Settings #####
+# Setup #####
 #remove and empty objects
 rm(list=ls());gc()
 
 #load libraries
-library(sdmTMB)
-library(VAST)
-library(lubridate)
-library(ggplot2)
-library(raster)
-library(sf)
-library(rnaturalearth)
-library(cowplot)
-library(scales)
+library('sdmTMB')
+library('VAST')
+library('lubridate')
+library('ggplot2')
+library('raster')
+library('sf')
+library('rnaturalearth')
+library('cowplot')
+library('scales')
+library('INLA')
+
 
 #set.seed
 set.seed(6)
 
 #set directory based on user and OS
-if (Sys.info()['user']=='daniel') {
-  #mydir<-'/Users/daniel/Work/VAST_DC/'
-  mydir<-'/Users/daniel/Work/WFS_DV2/WFS-FEM/'
-  setwd(mydir)
-} else if (Sys.info()['user']=='dvilasgonzalez') {
-  #mydir<-'/Users/daniel/Work/VAST_DC/'
-    mydir<-'C:/Users/dvilasgonzalez/Documents/WFS_DV2/WFS-FEM/'
-  setwd(mydir)
-} else {
-  if (.Platform$OS.type == "windows") {setwd(choose.dir())} else {setwd(tcltk::tk_choose.dir())}
-}
+# if (Sys.info()['user']=='daniel') {
+#   #mydir<-'/Users/daniel/Work/VAST_DC/'
+#   mydir<-'/Users/daniel/Work/WFS_DV2/WFS-FEM/'
+#   setwd(mydir)
+# } else if (Sys.info()['user']=='dvilasgonzalez') {
+#   #mydir<-'/Users/daniel/Work/VAST_DC/'
+#     mydir<-'C:/Users/dvilasgonzalez/Documents/WFS_DV2/WFS-FEM/'
+#   setwd(mydir)
+# } else {
+#   if (.Platform$OS.type == "windows") {setwd(choose.dir())} else {setwd(tcltk::tk_choose.dir())}
+# }
 
-# Prepare red tides dataset #####
+#Select directories and input files----
+print("set working directory to parent directory where red tide data and maps will be stored");flush.console()
+if(.Platform$OS.type == "windows") {setwd(choose.dir())} else {setwd(tcltk::tk_choose.dir())}
+
+print("select bathymetry grid as basemap");flush.console()
+if(.Platform$OS.type == "windows") {file.depth <- choose.files()} else {file.depth <- tcltk::tk_choose.files()}
+
+print("select Ecospace ST drivers folder for red tides");flush.console()
+if(.Platform$OS.type == "windows") {dir.st <- choose.dir()} else {dir.st <- tcltk::tk_choose.dir()}
+print(paste('working directory:',getwd()))
+print(paste('ST directory:',dir.st))
+print(paste('Map grid:',file.depth))
+
+dir.plots = paste0(getwd(),"/plots")
+if(!dir.exists(dir.plots)) dir.create(dir.plots)
+print(paste('Plot directory:',dir.plots))
+
 # Load depth and exclusion depth rasters to be used as a sample raster
-depth <- raster('./static drivers/depth/depth 4min 82x97.asc')
-excl_depth <- raster('./static drivers/depth/excl layer 4min 82x97.asc')
+#depth <- raster('./static drivers/depth/depth 4min 82x97.asc')
+#excl_depth <- raster('./static drivers/depth/excl layer 4min 82x97.asc')
+depth <- raster(file.depth)
+excl_depth <- raster(paste0(dirname(file.depth),"/",gsub('depth','excl layer',basename(file.depth))))
 
+#Create spatial grid and set CRS-------------------------------------------------------
 # Get US polygon as an sf object
 us <- ne_countries(country = "united states of america", scale = 10, returnclass = "sf")
 
@@ -52,10 +73,10 @@ us_cropped <- st_cast(us_cropped, "POLYGON")
 # Plot cropped version
 plot(us_cropped$geometry)
 
-#create data folder
-dir.create('./ST drivers/red tides/',showWarnings = FALSE)
-dir.create('./ST drivers/red tides/data/processed',showWarnings = FALSE)
-setwd('./ST drivers/red tides/')
+#create folder for red tide ST driver output
+#dir.create('./ST drivers/red tides/',showWarnings = FALSE)
+#dir.create('./ST drivers/red tides/data/processed',showWarnings = FALSE)
+#setwd('./ST drivers/red tides/')
 
 # Convert extent(depth) to an sf polygon
 depth_extent <- st_as_sf(st_as_sfc(st_bbox(depth)))
@@ -101,9 +122,10 @@ all_polygons_single <- st_cast(all_polygons_single, "POLYGON")
 plot(st_geometry(all_polygons))
 plot(st_geometry(all_polygons_single))
 
-# Load and process CSV files
-lf <- list.files(mydir, pattern = 'habsos.*\\.csv', recursive = TRUE)
-df <- read.csv(paste0(mydir,lf[length(lf)]))
+#Load and process HAB csv file--------------------------------------------------
+mydir = getwd()
+lf <- list.files(mydir, pattern = 'habsos.*\\.csv', recursive = TRUE, full.names=T)
+df <- read.csv(lf[length(lf)])
 # Convert SAMPLE_DATE to Date format
 df$SAMPLE_DATE <- as.Date(df$SAMPLE_DATE)
 
@@ -134,7 +156,38 @@ filtered_points_outside <- st_crop(filtered_points_outside, bbox_raster)
 # Extract coordinates and add them as columns
 filtered_points_df <- cbind(filtered_points_outside, st_coordinates(filtered_points_outside))
 
-# Create a ggplot of the filtered points and polygons
+
+sampling_effort<-as.data.frame(filtered_points_df)
+# Create a full sequence of monthly dates from Jan 1985 to the latest in the data
+full_dates <- data.frame(
+  date = seq(as.Date("1985-01-01"), 
+             as.Date(paste(max(sampling_effort$year), 12, "01", sep = "-")), 
+             by = "month")
+)
+# Create a date column in your data
+sampling_effort$date <- as.Date(paste(sampling_effort$year, sampling_effort$month, "01", sep = "-"))
+
+# Count rows per month (using base R)
+monthly_counts <- as.data.frame(table(sampling_effort$date))
+colnames(monthly_counts) <- c("date", "n")
+monthly_counts$date <- as.Date(monthly_counts$date)
+
+# Merge with full date sequence to fill missing months with 0
+plot_data <- merge(full_dates, monthly_counts, by = "date", all.x = TRUE)
+plot_data$n[is.na(plot_data$n)] <- 0
+
+#rename
+names(filtered_points_df)<-c('year','cells','month','lon','lat','geometry')
+
+# Save filtered observations
+# namefile <- sub("\\.csv$", "", basename(lf[length(lf)]))
+# save(filtered_points_df, file = paste0('./data/processed/filtered_', namefile, '.RData'))
+namefile <- gsub(".csv", "_filtered", basename(lf[length(lf)]))
+save(filtered_points_df, file = paste0('./data/', namefile, '.RData'))
+
+
+##Plots----
+###ggplot of the filtered points and polygons----
 p<-
 ggplot() +
   geom_sf(data = st_as_sf(us_clipped_sf_polygons), fill = 'lightgrey', color = 'black', alpha = 0.5) +
@@ -147,49 +200,25 @@ ggplot() +
   scale_x_continuous(breaks=c(-86,-84,-82))+
   facet_wrap((~year),ncol=8)
 
-#plot ts effort
-sampling_effort<-as.data.frame(filtered_points_df)
-# Create a full sequence of monthly dates from Jan 1985 to the latest in the data
-full_dates <- data.frame(
-  date = seq(as.Date("1985-01-01"), 
-             as.Date(paste(max(sampling_effort$year), 12, "01", sep = "-")), 
-             by = "month")
-)
+png(filename = paste0(dir.plots,"/sample locations by year.png"),width=7,height=7,units='in',res=300)
+p
+dev.off()
 
-# Create a date column in your data
-sampling_effort$date <- as.Date(paste(sampling_effort$year, sampling_effort$month, "01", sep = "-"))
-
+###ggplot plot ts effort----
 ggplot(sampling_effort, aes(x = cells)) +
   geom_histogram(aes(y = after_stat(density)), fill = "skyblue", color = "white", bins = 30000) +
   labs(x = "Cells", y = "Proportion", title = "Proportional Distribution of Cells") +
   theme_minimal()
 
-
-# Count rows per month (using base R)
-monthly_counts <- as.data.frame(table(sampling_effort$date))
-colnames(monthly_counts) <- c("date", "n")
-monthly_counts$date <- as.Date(monthly_counts$date)
-
-# Merge with full date sequence to fill missing months with 0
-plot_data <- merge(full_dates, monthly_counts, by = "date", all.x = TRUE)
-plot_data$n[is.na(plot_data$n)] <- 0
-
 # Now plot
-library(ggplot2)
+png(filename = paste0(dir.plots,"/N samples over time.png"),width=7,height=7,units='in',res=300)
 ggplot(plot_data, aes(x = date, y = n)) +
   geom_line() +
   labs(x = "time", y = "n samples") +
   theme_minimal()
+dev.off()
 
-
-#rename
-names(filtered_points_df)<-c('year','cells','month','lon','lat','geometry')
-
-# Save filtered observations
-namefile <- sub("\\.csv$", "", basename(lf[length(lf)]))
-save(filtered_points_df, file = paste0('./data/processed/filtered_', namefile, '.RData'))
-
-#create grid from depth raster
+#create grid from depth raster--------------------------------------------------
 # Convert to dataframe with latitude, longitude
 input_grid <- as.data.frame(depth, xy = TRUE)  # Extract Lon & Lat
 names(input_grid)[1:2] <- c("Lon", "Lat")  # Rename columns
@@ -207,6 +236,7 @@ compute_area_km2 <- function(lat, res_x, res_y) {
 
 # Apply function to each row to get area
 input_grid$Area_km2 <- mapply(compute_area_km2, input_grid$Lat, res(depth)[1], res(depth)[2])
+#input_grid$Area_km2 <- getValues(area(depth)) alternative way to calculate area, maybe not as accurate
 
 #exclude deep cells for later
 input_grid1<-input_grid
@@ -283,7 +313,7 @@ setwd('./OM month/')
 for (iyear in 1985:max(yr)) {
   
   #select year
-  #iyear=2008
+  iyear=2005
 
   ydf<-subset(filtered_points_df,year==iyear)
   
@@ -295,7 +325,7 @@ for (iyear in 1985:max(yr)) {
   
   for (imonth in 1:12) {
     
-    #imonth<-10
+    imonth<-9
     
     #print process
     cat(paste('################',iyear,'################\n',
@@ -417,7 +447,6 @@ for (iyear in 1985:max(yr)) {
       attempt_counter <- 0
       
       ## VAST ####
-      
       repeat {
         # Increment Newton steps with each attempt
         newtonsteps <- 1 + attempt_counter
