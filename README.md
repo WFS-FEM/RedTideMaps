@@ -4,6 +4,10 @@ This repository provides tools to download and process red tide concentration da
 
 ![image](https://github.com/user-attachments/assets/1272f2f3-61ff-4ac9-8c6b-347b8eca335a)
 
+## Template rasters
+
+This folder provides raster example of depth and excluded layer of the WFS EwE Ecospace model at multiple resolutions.
+
 ## Features
 
 ### 1. HAB Data Processing
@@ -64,19 +68,15 @@ This repository provides tools to download and process red tide concentration da
 ### 7. Select approach by year 
 (currently at ``scripts/make red tide maps - example.R``)
 
-### 8. 1985 - 2002 - (as buffer?)
+### 8. 1985 - 2002 
+(hindcast - as buffer?)
 
 ## Repository Structure
 
 ```
 EnvironmentalDrivers2EwE/
-├── data/ #
-      └── MODIS/
-            ├── chla
-            ├── sst
-            ├── poc
-            ├── pic
-            └── flh
+├── data/ # habsos data
+├── template rasters/ # ascii files templates
 ├── scripts/ # Core R scripts with modular functions and example code
 └── README.md # This file
 ```
