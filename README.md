@@ -26,15 +26,31 @@ This repository provides tools to download and process red tide concentration da
 ``IDW_HAB_data.R``
 
 - Predict with IDW and output raster.
+- Produce monthly red tide concentration raster
 - Plot IDW predictions.
 
-### 4. Get HAB data and
-``get_HAB_data.R``
+### 4. Simple Ordinary Kriging
+``ordkrig_HAB_data.R``
 
-- Download HAB FWC data
-- Spatially filter for the WFS region.
-- Plot observations
+- Predict with Simple Ordinary Kriging and output raster.
+- Backtransform.
+- Produce monthly red tide concentration raster
+- Plot kriging predictions.
 
+### 4. Anisotropic Kriging
+``anisokrig_HAB_data.R``
+
+- 
+
+### 5. Clip to VIIRS (Visible Infrared Imaging Radiometer Suite)
+``process_VIIRS.R``
+
+- 
+
+### 6. Clip/Process to MODIS  
+``process_MODIS.R``
+
+- 
 
 
 
