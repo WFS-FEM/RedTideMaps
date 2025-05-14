@@ -1,5 +1,69 @@
 # RedTideMaps
 
+This repository provides tools to download and process red tide concentration data from the Harmful Algal Bloom (HAB) Florida Fish & Wildlife Comission (FWC) monitoring program into monthly raster files to input red tide severity maps into EwE formats compatible with **Ecopath with Ecosim (EwE)** and **Ecospace**. It was developed as part of the *Operationalizing the West Florida Shelf ecosystem model and application to red tides, stock assessment, and catch advice for Gulf of Mexico reef fish* project (PI: David Chagaris).
+
+![image](https://github.com/user-attachments/assets/1272f2f3-61ff-4ac9-8c6b-347b8eca335a)
+
+## Features
+
+### 1. HAB Data Processing
+``get_HAB_data.R``
+
+- Download HAB FWC data.
+- Spatially filter for the WFS region.
+- Plot observations.
+
+### 2. Spatial Extrapolation
+``get_HAB_data.R``
+
+- Download HAB FWC data
+- Spatially filter for the WFS region.
+- Plot observations
+
+### 3. Get HAB data and
+``get_HAB_data.R``
+
+- Download HAB FWC data
+- Spatially filter for the WFS region.
+- Plot observations
+
+### 4. Get HAB data and
+``get_HAB_data.R``
+
+- Download HAB FWC data
+- Spatially filter for the WFS region.
+- Plot observations
+
+
+
+
+
+### 1 – Extract MODIS Data
+
+
+
+
+from the HAB FWC monitoring program stored in the NOAA HABSOS.  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 This repository provides scripts to produce raster files at monthly steps of red tides in the West Florida Shelf. The script folder includes:
 1. **01_get_HAB_data.R**:
  - Connect to Harmful Algal Bloom (HAB) database website
