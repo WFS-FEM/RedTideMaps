@@ -14,18 +14,19 @@ This repository provides tools to download and process red tide concentration da
 - Plot observations.
 
 ### 2. Spatial Extrapolation
-``get_HAB_data.R``
+``sdmTMB_HAB_data.R``
 
-- Download HAB FWC data
-- Spatially filter for the WFS region.
-- Plot observations
+- Make input grid for prediction purposes
+- Fit GLMM monthly models using sdmTMB log and nb.
+- Output predicted, observed red tide concentration and fit data objects.
+- Produce monthly red tide concentration raster
+- Plot red tide concentration maps into a pdf file.
 
-### 3. Get HAB data and
-``get_HAB_data.R``
+### 3. Inverse Distance Weighting
+``IDW_HAB_data.R``
 
-- Download HAB FWC data
-- Spatially filter for the WFS region.
-- Plot observations
+- Predict with IDW and output raster.
+- Plot IDW predictions.
 
 ### 4. Get HAB data and
 ``get_HAB_data.R``
