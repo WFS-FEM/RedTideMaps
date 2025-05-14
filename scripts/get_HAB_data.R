@@ -187,8 +187,8 @@ p<-
   scale_y_continuous(breaks=c(30,28,26))+
   scale_x_continuous(breaks=c(-86,-84,-82))+
   facet_wrap((~year),ncol=8)
-png(paste0(dir.data,"/sample locations by year.png"),width=7, height=7, units='in', res=300)
-p
+png(paste0(dir.data,"/sample locations by year.png"),width=12, height=10, units='in', res=300)
+print(p)
 dev.off()
 
 #plot ts effort
@@ -203,10 +203,10 @@ full_dates <- data.frame(
 #create a date column in your data
 sampling_effort$date <- as.Date(paste(sampling_effort$year, sampling_effort$month, "01", sep = "-"))
 
-ggplot(sampling_effort, aes(x = cells)) +
-  geom_histogram(aes(y = after_stat(density)), fill = "skyblue", color = "white", bins = 30000) +
-  labs(x = "Cells", y = "Proportion", title = "Proportional Distribution of Cells") +
-  theme_minimal()
+# ggplot(sampling_effort, aes(x = cells)) +
+#   geom_histogram(aes(y = after_stat(density)), fill = "skyblue", color = "white", bins = 30000) +
+#   labs(x = "Cells", y = "Proportion", title = "Proportional Distribution of Cells") +
+#   theme_minimal()
 
 #count rows per month (using base R)
 monthly_counts <- as.data.frame(table(sampling_effort$date))
@@ -219,10 +219,11 @@ plot_data$n[is.na(plot_data$n)] <- 0
 
 #plot
 png(paste0(dir.data,"/N samples over time.png"),width=7, height=7, units='in', res=300)
+print(
 ggplot(plot_data, aes(x = date, y = n)) +
   geom_line() +
   labs(x = "time", y = "n samples") +
-  theme_minimal()
+  theme_minimal())
 dev.off()
 }
 #Cleanup----

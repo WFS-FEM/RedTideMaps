@@ -1,6 +1,6 @@
 
 #IDW prediction-------------------------------------------------------------------------
-fn.hab_idw_monthly <- function(file.habRdat=paste0(dir.data,"/",file.habRdat),idw.wt=2, styr=1985){
+fn.hab_idw_monthly <- function(file.habRdat=file.habRdat,idw.wt=2, styr=1985){
   
   depth <- raster(file.depth)
   load(file.habRdat)

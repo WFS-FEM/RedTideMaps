@@ -28,6 +28,7 @@ vgpars.out = data.frame()
 start.time = gsub(":","",Sys.time())
 #dev.off()
 windows(record=T)
+dir.create(dir.ordkrig)
 pdf(paste0(dir.ordkrig,'/ordkrig variograms ',times[1],"-",tail(times,1),'.pdf'),onefile=T)
 for(i in 1:length(times)){
   #mos = unique(fwri.maxk$month[fwri.maxk$year==y])

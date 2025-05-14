@@ -103,7 +103,7 @@ modis.numpolys  <<- data.frame(yrmo=names(flh),
 fn.plot_modis <- function(dir.modis=dir.modis, file.flhpolys = list.files(dir.modis,pattern="^FLH polys", full.names=T)){
   
   #file.flhpolys = list.files(dir.modis,pattern="^FLH polys", full.names=T)[2]
-  #files.flhstack = list.files(dir.modis, pattern='.grd$', full.names=T)
+  files.flhstack = list.files(dir.modis, pattern='.grd$', full.names=T)
   flh = stack(files.flhstack)
   flh = flh/10
   depth = raster(file.depth)
