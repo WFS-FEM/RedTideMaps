@@ -40,16 +40,50 @@ This repository provides tools to download and process red tide concentration da
 ### 4. Anisotropic Kriging
 ``anisokrig_HAB_data.R``
 
-- 
+- Predict with SAnisotropic Kriging and output raster.
+- Backtransform.
+- Produce monthly red tide concentration raster
+- Plot kriging predictions.
 
-### 5. Clip to VIIRS (Visible Infrared Imaging Radiometer Suite)
+### 5. Clip to VIIRS (Visible Infrared Imaging Radiometer Suite) - (2012-present)
 ``process_VIIRS.R``
 
-- 
+- Get VIIRS and Observed data.
+- VIIRS data represent is raster probability data in which 1 indicates 100% percent of a red tide occurred in that cell in that month.
+- Clip Predicted data with VIIRS>0 data.
+- Plot red tide severity maps.
 
-### 6. Clip/Process to MODIS  
+### 6. Process and Clip to MODIS - (2003-2012)
 ``process_MODIS.R``
 
-- 
+- Make MODIS polygons.
+- Clip rasters.
+- Make nFLH polygons.
+- Plot results.
 
+### 7. Select approach by year 
+(currently at ``scripts/make red tide maps - example.R``)
+
+### 8. 1985 - 2002 - (as buffer?)
+
+## Repository Structure
+
+```
+EnvironmentalDrivers2EwE/
+├── data/ #
+      └── MODIS/
+            ├── chla
+            ├── sst
+            ├── poc
+            ├── pic
+            └── flh
+├── scripts/ # Core R scripts with modular functions and example code
+└── README.md # This file
+```
+
+## Getting Started
+
+To use the tools in this repository, you will need R (>= 4.0). It requires to previously download [MODIS data](https://modis.gsfc.nasa.gov/tools/).
+
+Example R script is included in  ``scripts/make red tide maps - example.R``.
 
