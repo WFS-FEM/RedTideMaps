@@ -106,6 +106,10 @@ depth_extent <- st_as_sf(st_as_sfc(st_bbox(depth)))
 excl_depth <- rasterToPolygons(excl_depth, dissolve = TRUE)
 excl_depth_sf <- st_as_sf(excl_depth)
 
+# plot(depth)
+# plot(us_cropped,add=T)
+# plot(excl_depth_sf,add=T)
+
 #perform intersection
 us_clipped_sf <- st_intersection(us_cropped, depth_extent)
 
@@ -141,6 +145,8 @@ all_polygons_single <- st_union(us_clipped_sf, Ps2_sf)
 all_polygons_single <- st_union(all_polygons_single, excl_depth_sf)
 all_polygons_single <- st_combine(all_polygons_single)
 all_polygons_single <- st_cast(all_polygons_single, "POLYGON")
+
+#save(all_polygons_single, file = "./data/outside_polygons.RData")
 
 ##filter data----
 #use st_within to identify points inside polygons
