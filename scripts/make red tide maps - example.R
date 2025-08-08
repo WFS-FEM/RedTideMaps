@@ -118,3 +118,41 @@ names(sdm.log.comb)
 dir.stsdm <- paste0(dir.stdriver,"/sdmTMB")
 if(!dir.exists(dir.stsdm)) dir.create(dir.stsdm)
 writeRaster(sdm.log.comb, filename=paste0(dir.stsdm,'/red tide sdm'), bylayer=T,suffix=paste0(gsub("X","",names(sdm.log.comb))),format='ascii')
+
+
+
+# check data HABSOS ####
+# Load required package
+library(sf)
+
+# GeoJSON API URL
+geojson_url <- "https://gis.myfwc.com/mapping/rest/services/Open_Data/Recent_Harmful_Algal_Bloom__HAB__Events_2015_present/MapServer/7/query?outFields=*&where=1%3D1&f=geojson"
+#geojson_url <- "https://atoll.floridamarine.org/arcgis/rest/services/Projects_FWC/HAB_Current/MapServer/0/query?outFields=*&where=1%3D1&f=geojson"
+
+# Read data directly into an sf object
+hab_data <- st_read(geojson_url)
+
+library(lubridate)
+
+# Convert epoch milliseconds to POSIXct date-time
+hab_data$SAMPLE_DATE <- as_datetime(hab_data$SAMPLE_DATE / 1000)
+
+# Check result
+head(hab_data$SAMPLE_DATE)
+
+# Add year and month columns
+hab_data$YEAR <- year(hab_data$SAMPLE_DATE)
+hab_data$MONTH <- month(hab_data$SAMPLE_DATE, label = TRUE, abbr = TRUE)
+
+
+library(ggplot2)
+
+ggplot(subset(hab_data,YEAR=='2024')) +
+  geom_sf() +
+  labs(title = "HAB samples 2024 by year",
+       color = "Year") +
+  theme_minimal()+
+  facet_wrap(~MONTH)
+
+
+
