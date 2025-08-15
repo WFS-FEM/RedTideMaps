@@ -16,7 +16,7 @@ logsev.files<-list.files(paste0(idir,'/RT severity rasters'),pattern = '*log.asc
 nbsev.files<-list.files(paste0(idir,'/RT severity rasters'),pattern = '*nb.asc$')
 
 #get matching years
-yyyymm<-substr(sev.files,1,6)
+yyyymm<-substr(nbsev.files,1,6)
 
 # make a regex pattern like "201209|201210|201211"
 yyyymm1 <- paste(yyyymm, collapse = "|")
@@ -376,12 +376,12 @@ ggplot(results, aes(x = sdm_clip, y = RRMSE, fill = sdm_clip)) +
   geom_boxplot(alpha = 0.7, outlier.shape = NA) +
   labs(
     title = "RRMSE relative to observations (pred and sev relative to obs HABSOS)",
-    x = "SDM and Clip",
+    x = "",
     y = "Relative RMSE"
   ) +
   theme_minimal() +
   theme(legend.position = "none") +
-  scale_x_discrete(labels=c('polygon','viirs'))+
+  scale_x_discrete(labels=c('log_VIIRS','log_pred','nb_VIIRS','nb_pred'))+
   scale_y_continuous(limits=c(0,20))+
   scale_fill_brewer(palette = "Set2")
 
@@ -398,15 +398,128 @@ ggplot(results_binary, aes(x = sdm_clip, y = AUC, fill = sdm_clip)) +
   ) +
   theme_minimal() +
   theme(legend.position = "none") +
+  scale_x_discrete(labels=c('log_VIIRS','log_pred','nb_VIIRS','nb_pred'))+
   scale_fill_brewer(palette = "Set2")
 
 
 
-# conclusion #####
+# conclusions 1 #####
 # no clip is more accurate (more similar to observations)
 # nb is more accurate than log
 
 #lets see if clipping by polygon how it compares to VIIRS
 
 
+#accuracy pred - pred+clip (VIIRS) pos+bin ####
+for (i in yyyymm) {
+  
+  #i<-yyyymm[1]
+  
+  cat("Processing:", i, "\n")
+  
+  #year and month
+  y <- substr(i, 1, 4)
+  m <- substr(i, 5, 6)
+  
+  # Load predicted raster
+  r_pred <- raster(paste0(idir, '/sdmTMB RT rasters/', y, m, '_predsdmTMBnb.asc'))
+  
+  for (r in c('HAB','FLH','VIIRS')) {
+    
+    #r<-'FLH'
+    
+    # Load severity raster
+    r_sev <- raster(paste0(idir, '/RT severity rasters/', r,'/',y, m, '_RTsevnb.asc'))
+    
+    # Apply land mask from depth raster to exclude shallow/land pixels
+    r_pred <- mask(r_pred, land_mask)
+    r_sev <- mask(r_sev, land_mask)
+    
+    # Extract values from rasters as vectors
+    pred_vals <- getValues(r_pred)
+    mean_pred<-mean(pred_vals,na.rm=TRUE)
+    sev_vals <- getValues(r_sev)
+    
+    # Remove NA pairs to compare for continuous metrics
+    valid_pred_sev <- !is.na(pred_vals) & !is.na(sev_vals)
+    
+     # Continuous metrics for r_sev vs r_pred
+    rmse_sev <- sqrt(mean((pred_vals[valid_pred_sev] - sev_vals[valid_pred_sev])^2))/mean_pred
+    cor_sev <- cor(pred_vals[valid_pred_sev], sev_vals[valid_pred_sev])
+    r2_sev <- cor_sev^2
+    
+    # Convert to binary presence/absence with threshold = 1000
+    bin_threshold <- 1000
+    
+    pred_bin <- ifelse(pred_vals > bin_threshold, 1, 0)
+    sev_bin <- ifelse(sev_vals > bin_threshold, 1, 0)
+    
+    # Remove NA pairs for binary metrics
+    valid_bin_sev <- !is.na(pred_bin) & !is.na(sev_bin)
+    
+    # Binary accuracy for r_sev vs r_pred
+    TP_sev <- sum(sev_bin[valid_bin_sev] == 1 & pred_bin[valid_bin_sev] == 1)
+    TN_sev <- sum(sev_bin[valid_bin_sev] == 0 & pred_bin[valid_bin_sev] == 0)
+    FP_sev <- sum(sev_bin[valid_bin_sev] == 1 & pred_bin[valid_bin_sev] == 0)
+    FN_sev <- sum(sev_bin[valid_bin_sev] == 0 & pred_bin[valid_bin_sev] == 1)
+    Accuracy_sev <- (TP_sev + TN_sev) / length(pred_bin[valid_bin_sev])
+    
+     # Calculate AUC for sev vs pred
+    auc_sev <- tryCatch({
+      roc_obj <- pROC::roc(sev_bin[valid_pred_sev], pred_vals[valid_pred_sev], quiet = TRUE)
+      auc(roc_obj)
+    }, error = function(e) NA_real_)
+    
+    # Append row to dataframe
+    results_df <- bind_rows(results_df, tibble(
+      yyyymm = i,
+      rrmse_sev = rmse_sev,
+      r2_sev = r2_sev,
+      accuracy_sev = Accuracy_sev,
+      auc_sev = as.numeric(auc_sev),
+      n_cells_sev = sum(valid_pred_sev),
+      pols=r
+    ))
+    
+  }
+
+}
+
+# Combine results into a dataframe
+
+# Reshape results_df to long format for AUC and RRMSE
+results_long <- results_df %>%
+  pivot_longer(
+    cols = c(auc_sev, rrmse_sev),
+    names_to = c("metric", "method"),
+    names_sep = "_",
+    values_to = "value"
+  )
+
+# Check the reshaped data (optional)
+head(results_long)
+
+# Plot boxplot for AUC
+ggplot(filter(results_long, metric == "auc"), aes(x = pols, y = value, fill = pols)) +
+  geom_boxplot(outlier.shape = NA) +  # no outliers shown, adjust if you want
+  geom_jitter(width = 0.15, alpha = 0.5) +  # add points
+  labs(title = "AUC (Polygon vs VIIRS) relative predictions", x = "Method", y = "AUC") +
+  theme_minimal() +
+  theme(legend.position = 'none')+
+  #scale_x_discrete(labels=c('polygon','viirs'))+
+  scale_fill_brewer(palette = "Set1")
+
+# Plot boxplot for RRMSE
+ggplot(filter(results_long, metric == "rrmse"), aes(x = pols, y = value, fill = pols)) +
+  geom_boxplot(outlier.shape = NA) +
+  geom_jitter(width = 0.15, alpha = 0.5) +
+  labs(title = "RRMSE (Polygon vs VIIRS) relative predictions", x = "Method", y = "RRMSE") +
+  theme_minimal() +
+  scale_y_continuous(limits=c(0,10))+
+  theme(legend.position = 'none')+
+  #scale_x_discrete(labels=c('polygon','viirs'))+
+  scale_fill_brewer(palette = "Set1")
+
+#conclusions 2 ####
+#VIIRS similar to other polygon changes on accuracy
 
