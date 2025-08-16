@@ -35,7 +35,6 @@ if (user == "dchagaris") {
   if (is.na(scripts_path)) stop("No scripts directory selected. Exiting.")
 }
 
-
 #MODIS FHL polygons (2003-2012) ####
 #threshold to 0.02 (Soto 2013; Hu personal communication).
 s<-stack(paste0(dirname(wd),'/MODIS/flh/flh_-98_-80.5_24_31_200301-20250601.gri'))
@@ -228,79 +227,93 @@ ifiltered_points_df<-subset(filtered_points_df,year>=1985)
 allyyyymm<-paste0(ifiltered_points_df$year,sprintf("%02d", ifiltered_points_df$month))
 sort(unique(allyyyymm))
 
-#create folders
-dir.create(paste0(idir,'/RT severity rasters/FLH/'))
-dir.create(paste0(idir,'/RT severity rasters/HAB/'))
+for (res in c(4,6,10)) {
+  
+  #create folders
+  dir.create(paste0(idir,'/RT severity rasters/',res,'min/FLH/'))
+  dir.create(paste0(idir,'/RT severity rasters/',res,'min/HAB'))
+  
+  
+  #clipping ####
+  for (i in sort(unique(allyyyymm))) {
+    
+    #i<-sort(unique(allyyyymm))[3]
+    
+    cat("Processing:", i, "\n")
+    
+    # Extract polygon
+    p <- pol_list[[i]]
+    
+    #year and month
+    y <- substr(i, 1, 4)
+    m <- substr(i, 5, 6)
+    
+    for (res in c(4,6,10)) {
+      
+      dir.sdmout  <- paste0(wd, res,"min/sdm out")
+      
+      #log and nb extrapolations
+      for (var in c('log','nb')) {
+    
+        r_pred <- raster(paste0(idir, '/sdmTMB RT rasters/', y, m, '_predsdmTMB',var,'.asc')) #make more sense to choose log (only positives) instead of nb, because the filtering of presence is done by VIIRS, MODIS FLH and convex hull
 
-for (i in sort(unique(allyyyymm))) {
-  
-  #i<-sort(unique(allyyyymm))[3]
-  
-  cat("Processing:", i, "\n")
-  
-  # Extract polygon
-  p <- pol_list[[i]]
-  
-  #year and month
-  y <- substr(i, 1, 4)
-  m <- substr(i, 5, 6)
-  
-  for (res in c(4,6,10)) {
-    
-  }
-  #log and nb extrapolations
-  for (var in c('log','nb')) {
-
-    r_pred <- raster(paste0(idir, '/sdmTMB RT rasters/', y, m, '_predsdmTMB',var,'.asc')) #make more sense to choose log (only positives) instead of nb, because the filtering of presence is done by VIIRS, MODIS FLH and convex hull
-    
-    #if no raster or polygon
-    if (is.null(p) | is.null(r_pred)) {
-      next
-    }
-    
-    # Transform polygon CRS to raster CRS
-    p <- st_transform(p, crs = crs(r_pred))
-    
-    # Rasterize polygon (1 inside polygon, NA outside)
-    mask_raster <- rasterize(p, r_pred, field=1, background=NA)
-    
-    # Mask predicted raster with polygon mask: outside polygon to NA
-    hab_raster <- mask(r_pred, mask_raster)
-    
-    # Set NA outside polygon to 0
-    hab_raster[is.na(hab_raster)] <- 0
-    
-    # Apply land mask from depth raster to exclude shallow/land pixels
-    hab_raster <- mask(hab_raster, land_mask)
-    #plot(hab_raster)
-    
-    #save raster
-    writeRaster(hab_raster,paste0(idir,'RT severity rasters/HAB/',y,m,'_RTsev',var,'.asc'),overwrite=TRUE)
-    
-    if (y>=2003) {
-      
-      #select flh polygon
-      flh<-flh.polys.new[[paste0('X', y, m)]]
-      
-      # Transform polygon CRS to raster CRS
-      flh <- st_transform(flh, crs = crs(r_pred))
-      
-      #rasterize
-      flh <- st_collection_extract(flh, "POLYGON")
-      flh$poly_id <- seq_len(nrow(flh))
-      mask_raster <- rasterize(as(flh, "Spatial"), r_pred, field = 1, background = NA)
-      
-      # Mask predicted raster with polygon mask: outside polygon to NA
-      fhl_raster <- mask(r_pred, mask_raster)
-      # Set NA outside polygon to 0
-      fhl_raster[is.na(fhl_raster)] <- 0
-      
-      # Apply land mask from depth raster to exclude shallow/land pixels
-      fhl_raster <- mask(fhl_raster, land_mask)
-      
-      #save raster
-      writeRaster(hab_raster,paste0(idir,'RT severity rasters/FLH/',y,m,'_RTsev',var,'.asc'),overwrite=TRUE)
-      
+        if (var=='log') {
+          pred.stack<-list.files(dir.sdmout,"/sdmTMB_log_stack_")
+          
+        } else if (var=='nb') {
+          pred.stack<-list.files(dir.sdmout,"/sdmTMB_nb_stack_")
+        }
+        
+        r_pred <-pred_stack[[paste0(y,m)]]
+        #if no raster or polygon
+        if (is.null(p) | is.null(r_pred)) {
+          next
+        }
+        
+        # Transform polygon CRS to raster CRS
+        p <- st_transform(p, crs = crs(r_pred))
+        
+        # Rasterize polygon (1 inside polygon, NA outside)
+        mask_raster <- rasterize(p, r_pred, field=1, background=NA)
+        
+        # Mask predicted raster with polygon mask: outside polygon to NA
+        hab_raster <- mask(r_pred, mask_raster)
+        
+        # Set NA outside polygon to 0
+        hab_raster[is.na(hab_raster)] <- 0
+        
+        # Apply land mask from depth raster to exclude shallow/land pixels
+        hab_raster <- mask(hab_raster, land_mask)
+        #plot(hab_raster)
+        
+        #save raster
+        writeRaster(hab_raster,paste0(idir,'RT severity rasters/',res,'min/HAB/',y,m,'_RTsev',var,'.asc'),overwrite=TRUE)
+        
+        if (y>=2003) {
+          
+          #select flh polygon
+          flh<-flh.polys.new[[paste0('X', y, m)]]
+          
+          # Transform polygon CRS to raster CRS
+          flh <- st_transform(flh, crs = crs(r_pred))
+          
+          #rasterize
+          flh <- st_collection_extract(flh, "POLYGON")
+          flh$poly_id <- seq_len(nrow(flh))
+          mask_raster <- rasterize(as(flh, "Spatial"), r_pred, field = 1, background = NA)
+          
+          # Mask predicted raster with polygon mask: outside polygon to NA
+          fhl_raster <- mask(r_pred, mask_raster)
+          # Set NA outside polygon to 0
+          fhl_raster[is.na(fhl_raster)] <- 0
+          
+          # Apply land mask from depth raster to exclude shallow/land pixels
+          fhl_raster <- mask(fhl_raster, land_mask)
+          
+          #save raster
+          writeRaster(hab_raster,paste0(idir,'RT severity rasters/',res,'min/FLH/',y,m,'_RTsev',var,'.asc'),overwrite=TRUE)
+        }
+      }
     }
   }
 }
