@@ -245,6 +245,9 @@ for (i in sort(unique(allyyyymm))) {
   y <- substr(i, 1, 4)
   m <- substr(i, 5, 6)
   
+  for (res in c(4,6,10)) {
+    
+  }
   #log and nb extrapolations
   for (var in c('log','nb')) {
 
