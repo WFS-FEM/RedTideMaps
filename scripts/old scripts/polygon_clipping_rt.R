@@ -228,9 +228,7 @@ ifiltered_points_df<-subset(filtered_points_df,year>=1985)
 allyyyymm<-paste0(ifiltered_points_df$year,sprintf("%02d", ifiltered_points_df$month))
 sort(unique(allyyyymm))
 
-#create folders
-dir.create(paste0(idir,'/RT severity rasters/FLH/'))
-dir.create(paste0(idir,'/RT severity rasters/HAB/'))
+
 
 for (i in sort(unique(allyyyymm))) {
   
@@ -247,11 +245,21 @@ for (i in sort(unique(allyyyymm))) {
   
   for (res in c(4,6,10)) {
     
-  }
   #log and nb extrapolations
   for (var in c('log','nb')) {
 
-    r_pred <- raster(paste0(idir, '/sdmTMB RT rasters/', y, m, '_predsdmTMB',var,'.asc')) #make more sense to choose log (only positives) instead of nb, because the filtering of presence is done by VIIRS, MODIS FLH and convex hull
+    #create folders
+    dir.create(paste0(idir,'/',res,'min/RT severity rasters/FLH/'))
+    dir.create(paste0(idir,'/',res,'min/RT severity rasters/HAB/'))
+    
+    # Locate prediction rasters
+    r_pred_files <- list.files(
+      path = paste0(idir, '/', res, 'min/sdm out/'),
+      pattern = paste0('sdmTMB_',var,'_stack_1985.*\\.grd$'), 
+      full.names = TRUE
+    )
+    
+    #make more sense to choose log (only positives) instead of nb, because the filtering of presence is done by VIIRS, MODIS FLH and convex hull
     
     #if no raster or polygon
     if (is.null(p) | is.null(r_pred)) {
@@ -275,7 +283,7 @@ for (i in sort(unique(allyyyymm))) {
     #plot(hab_raster)
     
     #save raster
-    writeRaster(hab_raster,paste0(idir,'RT severity rasters/HAB/',y,m,'_RTsev',var,'.asc'),overwrite=TRUE)
+    writeRaster(hab_raster,paste0(idir,'/',res,'min/RT severity rasters/HAB/',y,m,'_RTsev',var,'.asc'),overwrite=TRUE)
     
     if (y>=2003) {
       
@@ -300,7 +308,7 @@ for (i in sort(unique(allyyyymm))) {
       
       #save raster
       writeRaster(hab_raster,paste0(idir,'RT severity rasters/FLH/',y,m,'_RTsev',var,'.asc'),overwrite=TRUE)
-      
+    }
     }
   }
 }

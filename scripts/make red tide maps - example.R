@@ -12,7 +12,7 @@ if (user == "dchagaris") {
 } else if (user == "dvilasgonzalez") {
   wd <- "C:/Users/dvilasgonzalez/Documents/WFS_DV2/WFS-FEM/ST drivers/red tides/"
   wd.depth <- "C:/Users/dvilasgonzalez/Documents/WFS_DV2/WFS-FEM/static drivers/depth/"
-  scripts_path <- "C:/Users/dvilasgonzalez/Documents/Github/RedTideMaps/scripts"
+  scripts_path <- "C:/Users/dvilasgonzalez/Documents/Github/RedTideMaps/scripts/"
 } else {
   message("User not recognized. Please select working and depth directories.")
   wd <- choose.dir(caption = "Select your red tide maps working directory")
@@ -46,8 +46,8 @@ source(file.path(scripts_path, "process_VIIRS.R"))
 source(file.path(scripts_path, "process_MODIS.R"))
 source(file.path(scripts_path, "IDW_HAB_data.R"))
 source(file.path(scripts_path, "ordkrig_HAB_data.R"))
-source(file.path(scripts_path, "anisokrig_HAB_data.R"))
-
+#source(file.path(scripts_path, "anisokrig_HAB_data.R"))
+source(file.path(scripts_path, "polygon_clipping_rt_v2.R"))
 
 for (res in c(4,6,10)) {
   
@@ -56,7 +56,7 @@ for (res in c(4,6,10)) {
   # Build all dirs
   dir.plots   <- paste0(wd,res, 'min/plots')
   #dir.viirs   <- paste0(res, 'min', dir.viirs0)
-  #dir.modis   <- paste0(res, 'min', dir.modis0)
+  dir.modis   <- dir.modis0
   dir.sdmout  <- paste0(wd, res,"min/sdm out")
   dir.idwout  <- paste0(wd, res,'min/idw out')
   dir.ordkrig <- paste0(wd, res,'min/ordkrig out')
@@ -143,10 +143,34 @@ for (res in c(4,6,10)) {
   # dir.stsdm <- paste0(wd,"/sdmTMB")
   # if(!dir.exists(dir.stsdm)) dir.create(dir.stsdm)
   # writeRaster(sdm.log.comb, filename=paste0(dir.stsdm,'/red tide sdm'), bylayer=T,suffix=paste0(gsub("X","",names(sdm.log.comb))),format='ascii')
+  
+  #fxn
+  # Run clipping setup
+  clip_objects <- clip_setup(wd = wd, wd.depth = wd.depth)
+  #clip_objects <- clip_setup(wd, wd.depth)
+  flh_polys <- clip_objects$flh_polys
+  pol_list  <- clip_objects$pol_list
+  land_mask <- clip_objects$land_mask
+  # Run clipping setup
+  #clip_objects <- clip_setup(wd = wd, wd.depth = wd.depth)
+  
+  # Apply clipping across all years, months, and variables
+  clip_apply(
+    wd = wd,
+    res = res,
+    land_mask = clip_objects$land_mask,
+    flh_polys = clip_objects$flh_polys,
+    pol_list = clip_objects$pol_list,
+    vars = c("log",'nb')       # or add other variables if needed
+  )
 }
 
 
-# check data HABSOS ####
+#add polygon
+
+
+
+# check data HABSOS through API GEOJSON####
 # Load required package
 library(sf)
 
