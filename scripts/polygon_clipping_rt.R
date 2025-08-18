@@ -227,6 +227,8 @@ ifiltered_points_df<-subset(filtered_points_df,year>=1985)
 allyyyymm<-paste0(ifiltered_points_df$year,sprintf("%02d", ifiltered_points_df$month))
 sort(unique(allyyyymm))
 
+#clipping HAB extrapolation predictions ####
+#loop over resolutions
 for (res in c(4,6,10)) {
   
   #create folders
@@ -234,7 +236,7 @@ for (res in c(4,6,10)) {
   dir.create(paste0(idir,'/RT severity rasters/',res,'min/HAB'))
   
   
-  #clipping ####
+  # loop over year and month ####
   for (i in sort(unique(allyyyymm))) {
     
     #i<-sort(unique(allyyyymm))[3]

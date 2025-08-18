@@ -13,6 +13,10 @@ if (user == "dchagaris") {
   wd <- "C:/Users/dvilasgonzalez/Documents/WFS_DV2/WFS-FEM/ST drivers/red tides/"
   wd.depth <- "C:/Users/dvilasgonzalez/Documents/WFS_DV2/WFS-FEM/static drivers/depth/"
   scripts_path <- "C:/Users/dvilasgonzalez/Documents/Github/RedTideMaps/scripts"
+} else if (user == "daniel") {
+  wd <- "/Users/daniel/Work/WFS_DV2/WFS-FEM/ST drivers/red tides/"
+  wd.depth <- "/Users/daniel/Work/WFS_DV2/WFS-FEM/static drivers/depth/"
+  scripts_path <- "/Users/daniel/Documents/Github/RedTideMaps/scripts"
 } else {
   message("User not recognized. Please select working and depth directories.")
   wd <- choose.dir(caption = "Select your red tide maps working directory")
