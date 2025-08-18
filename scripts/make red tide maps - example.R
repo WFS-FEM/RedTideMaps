@@ -13,6 +13,11 @@ if (user == "dchagaris") {
   wd <- "C:/Users/dvilasgonzalez/Documents/WFS_DV2/WFS-FEM/ST drivers/red tides/"
   wd.depth <- "C:/Users/dvilasgonzalez/Documents/WFS_DV2/WFS-FEM/static drivers/depth/"
   scripts_path <- "C:/Users/dvilasgonzalez/Documents/Github/RedTideMaps/scripts/"
+  scripts_path <- "C:/Users/dvilasgonzalez/Documents/Github/RedTideMaps/scripts"
+} else if (user == "daniel") {
+  wd <- "/Users/daniel/Work/WFS_DV2/WFS-FEM/ST drivers/red tides/"
+  wd.depth <- "/Users/daniel/Work/WFS_DV2/WFS-FEM/static drivers/depth/"
+  scripts_path <- "/Users/daniel/Documents/Github/RedTideMaps/scripts"
 } else {
   message("User not recognized. Please select working and depth directories.")
   wd <- choose.dir(caption = "Select your red tide maps working directory")
@@ -51,7 +56,7 @@ source(file.path(scripts_path, "polygon_clipping_rt_v2.R"))
 
 for (res in c(4,6,10)) {
   
-  res<-'4'
+  #res<-'4'
   
   # Build all dirs
   dir.plots   <- paste0(wd,res, 'min/plots')
@@ -144,7 +149,7 @@ for (res in c(4,6,10)) {
   # if(!dir.exists(dir.stsdm)) dir.create(dir.stsdm)
   # writeRaster(sdm.log.comb, filename=paste0(dir.stsdm,'/red tide sdm'), bylayer=T,suffix=paste0(gsub("X","",names(sdm.log.comb))),format='ascii')
   
-  #fxn
+  # clip objects ####
   # Run clipping setup
   clip_objects <- clip_setup(wd = wd, wd.depth = wd.depth)
   #clip_objects <- clip_setup(wd, wd.depth)
@@ -154,7 +159,7 @@ for (res in c(4,6,10)) {
   # Run clipping setup
   #clip_objects <- clip_setup(wd = wd, wd.depth = wd.depth)
   
-  # Apply clipping across all years, months, and variables
+  # Clip and store RT severity ascii ####
   clip_apply(
     wd = wd,
     res = res,
@@ -165,14 +170,11 @@ for (res in c(4,6,10)) {
   )
 }
 
-
-#add polygon
-
-
-
 # check data HABSOS through API GEOJSON####
-# Load required package
+#libraryies
 library(sf)
+library(lubridate)
+library(ggplot2)
 
 # GeoJSON API URL
 geojson_url <- "https://gis.myfwc.com/mapping/rest/services/Open_Data/Recent_Harmful_Algal_Bloom__HAB__Events_2015_present/MapServer/7/query?outFields=*&where=1%3D1&f=geojson"
@@ -180,8 +182,6 @@ geojson_url <- "https://gis.myfwc.com/mapping/rest/services/Open_Data/Recent_Har
 
 # Read data directly into an sf object
 hab_data <- st_read(geojson_url)
-
-library(lubridate)
 
 # Convert epoch milliseconds to POSIXct date-time
 hab_data$SAMPLE_DATE <- as_datetime(hab_data$SAMPLE_DATE / 1000)
@@ -193,9 +193,7 @@ head(hab_data$SAMPLE_DATE)
 hab_data$YEAR <- year(hab_data$SAMPLE_DATE)
 hab_data$MONTH <- month(hab_data$SAMPLE_DATE, label = TRUE, abbr = TRUE)
 
-
-library(ggplot2)
-
+#plot
 ggplot(subset(hab_data,YEAR=='2024')) +
   geom_sf() +
   labs(title = "HAB samples 2024 by year",
