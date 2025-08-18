@@ -39,7 +39,6 @@ clip_setup <- function(wd, wd.depth) {
   return(list(flh_polys = flh_polys, pol_list = pol_list, land_mask = land_mask))
 }
 
-# scripts/clip_apply.R
 clip_apply <- function(wd, res, land_mask, flh_polys, pol_list, vars = c("log",'nb'), years = 1985:2025) {
   idir <- wd
   
@@ -50,25 +49,43 @@ clip_apply <- function(wd, res, land_mask, flh_polys, pol_list, vars = c("log",'
       pattern = paste0("sdmTMB_", var, "_stack_1985.*\\.gri$"),
       full.names = TRUE
     )
-    # locate predictions
     r_viirs_files <- list.files(
       path = file.path(idir, paste0(res, "min/sdm out/")),
-      pattern = paste0("sdmTMB_", var, "_stack_.*\\viirs.gri$"),
+      pattern = paste0("sdmTMB_", var, "_stack_.*viirs.gri$"),
       full.names = TRUE
     )
     
-    pred.stack<-stack(r_pred_files)
-    viirs.stack<-stack(r_viirs_files)
+    pred.stack <- stack(r_pred_files)
+    viirs.stack <- if(length(r_viirs_files)>0) stack(r_viirs_files) else NULL
     
     for (y in years) {
       for (m in 1:12) {
-        #y=1985;m=9
         cat(paste0('############### ',y,m,'#############\n'))
         lyr_name <- paste0('X', sprintf("%d%02d", y, m))
+        
         # polygon for this month
         p <- pol_list[[sprintf("%d%02d", y, m)]]
-        if (is.null(p)) next
-        r_pred <- raster(pred.stack[[lyr_name]]) # grab first
+        
+        # check prediction layer exists
+        if(!lyr_name %in% names(pred.stack)) {
+          cat("  - No prediction layer ", lyr_name, " - skipping\n")
+          next
+        }
+        
+        r_pred <- pred.stack[[lyr_name]]
+        
+        if (is.null(p)) {
+          # create empty raster (all zeros) with same extent/res as prediction
+          empty_raster <- r_pred
+          values(empty_raster) <- 0
+          
+          outdir <- file.path(idir, paste0(res, "min/RT severity rasters/HAB"))
+          dir.create(outdir, recursive = TRUE, showWarnings = FALSE)
+          out_file <- file.path(outdir, sprintf("%d%02d_RTsev%s.asc", y, m, var))
+          writeRaster(empty_raster, out_file, overwrite = TRUE)
+          cat("  - No polygon, saved empty HAB raster: ", out_file, "\n")
+          next
+        }
         
         # transform polygon to raster CRS
         p <- st_transform(p, crs = crs(r_pred))
@@ -80,12 +97,14 @@ clip_apply <- function(wd, res, land_mask, flh_polys, pol_list, vars = c("log",'
         # save HAB mask
         outdir <- file.path(idir, paste0(res, "min/RT severity rasters/HAB"))
         dir.create(outdir, recursive = TRUE, showWarnings = FALSE)
-        writeRaster(hab_raster, file.path(outdir, sprintf("%d%02d_RTsev%s.asc", y, m, var)), overwrite = TRUE)
+        out_file <- file.path(outdir, sprintf("%d%02d_RTsev%s.asc", y, m, var))
+        writeRaster(hab_raster, out_file, overwrite = TRUE)
+        cat("  -> HAB raster saved: ", out_file, "\n")
         
         # FLH mask only post-2003
-        if (y >= 2003) {
-          flh <- flh_polys[[paste0("X", y, m)]]
-          if (!is.null(flh)) {
+        if(y >= 2003) {
+          flh <- flh_polys[[lyr_name]]
+          if(!is.null(flh)) {
             flh <- st_transform(flh, crs = crs(r_pred))
             flh <- st_collection_extract(flh, "POLYGON")
             flh$poly_id <- seq_len(nrow(flh))
@@ -93,19 +112,25 @@ clip_apply <- function(wd, res, land_mask, flh_polys, pol_list, vars = c("log",'
             flh_raster <- mask(r_pred, mask_raster)
             flh_raster[is.na(flh_raster)] <- 0
             flh_raster <- mask(flh_raster, land_mask)
+            
             outdir <- file.path(idir, paste0(res, "min/RT severity rasters/FLH"))
             dir.create(outdir, recursive = TRUE, showWarnings = FALSE)
-            writeRaster(flh_raster, file.path(outdir, sprintf("%d%02d_RTsev%s.asc", y, m, var)), overwrite = TRUE)
+            out_file <- file.path(outdir, sprintf("%d%02d_RTsev%s.asc", y, m, var))
+            writeRaster(flh_raster, out_file, overwrite = TRUE)
+            cat("  -> FLH raster saved: ", out_file, "\n")
           }
         }
-        if (y >= 2012) {
+        
+        # VIIRS mask post-2012
+        if(y>=2012 && !is.null(viirs.stack) && lyr_name %in% names(viirs.stack)) {
           r_viirs <- viirs.stack[[lyr_name]]
           outdir <- file.path(idir, paste0(res, "min/RT severity rasters/VIIRS"))
           dir.create(outdir, recursive = TRUE, showWarnings = FALSE)
-          writeRaster(r_viirs, file.path(outdir, sprintf("%d%02d_RTsev%s.asc", y, m, var)), overwrite = TRUE)
+          out_file <- file.path(outdir, sprintf("%d%02d_RTsev%s.asc", y, m, var))
+          writeRaster(r_viirs, out_file, overwrite = TRUE)
+          cat("  -> VIIRS raster saved: ", out_file, "\n")
         }
       }
-    } # end month
-  } # end year
-} # end var
-
+    }
+  }
+}
