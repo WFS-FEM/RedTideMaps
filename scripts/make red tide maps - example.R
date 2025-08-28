@@ -11,7 +11,7 @@ if (user == "dchagaris") {
   scripts_path <- "C:/Users/dchagaris/Documents/Github/RedTideMaps/scripts"
 } else if (user == "dvilasgonzalez") {
   wd <- "C:/Users/dvilasgonzalez/Documents/WFS_DV2/WFS-FEM/ST drivers/red tides/"
-  wd.depth <- "C:/Users/dvilasgonzalez/Documents/WFS_DV2/WFS-FEM/static drivers/depth/"
+  wd.depth <- "C:/Users/dvilasgonzalez/Documents/WFS_DV2/WFS-FEM/static drivers/depth"
   scripts_path <- "C:/Users/dvilasgonzalez/Documents/Github/RedTideMaps/scripts/"
   scripts_path <- "C:/Users/dvilasgonzalez/Documents/Github/RedTideMaps/scripts"
 } else if (user == "daniel") {
@@ -49,8 +49,8 @@ source(file.path(scripts_path, "get_HAB_data.R"))
 source(file.path(scripts_path, "sdmTMB_HAB_data.R"))
 source(file.path(scripts_path, "process_VIIRS.R"))
 source(file.path(scripts_path, "process_MODIS.R"))
-source(file.path(scripts_path, "IDW_HAB_data.R"))
-source(file.path(scripts_path, "ordkrig_HAB_data.R"))
+#source(file.path(scripts_path, "IDW_HAB_data.R"))
+#source(file.path(scripts_path, "ordkrig_HAB_data.R"))
 #source(file.path(scripts_path, "anisokrig_HAB_data.R"))
 source(file.path(scripts_path, "polygon_clipping_rt_v2.R"))
 
@@ -77,7 +77,7 @@ for (res in c(4,6,10)) {
   
   #get bathymetry basemap and geographic extent of ecospace model
   if(res==4) file.depth = file.path(paste0(wd.depth,"/depth 4min 82x97.asc"))
-  if(res==6) file.depth = file.path(paste0(wd.depth,"/depth/depth 6min 55x65.asc"))
+  if(res==6) file.depth = file.path(paste0(wd.depth,"/depth 6min 55x65.asc"))
   if(res==10) file.depth = file.path(paste0(wd.depth,"/depth 10min 33x39.asc"))
   
   #get excl cells in ecospace bathymetry basemap and geographic extent of ecospace model
@@ -98,30 +98,31 @@ for (res in c(4,6,10)) {
   fn.make_input_grid(file.depth = file.depth, file.excl = file.excl)
   fn.fit_monthly_sdmTMB(habdata=filtered_points_df, styr=1985, enyr=2024)
   fn.predict_monthly_sdmTMB(file.sdmpred = paste0(dir.sdmout,'/pred_SDMs_RT.RData'), file.depth=file.depth)
-  fn.plot_sdmTMB()
+  #fn.plot_sdmTMB()
   #sdm.log <- stack(paste0(dir.sdmout,"/sdmTMB_log_stack_198501-202412"))
   
   ##IDW----
   #inverse distance weighting
-  fn.hab_idw_monthly(file.habRdat=file.habRdat)
-  fn.plot_idw(file.idwstack=list.files(dir.idwout,pattern=".grd",full.names=T))
+  #fn.hab_idw_monthly(file.habRdat=file.habRdat)
+  #fn.plot_idw(file.idwstack=list.files(dir.idwout,pattern=".grd",full.names=T))
   #idw <- stack(list.files(dir.idwout,pattern=".grd",full.names=T))
   
   ##Simple Ordinary Kriging----
   #not yet working, need to finish back transformation
-  fn.hab_ordkrig_monthly(file.habRdat = file.habRdat)
+  #fn.hab_ordkrig_monthly(file.habRdat = file.habRdat)
   #ordkrig <- stack(list.files(dir.ordkrig,pattern=".grd",full.names=T)[1])
   
   #clip to VIIRS----------------------------------------------------------
   fn.viirs_tifs2stack(dir.viirs=dir.viirs)
-  fn.get_viirs_obs(file.habRdat = paste0(dir.data,"/",file.habRdat), dir.sdmout = dir.sdmout, viirs.stack=viirs.stack)
+  fn.get_viirs_obs(file.habRdat = paste0(file.habRdat), dir.sdmout = dir.sdmout, viirs.stack=viirs.stack)
   sdm.log.viirs <- fn.clip_2_viirs(file.pred=paste0(dir.sdmout,'/sdmTMB_log_stack_198501-202412'),file.viirs=file.viirs)
+  sdm.log.viirs <- fn.clip_2_viirs(file.pred=paste0(dir.sdmout,'/sdmTMB_nb_stack_198501-202412'),file.viirs=file.viirs)
   #fn.plot_viirs()
   #sdm.log.viirs <- stack(paste0(dir.sdmout,"/sdmTMB_log_stack_201201-202412_clipped_viirs"))
   
   #make MODIS polygons------------------------------------------------------------
   fn.make_nflh_polys(dir.modis=dir.modis)
-  fn.plot_modis(dir.modis=dir.modis, file.flhpolys = list.files(dir.modis,pattern="^FLH polys", full.names=T)[2])
+  #fn.plot_modis(dir.modis=dir.modis, file.flhpolys = list.files(dir.modis,pattern="^FLH polys", full.names=T)[2])
   
   #need to get the first 6 months from older file, b/c newest modis stack started in 2003
   # load(list.files(dir.modis,pattern="^FLH polys", full.names=T)[1])
@@ -151,7 +152,7 @@ for (res in c(4,6,10)) {
   
   # clip objects ####
   # Run clipping setup
-  clip_objects <- clip_setup(wd = wd, wd.depth = wd.depth)
+  clip_objects <- clip_setup(wd = wd,file.depth = file.depth)
   #clip_objects <- clip_setup(wd, wd.depth)
   flh_polys <- clip_objects$flh_polys
   pol_list  <- clip_objects$pol_list

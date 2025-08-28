@@ -1,9 +1,12 @@
 # scripts/clip_setup.R
-clip_setup <- function(wd, wd.depth) {
-  # land mask
-  depth <- raster(file.path(wd.depth, "depth 4min 82x97.asc"))
-  land_mask <- calc(depth, function(x) ifelse(is.na(x) | x > 250, NA, 1))
+clip_setup <- function(wd,file.depth) {
   
+  # load raster
+  depth <- raster(file.depth)
+  
+  # create land mask
+  land_mask <- calc(depth, function(x) ifelse(is.na(x) | x > 250, NA, 1))
+
   # load MODIS FLH stack
   flh_stack <- stack(file.path(dirname(wd), "MODIS/flh/flh_-98_-80.5_24_31_200301-20250601.gri"))
   flh_stack <- crop(flh_stack, extent(depth)) / 10
@@ -43,6 +46,7 @@ clip_apply <- function(wd, res, land_mask, flh_polys, pol_list, vars = c("log",'
   idir <- wd
   
   for (var in vars) {
+    #var<-'log'
     # locate predictions
     r_pred_files <- list.files(
       path = file.path(idir, paste0(res, "min/sdm out/")),
@@ -60,6 +64,8 @@ clip_apply <- function(wd, res, land_mask, flh_polys, pol_list, vars = c("log",'
     
     for (y in years) {
       for (m in 1:12) {
+        #y<-1985
+        #m<-9
         cat(paste0('############### ',y,m,'#############\n'))
         lyr_name <- paste0('X', sprintf("%d%02d", y, m))
         
