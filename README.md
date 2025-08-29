@@ -67,9 +67,9 @@ This folder provides raster example of depth and excluded layer of the WFS EwE E
 ``scripts/polygon_clipping_rt.R``
 
 - Prepare FLH MODIS polygons
-- Prepare convex hull polygons with buffer
+- Prepare convex hull polygons with buffer (5km)
 - Clip HAB density monthly maps using three polygon methods:
-    - HAB method . convex hull + buffer around monthly HAB observations
+    - CONCAVE method. concave hull + buffer around monthly HAB observations
     - FLH method (1998<). polygon from the fluorescence line height filtering
     - VIIRS method (2012<). polygon from the Visible Infrared Imaging Radiometer Suite
  
