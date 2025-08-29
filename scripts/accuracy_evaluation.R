@@ -1,7 +1,26 @@
 #accuracy evaluation
 
 #setwd
-idir<-'/Users/dvilasgonzalez/Documents/WFS_DV2/WFS-FEM/ST drivers/red tides/'
+
+# Get user and OS
+user <- Sys.info()['user']
+os_type <- .Platform$OS.type
+
+
+#set directory based on user and OS
+# Set paths based on user
+if (user == 'daniel') {
+  #mydir<-'/Users/daniel/Work/VAST_DC/'
+  idir<-'/Users/daniel/Work/WFS_DV2/WFS-FEM/ST drivers/red tides/'
+} else if (user=='dvilasgonzalez') {
+  #mydir<-'/Users/daniel/Work/VAST_DC/'
+  idir<-'C:/Users/dvilasgonzalez/Documents/WFS_DV2/WFS-FEM/ST drivers/red tides/'
+} else {
+  
+  if (.Platform$OS.type == "windows") {setwd(choose.dir())} else {setwd(tcltk::tk_choose.dir())}
+  
+}
+
 
 #observations
 load(paste0(idir,'/data/habsos_20240430_filtered.RData'))
