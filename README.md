@@ -2,8 +2,6 @@
 
 This repository provides tools to download and process red tide concentration data from the Harmful Algal Bloom (HAB) Florida Fish & Wildlife Comission (FWC) monitoring program into monthly raster files to input red tide severity maps into EwE formats compatible with **Ecopath with Ecosim (EwE)** and **Ecospace**. It was developed as part of the *Operationalizing the West Florida Shelf ecosystem model and application to red tides, stock assessment, and catch advice for Gulf of Mexico reef fish* project (PI: David Chagaris).
 
-![image](https://github.com/user-attachments/assets/1272f2f3-61ff-4ac9-8c6b-347b8eca335a)
-
 ## Template rasters
 
 This folder provides raster example of depth and excluded layer of the WFS EwE Ecospace model at multiple resolutions.
@@ -65,11 +63,27 @@ This folder provides raster example of depth and excluded layer of the WFS EwE E
 - Make nFLH polygons.
 - Plot results.
 
-### 7. Select approach by year 
-(currently at ``scripts/make red tide maps - example.R``)
+### 7. Polygon Convex and Clipping
+``scripts/polygon_clipping_rt.R``
 
-### 8. 1985 - 2002 
-(hindcast - as buffer?)
+- Prepare FLH MODIS polygons
+- Prepare convex hull polygons with buffer
+- Clip HAB density monthly maps using three polygon methods:
+    - HAB method . convex hull + buffer around monthly HAB observations
+    - FLH method (1998<). polygon from the fluorescence line height filtering
+    - VIIRS method (2012<). polygon from the Visible Infrared Imaging Radiometer Suite
+ 
+### 8. Evaluation of clip method approaches
+(``scripts/accuracy_evaluation.R``)
+
+- Accuracy obs vs pred dens
+- Accuracy obs vs pred bin
+- Accuracy obs vs pred+clip dens
+- Accuracy obs vs pred+clip bin
+- Accuracy pred vs pred+clip
+   
+### 9. Run example
+(currently at ``scripts/make red tide maps - example.R``)
 
 ## Repository Structure
 
