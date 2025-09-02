@@ -2,6 +2,9 @@
 
 This repository provides tools to download and process red tide concentration data from the Harmful Algal Bloom (HAB) Florida Fish & Wildlife Comission (FWC) monitoring program into monthly raster files to input red tide severity maps into EwE formats compatible with **Ecopath with Ecosim (EwE)** and **Ecospace**. It was developed as part of the *Operationalizing the West Florida Shelf ecosystem model and application to red tides, stock assessment, and catch advice for Gulf of Mexico reef fish* project (PI: David Chagaris).
 
+<img width="721" height="256" alt="RT drawio (2)" src="https://github.com/user-attachments/assets/1755395d-8e79-48b7-9a67-5299fc1280ac" />
+
+
 ## Template rasters
 
 This folder provides raster example of depth and excluded layer of the WFS EwE Ecospace model at multiple resolutions.
