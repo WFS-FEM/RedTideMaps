@@ -101,3 +101,6 @@ To use the tools in this repository, you will need R (>= 4.0). It requires to pr
 
 Example R script is included in  ``scripts/make red tide maps - example.R``.
 
+## Authors
+- [Daniel Vilas](https://github.com/danielvilasgonzalez)
+- [David Chagaris](https://github.com/dchagaris)
