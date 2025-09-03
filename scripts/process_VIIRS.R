@@ -121,7 +121,7 @@ viirs_obs <<- viirs_obs
 }
 
 #clip predictions---------------------------------------------------------------
-fn.clip_2_viirs <- function(file.pred=list.files(dir.sdmout,pattern='log_stack',full.names = T)[1],
+fn.clip_2_viirs <- function(file.pred=f.pred,
                             file.viirs=list.files(dirname(dir.viirs),pattern=".grd$",full.names=T)){
   #file.viirs=list.files(dirname(dir.viirs),pattern=".grd$",full.names=T)
   viirs<-stack(file.viirs)
@@ -196,12 +196,21 @@ for(i in do.viirs_clip){
   pred.clipped = addLayer(pred.clipped,raster(ipred.clipped))
 }
 #file.clipped = paste0(dir.sdmout,"/",gsub("[0-9-]","",basename(file.pred)),gsub("X","",names(pred.clipped)[1]),"-",gsub("X","",names(pred.clipped)[nlayers(pred.clipped)]),"_clipped_viirs")
-file.clipped <- paste0(dir.sdmout,
-       '/',gsub("\\.grd$","",basename(file.pred)),  # remove .grd only
-       #gsub("X","",names(pred.clipped)[1]), "-",
-       #gsub("X","",names(pred.clipped)[nlayers(pred.clipped)]),
-       "_clipped_viirs.grd"
-   )
+# Extract the original filename
+fname <- basename(file.pred)
+
+# Extract everything up to "stack_" (inclusive)
+prefix <- sub("(.*stack_).*", "\\1", fname)
+
+# Extract first and last layer names (remove "X" if present)
+start_date <- gsub("X", "", names(pred.clipped)[1])
+end_date   <- gsub("X", "", names(pred.clipped)[nlayers(pred.clipped)])
+
+# Build new filename
+file.clipped <- paste0(
+  dir.sdmout, "/", 
+  prefix, start_date, "-", end_date, "_clipped_viirs.grd"
+)
 writeRaster(pred.clipped,file.clipped,overwrite=T)
 return(pred.clipped)
 }
