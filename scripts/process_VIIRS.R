@@ -28,6 +28,7 @@ viirs.stack = stack()
 #loop
 for (f in lf) {
   
+  cat(paste0('################ ',f,' ####\n'))
   #f<-lf[1]
   
   #get raster
@@ -120,8 +121,8 @@ viirs_obs <<- viirs_obs
 }
 
 #clip predictions---------------------------------------------------------------
-fn.clip_2_viirs <- function(file.pred=list.files(dir.sdmout,pattern='log_raster_stack',full.names = T)[1],
-                            file.viirs=list.files(dirname(dir.viirs),pattern=".grd$")){
+fn.clip_2_viirs <- function(file.pred=list.files(dir.sdmout,pattern='log_stack',full.names = T)[1],
+                            file.viirs=list.files(dirname(dir.viirs),pattern=".grd$",full.names=T)){
   #file.viirs=list.files(dirname(dir.viirs),pattern=".grd$",full.names=T)
   viirs<-stack(file.viirs)
   pred <- stack(file.pred)
@@ -194,7 +195,13 @@ for(i in do.viirs_clip){
   names(ipred.clipped) = paste0("X",y,m)
   pred.clipped = addLayer(pred.clipped,raster(ipred.clipped))
 }
-file.clipped = paste0(dir.sdmout,"/",gsub("[0-9-]","",basename(file.pred)),gsub("X","",names(pred.clipped)[1]),"-",gsub("X","",names(pred.clipped)[nlayers(pred.clipped)]),"_clipped_viirs")
+#file.clipped = paste0(dir.sdmout,"/",gsub("[0-9-]","",basename(file.pred)),gsub("X","",names(pred.clipped)[1]),"-",gsub("X","",names(pred.clipped)[nlayers(pred.clipped)]),"_clipped_viirs")
+file.clipped <- paste0(dir.sdmout,
+       '/',gsub("\\.grd$","",basename(file.pred)),  # remove .grd only
+       #gsub("X","",names(pred.clipped)[1]), "-",
+       #gsub("X","",names(pred.clipped)[nlayers(pred.clipped)]),
+       "_clipped_viirs.grd"
+   )
 writeRaster(pred.clipped,file.clipped,overwrite=T)
 return(pred.clipped)
 }

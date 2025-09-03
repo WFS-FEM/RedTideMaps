@@ -52,7 +52,7 @@ source(file.path(scripts_path, "process_MODIS.R"))
 #source(file.path(scripts_path, "IDW_HAB_data.R"))
 #source(file.path(scripts_path, "ordkrig_HAB_data.R"))
 #source(file.path(scripts_path, "anisokrig_HAB_data.R"))
-source(file.path(scripts_path, "polygon_clipping_rt_v2.R"))
+source(file.path(scripts_path, "polygon_clipping_rt.R"))
 
 for (res in c(4,6,10)) {
   
@@ -115,8 +115,33 @@ for (res in c(4,6,10)) {
   #clip to VIIRS----------------------------------------------------------
   fn.viirs_tifs2stack(dir.viirs=dir.viirs)
   fn.get_viirs_obs(file.habRdat = paste0(file.habRdat), dir.sdmout = dir.sdmout, viirs.stack=viirs.stack)
-  sdm.log.viirs <- fn.clip_2_viirs(file.pred=paste0(dir.sdmout,'/sdmTMB_log_stack_198501-202412'),file.viirs=file.viirs)
-  sdm.log.viirs <- fn.clip_2_viirs(file.pred=paste0(dir.sdmout,'/sdmTMB_nb_stack_198501-202412'),file.viirs=file.viirs)
+  #LOG PRED
+  # look inside dir.sdmout for the right stack
+  f.pred <- list.files(
+    dir.sdmout,
+    pattern = "sdmTMB_log_stack_.*\\.grd$",
+    full.names = TRUE
+  )
+  # Keep only paths that do NOT contain 'clipped'
+  f.pred <- f.pred[!grepl("clipped", f.pred)]
+  
+  # in case more than one match, take the first
+  f.pred <- f.pred[1]
+  
+  # run your function
+  sdm.log.viirs <- fn.clip_2_viirs(file.pred = f.pred, file.viirs = file.viirs)
+  # #LOG PRED
+  # # look inside dir.sdmout for the right stack
+  # f.pred <- list.files(
+  #   dir.sdmout,
+  #   pattern = "sdmTMB_nb_stack_.*\\.grd$",
+  #   full.names = TRUE
+  # )
+  # # in case more than one match, take the first
+  # f.pred <- f.pred[1]
+  # # run your function
+  # sdm.log.viirs <- fn.clip_2_viirs(file.pred = f.pred, file.viirs = file.viirs)
+
   #fn.plot_viirs()
   #sdm.log.viirs <- stack(paste0(dir.sdmout,"/sdmTMB_log_stack_201201-202412_clipped_viirs"))
   
@@ -136,7 +161,7 @@ for (res in c(4,6,10)) {
   sdm.log.modis <- fn.clip_2_modis(file.pred=gsub(".grd","",list.files(dir.sdmout,pattern='log_stack',full.names = T)[1]),
                                    file.flhpolys = list.files(dir.modis,pattern="^FLH polys", full.names=T)[2])
   
-  sdm.log.modis <- stack(paste0(dir.sdmout,"/sdmTMB_log_stack_200207-202309_clipped_modis"))
+  #sdm.log.modis <- stack(paste0(dir.sdmout,"/sdmTMB_log_stack_200207-202309_clipped_modis"))
   
   # #combine and save ascii---------------------------------------------------------
   # sdm.log.modis <- stack(paste0(dir.sdmout,"/sdmTMB_log_stack_200207-202309_clipped_modis"))
@@ -152,7 +177,7 @@ for (res in c(4,6,10)) {
   
   # clip objects ####
   # Run clipping setup
-  clip_objects <- clip_setup(wd = wd,file.depth = file.depth)
+  clip_objects <- clip_setup(wd = wd,file.depth = file.depth,file.habRdat=file.habRdat)
   #clip_objects <- clip_setup(wd, wd.depth)
   flh_polys <- clip_objects$flh_polys
   pol_list  <- clip_objects$pol_list
@@ -163,13 +188,14 @@ for (res in c(4,6,10)) {
   # Clip and store RT severity ascii ####
   clip_apply(
     wd = wd,
+    years = 1985:2024,
     res = res,
     land_mask = clip_objects$land_mask,
     flh_polys = clip_objects$flh_polys,
     pol_list = clip_objects$pol_list,
-    vars = c("log",'nb')       # or add other variables if needed
+    vars = c("log",'nb')[1]       # or add other variables if needed
   )
-}
+ }
 
 # check data HABSOS through API GEOJSON####
 #libraryies

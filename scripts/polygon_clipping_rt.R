@@ -1,5 +1,5 @@
 # scripts/clip_setup.R
-clip_setup <- function(wd,file.depth) {
+clip_setup <- function(wd,file.depth,file.habRdat) {
   
   # load raster
   depth <- raster(file.depth)
@@ -8,7 +8,12 @@ clip_setup <- function(wd,file.depth) {
   land_mask <- calc(depth, function(x) ifelse(is.na(x) | x > 250, NA, 1))
 
   # load MODIS FLH stack
-  flh_stack <- stack(file.path(dirname(wd), "MODIS/flh/flh_-98_-80.5_24_31_200301-20250601.gri"))
+  # find the MODIS FLH stack automatically
+  f.flh <- list.files(
+    file.path(dirname(wd), "MODIS/flh"),
+    pattern = "flh_.*\\.gri$",
+    full.names = TRUE)
+  flh_stack <- stack(f.flh[length(f.flh)])
   flh_stack <- crop(flh_stack, extent(depth)) / 10
   
   # build polygons
@@ -25,8 +30,8 @@ clip_setup <- function(wd,file.depth) {
   }
   
   # load HABSOS and build buffered hulls
-  load(file.path(wd, "data/habsos_20240430_filtered.RData"))
-  habyrs <- sort(unique(filtered_points_df$year[filtered_points_df$year %in% 1985:2025]))
+  load(file.habRdat)
+  habyrs <- sort(unique(filtered_points_df$year[filtered_points_df$year %in% 1985:2024]))
   pol_list <- list()
   for (y in habyrs) {
     for (m in sort(unique(filtered_points_df$month[filtered_points_df$year == y]))) {
@@ -42,8 +47,16 @@ clip_setup <- function(wd,file.depth) {
   return(list(flh_polys = flh_polys, pol_list = pol_list, land_mask = land_mask))
 }
 
-clip_apply <- function(wd, res, land_mask, flh_polys, pol_list, vars = c("log",'nb'), years = 1985:2025) {
+clip_apply <- function(wd, res, land_mask, flh_polys, pol_list, vars = c("log",'nb')[1], years = 1985:2024) {
   idir <- wd
+
+  # wd = wd;
+  # res = res;
+  # land_mask = clip_objects$land_mask;
+  # flh_polys = clip_objects$flh_polys;
+  # pol_list = clip_objects$pol_list;
+  # years = 1985:2024
+  # vars = c("log",'nb')[1]
   
   for (var in vars) {
     #var<-'log'
@@ -59,13 +72,15 @@ clip_apply <- function(wd, res, land_mask, flh_polys, pol_list, vars = c("log",'
       full.names = TRUE
     )
     
+    r_pred_files <- r_pred_files[!grepl("_clipped", r_pred_files)]
     pred.stack <- stack(r_pred_files)
     viirs.stack <- if(length(r_viirs_files)>0) stack(r_viirs_files) else NULL
     
     for (y in years) {
       for (m in 1:12) {
-        #y<-1985
-        #m<-9
+        #y<-2012
+        #m<-1
+        
         cat(paste0('############### ',y,m,'#############\n'))
         lyr_name <- paste0('X', sprintf("%d%02d", y, m))
         
@@ -80,7 +95,7 @@ clip_apply <- function(wd, res, land_mask, flh_polys, pol_list, vars = c("log",'
         
         r_pred <- pred.stack[[lyr_name]]
         
-        if (is.null(p)) {
+        if (is.null(p) |  all(is.na(values(r_pred)))) {
           # create empty raster (all zeros) with same extent/res as prediction
           empty_raster <- r_pred
           values(empty_raster) <- 0
@@ -90,22 +105,26 @@ clip_apply <- function(wd, res, land_mask, flh_polys, pol_list, vars = c("log",'
           out_file <- file.path(outdir, sprintf("%d%02d_RTsev%s.asc", y, m, var))
           writeRaster(empty_raster, out_file, overwrite = TRUE)
           cat("  - No polygon, saved empty HAB raster: ", out_file, "\n")
-          next
+          
+        } else {
+          
+          # transform polygon to raster CRS
+          p <- st_transform(p, crs = crs(r_pred))
+          mask_raster <- rasterize(p, r_pred, field = 1, background = NA)
+          hab_raster <- mask(r_pred, mask_raster)
+          hab_raster[is.na(hab_raster)] <- 0
+          hab_raster <- mask(hab_raster, land_mask)
+          
+          # save HAB mask
+          outdir <- file.path(idir, paste0(res, "min/RT severity rasters/HAB"))
+          dir.create(outdir, recursive = TRUE, showWarnings = FALSE)
+          out_file <- file.path(outdir, sprintf("%d%02d_RTsev%s.asc", y, m, var))
+          writeRaster(hab_raster, out_file, overwrite = TRUE)
+          cat("  -> HAB raster saved: ", out_file, "\n")
+          
         }
         
-        # transform polygon to raster CRS
-        p <- st_transform(p, crs = crs(r_pred))
-        mask_raster <- rasterize(p, r_pred, field = 1, background = NA)
-        hab_raster <- mask(r_pred, mask_raster)
-        hab_raster[is.na(hab_raster)] <- 0
-        hab_raster <- mask(hab_raster, land_mask)
         
-        # save HAB mask
-        outdir <- file.path(idir, paste0(res, "min/RT severity rasters/HAB"))
-        dir.create(outdir, recursive = TRUE, showWarnings = FALSE)
-        out_file <- file.path(outdir, sprintf("%d%02d_RTsev%s.asc", y, m, var))
-        writeRaster(hab_raster, out_file, overwrite = TRUE)
-        cat("  -> HAB raster saved: ", out_file, "\n")
         
         # FLH mask only post-2003
         if(y >= 2003) {
@@ -128,7 +147,16 @@ clip_apply <- function(wd, res, land_mask, flh_polys, pol_list, vars = c("log",'
         }
         
         # VIIRS mask post-2012
-        if(y>=2012 && !is.null(viirs.stack) && lyr_name %in% names(viirs.stack)) {
+        if(y>=2012 && !is.null(viirs.stack)) {
+          
+          if(all(is.na(values(r_pred)))) {
+          
+            # create empty raster (all zeros) with same extent/res as prediction
+            empty_raster <- r_pred
+            values(empty_raster) <- 0
+            r_pred<- empty_raster
+          }
+          
           r_viirs <- viirs.stack[[lyr_name]]
           outdir <- file.path(idir, paste0(res, "min/RT severity rasters/VIIRS"))
           dir.create(outdir, recursive = TRUE, showWarnings = FALSE)
@@ -140,3 +168,4 @@ clip_apply <- function(wd, res, land_mask, flh_polys, pol_list, vars = c("log",'
     }
   }
 }
+
