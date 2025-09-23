@@ -1,0 +1,1026 @@
+STATE_ID,DESCRIPTION,,LATITUDE,LONGITUDE,SAMPLE_DATE,SAMPLE_TIME,SAMPLE_DEPTH,GENUS,SPECIES,CATEGORY,CELLCOUNT,CELLCOUNT_UNIT,CELLCOUNT_QA,SALINITY,SALINITY_UNIT,SALINITY_QA,WATER_TEMP,WATER_TEMP_UNIT,WATER_TEMP_QA,WIND_DIR,WIND_DIR_UNIT,WIND_DIR_QA,WIND_SPEED,WIND_SPEED_UNIT,WIND_SPEED_QA,OBJECTID
+FL,East Bahia Honda Key; 8.9 mi NE of,,24.894,-81.159,1/2/2024,,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134231
+FL,East Bahia Honda Key; 10 mi N of,,24.925,-81.2,1/2/2024,,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134232
+FL,East Bahia Honda Key; 12 mi N of,,24.954,-81.235,1/2/2024,,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134233
+FL,West Bahia Honda Key; 14 mi N of,,24.974,-81.283,1/2/2024,,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134234
+FL,Biolab Road; E of (Mosquito Lagoon),,28.70677,-80.72105,1/4/2024,16:05,0.5,Karenia,brevis,not observed,0,cells/L,1,30.4,ppt,1,13,deg. C,1,,,9,,,9,2134247
+FL,Camas Lane; canal N of,,24.68767,-81.37695,1/5/2024,,0.5,Karenia,brevis,not observed,0,cells/L,1,33.3,ppt,1,20.9,deg. C,1,,,9,,,9,2134249
+FL,Camas Lane; W of (Pine Channel),,24.68713,-81.37786,1/5/2024,,0.5,Karenia,brevis,not observed,0,cells/L,1,36.6,ppt,1,20.9,deg. C,1,,,9,,,9,2134248
+FL,Biolab Road; E of (Mosquito Lagoon),,28.70677,-80.72105,1/10/2024,14:30,0.5,Karenia,brevis,not observed,0,cells/L,1,29.8,ppt,1,17,deg. C,1,,,9,,,9,2134250
+FL,Content Keys; 9.2 mi N of,,24.936,-81.47,1/11/2024,,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134276
+FL,Content Passage; 11 mi N of,,24.962,-81.489,1/11/2024,,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134277
+FL,Big Torch Key Road,,24.69046,-81.41689,1/12/2024,14:00,0.2,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134252
+FL,Snipe Point; 1.5 mi NW of,,24.717,-81.687,1/12/2024,,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134278
+FL,Snipe Point; 3.3 mi NW of,,24.725,-81.717,1/12/2024,,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134279
+FL,Snipe Point; 5.4 mi NW of,,24.735,-81.749,1/12/2024,,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134280
+FL,Snipe Point; 7.2 mi NW of,,24.749,-81.773,1/12/2024,,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134281
+FL,Upper Harbor Key; 5.2 mi N of,,24.888,-81.454,1/13/2024,,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134274
+FL,Upper Harbor Key; 7.2 mi N of,,24.917,-81.459,1/13/2024,,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134275
+FL,Guava Lane; canal W of,,24.68292,-81.37817,1/16/2024,18:20,0.2,Karenia,brevis,not observed,0,cells/L,1,36.34,ppt,1,25.79,deg. C,1,,,9,,,9,2134251
+FL,Big Torch Key Road; N of,,24.6906,-81.4169,1/17/2024,,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134283
+FL,Airport Drive South; canal SW of,,24.66011,-81.44816,1/18/2024,,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134282
+FL,Biolab Road; E of (Mosquito Lagoon),,28.70677,-80.72105,1/19/2024,15:00,0.5,Karenia,brevis,not observed,0,cells/L,1,28,ppt,1,22,deg. C,1,,,9,,,9,2134444
+FL,East Bahia Honda Key; 8.9 mi NE of,,24.894,-81.159,1/19/2024,,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134565
+FL,East Bahia Honda Key; 10 mi N of,,24.925,-81.2,1/19/2024,,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134566
+FL,East Bahia Honda Key; 12 mi N of,,24.954,-81.235,1/19/2024,,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134567
+FL,West Bahia Honda Key; 14 mi N of,,24.974,-81.283,1/19/2024,,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134568
+FL,Biolab Road; E of (Mosquito Lagoon),,28.70677,-80.72105,1/25/2024,14:55,0.5,Karenia,brevis,not observed,0,cells/L,1,27.2,ppt,1,23,deg. C,1,,,9,,,9,2134261
+FL,Jamaica Lane; canal E of,,24.62965,-81.541,1/27/2024,,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134561
+FL,Snipe Point; 1.5 mi NW of,,24.717,-81.687,1/27/2024,,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134569
+FL,Snipe Point; 3.3 mi NW of,,24.725,-81.717,1/27/2024,,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134570
+FL,Snipe Point; 5.4 mi NW of,,24.735,-81.749,1/27/2024,,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134571
+FL,Snipe Point; 7.2 mi NW of,,24.749,-81.773,1/27/2024,,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134572
+FL,Upper Harbor Key; 5.2 mi N of,,24.888,-81.454,1/28/2024,,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134573
+FL,Kemp Channel Bridge; 1.6 mi SE of,,24.64009,-81.45865,1/28/2024,12:22,0.5,Karenia,brevis,not observed,0,cells/L,1,36.6,ppt,1,24.8,deg. C,1,,,9,,,9,2134262
+FL,Upper Harbor Key; 7.2 mi N of,,24.917,-81.459,1/28/2024,,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134574
+FL,Content Keys; 9.2 mi N of,,24.936,-81.47,1/28/2024,,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134575
+FL,Content Passage; 11 mi N of,,24.962,-81.489,1/28/2024,,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134576
+FL,Sawyer Key; 1.7 mi N of,,24.78364,-81.56958,1/28/2024,12:40,0.5,Karenia,brevis,not observed,0,cells/L,1,35.7,ppt,1,22.7,deg. C,1,,,9,,,9,2134263
+FL,Marvin Key; 3.9 mi N of,,24.76532,-81.65648,1/28/2024,12:55,0.5,Karenia,brevis,not observed,0,cells/L,1,35.7,ppt,1,21.9,deg. C,1,,,9,,,9,2134264
+FL,West Harbor Key; 6.6 mi N of,,24.75,-81.74417,1/28/2024,13:05,0.5,Karenia,brevis,not observed,0,cells/L,1,35.8,ppt,1,21.8,deg. C,1,,,9,,,9,2134265
+FL,Key West; 5.5 mi S of,,24.46773,-81.78203,1/28/2024,14:52,0.5,Karenia,brevis,not observed,0,cells/L,1,36.1,ppt,1,25,deg. C,1,,,9,,,9,2134560
+FL,Key West; 2.3 mi S of,,24.51067,-81.80447,1/28/2024,14:44,0.5,Karenia,brevis,not observed,0,cells/L,1,35,ppt,1,23.59,deg. C,1,,,9,,,9,2134559
+FL,Key West Harbor,,24.55421,-81.81337,1/28/2024,14:36,0.5,Karenia,brevis,not observed,0,cells/L,1,35,ppt,1,23.6,deg. C,1,,,9,,,9,2134558
+FL,Key West; 12 mi N of,,24.73238,-81.83607,1/28/2024,13:16,0.5,Karenia,brevis,not observed,0,cells/L,1,35.9,ppt,1,21.8,deg. C,1,,,9,,,9,2134266
+FL,Key West; 3 mi NW of,,24.58325,-81.84827,1/28/2024,14:29,0.5,Karenia,brevis,not observed,0,cells/L,1,34.9,ppt,1,24,deg. C,1,,,9,,,9,2134273
+FL,Key West; 5.5 mi NW of,,24.6128,-81.87297,1/28/2024,14:29,0.5,Karenia,brevis,not observed,0,cells/L,1,35.2,ppt,1,23.4,deg. C,1,,,9,,,9,2134272
+FL,Key West; 8.6 mi NW of,,24.64097,-81.89827,1/28/2024,14:17,0.5,Karenia,brevis,not observed,0,cells/L,1,35.5,ppt,1,22.4,deg. C,1,,,9,,,9,2134271
+FL,Key West; 10 mi NW of,,24.68048,-81.90799,1/28/2024,14:10,0.5,Karenia,brevis,not observed,0,cells/L,1,35.5,ppt,1,22.5,deg. C,1,,,9,,,9,2134270
+FL,Smith Shoals,,24.71724,-81.92366,1/28/2024,13:26,0.5,Karenia,brevis,not observed,0,cells/L,1,35.7,ppt,1,21.89,deg. C,1,,,9,,,9,2134267
+FL,Key West; 18 mi NW of,,24.71799,-82.02452,1/28/2024,13:38,0.5,Karenia,brevis,not observed,0,cells/L,1,35.7,ppt,1,22,deg. C,1,,,9,,,9,2134268
+FL,Marquesas Keys; 8.3 mi N of,,24.71731,-82.12366,1/28/2024,13:50,0.5,Karenia,brevis,not observed,0,cells/L,1,35.5,ppt,1,22.5,deg. C,1,,,9,,,9,2134269
+FL,Bird Island; 2.2 mi W of,,29.593,-83.447,1/30/2024,,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134712
+FL,Steinhatchee River; 8.6 mi SW of,,29.588,-83.527,1/30/2024,,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134713
+FL,Bay Dock (Sarasota Bay),,27.3316,-82.5779,2/1/2024,15:45,0.5,Karenia,brevis,not observed,0,cells/L,1,35.65,ppt,1,16.8,deg. C,1,,,9,,,9,2134563
+FL,New Pass Dock (Sarasota Bay),,27.33375,-82.57938,2/1/2024,15:55,0.5,Karenia,brevis,not observed,0,cells/L,1,35.15,ppt,1,16.6,deg. C,1,,,9,,,9,2134564
+FL,Deadmans Key; 2.5 mi SW of,,29.091,-83.108,2/1/2024,,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134710
+FL,Deadmans Key; 6.3 mi SW of,,29.061,-83.16,2/1/2024,,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134711
+FL,East Bahia Honda Key; 8.9 mi NE of,,24.894,-81.159,2/2/2024,,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134667
+FL,East Bahia Honda Key; 10 mi N of,,24.925,-81.2,2/2/2024,,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134668
+FL,East Bahia Honda Key; 12 mi N of,,24.954,-81.235,2/2/2024,,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134716
+FL,West Bahia Honda Key; 14 mi N of,,24.974,-81.283,2/2/2024,,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134717
+FL,Cudjoe Key; 1.4 mi NW of (Cudjoe Basin),,24.71333,-81.53583,2/2/2024,18:35,0.5,Karenia,brevis,not observed,0,cells/L,1,37.22,ppt,1,20.35,deg. C,1,,,9,,,9,2134897
+FL,Sanibel Beach; 4.9 mi SE of,,26.3878,-81.97891,2/2/2024,16:13,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134679
+FL,Sanibel Beach; 4.9 mi SE of,,26.3878,-81.97891,2/2/2024,16:13,6.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134680
+FL,Barefoot Beach; 10 mi W of,,26.3141,-82.00202,2/2/2024,16:00,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134677
+FL,Barefoot Beach; 10 mi W of,,26.3141,-82.00202,2/2/2024,16:00,9,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134678
+FL,Tarpon Bay Road Beach; 6.2 mi SW of,,26.339,-82.119,2/2/2024,15:39,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134675
+FL,Tarpon Bay Road Beach; 6.2 mi SW of,,26.339,-82.119,2/2/2024,15:39,9,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134676
+FL,Bowmans Beach; 4 mi SW of,,26.41634,-82.2026,2/2/2024,17:00,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134673
+FL,Bowmans Beach; 4 mi SW of,,26.41634,-82.2026,2/2/2024,17:00,7.9,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134674
+FL,Captiva Island; 5.2 mi W of,,26.50312,-82.27413,2/2/2024,17:20,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134671
+FL,Captiva Island; 5.2 mi W of,,26.50312,-82.27413,2/2/2024,17:20,9.2,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134672
+FL,Boca Grande Pass; 2 mi W of,,26.70117,-82.28919,2/2/2024,17:54,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134645
+FL,Boca Grande Pass; 2 mi W of,,26.70117,-82.28919,2/2/2024,17:54,9.2,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134646
+FL,Captiva Pass; 4.2 mi W of,,26.61003,-82.29105,2/2/2024,17:37,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134669
+FL,Captiva Pass; 4.2 mi W of,,26.61003,-82.29105,2/2/2024,17:37,9.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134670
+FL,Wiggins Pass; 32 mi W of,,26.28597,-82.34245,2/2/2024,14:45,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134683
+FL,Wiggins Pass; 32 mi W of,,26.28597,-82.34245,2/2/2024,14:45,15,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2135121
+FL,Wiggins Pass; 32 mi W of,,26.28597,-82.34245,2/2/2024,15:08,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2135122
+FL,Little Gasparilla Island; 3.8 mi W of,,26.82491,-82.3501,2/2/2024,18:30,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134643
+FL,Little Gasparilla Island; 3.8 mi W of,,26.82491,-82.3501,2/2/2024,18:30,9.3,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134644
+FL,Punta Gorda Beach; 3.3 mi W of,,26.91813,-82.41211,2/2/2024,18:50,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134641
+FL,Punta Gorda Beach; 3.3 mi W of,,26.91813,-82.41211,2/2/2024,18:50,9.8,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134642
+FL,Manasota Beach; 3.4 mi W of,,27.01283,-82.46982,2/2/2024,19:08,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134639
+FL,Manasota Beach; 3.4 mi W of,,27.01283,-82.46982,2/2/2024,19:08,9.7,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134640
+FL,Venice Inlet; 3 mi W of,,27.11184,-82.51702,2/2/2024,19:28,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134637
+FL,Venice Inlet; 3 mi W of,,27.11184,-82.51702,2/2/2024,19:28,9.8,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134638
+FL,Turtle Beach; 4 mi W of,,27.20647,-82.57573,2/2/2024,14:42,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134631
+FL,Turtle Beach; 4 mi W of,,27.20647,-82.57573,2/2/2024,14:42,9.9,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134632
+FL,Bay Dock (Sarasota Bay),,27.3316,-82.5779,2/2/2024,14:30,0.5,Karenia,brevis,not observed,0,cells/L,1,35.51,ppt,1,16.8,deg. C,1,,,9,,,9,2134577
+FL,Gasparilla Pass; 18 mi W of,,26.79666,-82.57846,2/2/2024,13:26,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134681
+FL,Gasparilla Pass; 18 mi W of,,26.79666,-82.57846,2/2/2024,13:26,18.3,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134682
+FL,New Pass Dock (Sarasota Bay),,27.33375,-82.57938,2/2/2024,14:36,0.5,Karenia,brevis,not observed,0,cells/L,1,34.99,ppt,1,16.6,deg. C,1,,,9,,,9,2134578
+FL,Lido Beach; 2.3 mi W of,,27.30897,-82.61293,2/2/2024,20:06,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134628
+FL,Lido Beach; 2.3 mi W of,,27.30897,-82.61293,2/2/2024,20:06,8.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134629
+FL,Lido Beach; 2.3 mi W of,,27.30897,-82.61293,2/2/2024,20:06,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134630
+FL,Longboat Key; 4.1 mi W of,,27.36557,-82.69319,2/2/2024,19:45,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134626
+FL,Longboat Key; 4.1 mi W of,,27.36557,-82.69319,2/2/2024,19:45,10.4,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134627
+FL,Casey Key; 18 mi W of,,27.1364,-82.76011,2/2/2024,15:28,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134635
+FL,Casey Key; 18 mi W of,,27.1364,-82.76011,2/2/2024,15:28,19.9,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134636
+FL,Coquina Beach; 4.6 mi W of,,27.4504,-82.76839,2/2/2024,19:19,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134624
+FL,Coquina Beach; 4.6 mi W of,,27.4504,-82.76839,2/2/2024,19:19,10.1,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134625
+FL,Egmont Key; 2.3 mi SW of,,27.55661,-82.78781,2/2/2024,18:36,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134579
+FL,Egmont Key; 2.3 mi SW of,,27.55661,-82.78781,2/2/2024,18:36,6.7,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134580
+FL,Longboat Key; 19 mi W of,,27.35832,-82.92915,2/2/2024,17:30,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134633
+FL,Longboat Key; 19 mi W of,,27.35832,-82.92915,2/2/2024,17:30,17.8,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134634
+FL,Florida State Road A1A; S of (Pine Channel),,24.66753,-81.3798,2/3/2024,15:38,0.5,Karenia,brevis,not observed,0,cells/L,1,37.45,ppt,1,19.98,deg. C,1,,,9,,,9,2135118
+FL,Big Torch Key Road,,24.69056,-81.41667,2/3/2024,0:33,0.5,Karenia,brevis,not observed,0,cells/L,1,38.24,ppt,1,21.82,deg. C,1,,,9,,,9,2134895
+FL,Big Torch Key Road,,24.69056,-81.41667,2/3/2024,0:33,0.7,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134896
+FL,Florida State Road A1A; dock S of (Cudjoe Bay),,24.6649,-81.4958,2/5/2024,,0.2,Karenia,brevis,not observed,0,cells/L,1,36.73,ppt,1,20.8,deg. C,1,,,9,,,9,2134509
+FL,Florida State Road A1A; dock S of (Cudjoe Bay),,24.6649,-81.4958,2/5/2024,,1.5,Karenia,brevis,not observed,0,cells/L,1,36.74,ppt,1,18.7,deg. C,1,,,9,,,9,2134510
+FL,Bay Dock (Sarasota Bay),,27.3316,-82.5779,2/5/2024,19:15,0.5,Karenia,brevis,not observed,0,cells/L,1,34.6,ppt,1,17.8,deg. C,1,,,9,,,9,2134684
+FL,New Pass Dock (Sarasota Bay),,27.33375,-82.57938,2/5/2024,18:25,0.5,Karenia,brevis,not observed,0,cells/L,1,35.21,ppt,1,17.4,deg. C,1,,,9,,,9,2134685
+FL,Blind Pass Beach,,26.96324,-82.38565,2/6/2024,13:20,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134892
+FL,Manasota Beach,,27.01031,-82.41312,2/6/2024,13:50,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134891
+FL,Caspersen Beach,,27.05703,-82.4436,2/6/2024,14:20,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134890
+FL,Brohard Beach,,27.06631,-82.448,2/6/2024,14:35,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134889
+FL,Venice Fishing Pier; N of,,27.0735,-82.4515,2/6/2024,14:50,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134888
+FL,Service Club Park,,27.07827,-82.45286,2/6/2024,15:15,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134887
+FL,Venice Beach,,27.10034,-82.46089,2/6/2024,15:35,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134886
+FL,North Jetty,,27.11382,-82.46883,2/6/2024,16:05,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134885
+FL,Nokomis Beach,,27.12332,-82.47122,2/6/2024,16:25,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134884
+FL,Turtle Beach,,27.21843,-82.51711,2/6/2024,15:30,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134883
+FL,Siesta Beach,,27.26518,-82.5531,2/6/2024,16:00,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134882
+FL,Ringling Causeway,,27.32682,-82.56244,2/6/2024,13:55,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134878
+FL,South Lido Park,,27.29818,-82.56739,2/6/2024,15:20,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134881
+FL,Lido Beach Casino,,27.311,-82.57718,2/6/2024,15:00,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134880
+FL,Bay Dock (Sarasota Bay),,27.3316,-82.5779,2/6/2024,15:35,0.5,Karenia,brevis,not observed,0,cells/L,1,35.44,ppt,1,17,deg. C,1,,,9,,,9,2134893
+FL,New Pass Dock (Sarasota Bay),,27.33375,-82.57938,2/6/2024,15:45,0.5,Karenia,brevis,not observed,0,cells/L,1,35.24,ppt,1,16.8,deg. C,1,,,9,,,9,2134894
+FL,North Lido Beach,,27.31561,-82.58171,2/6/2024,14:45,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134879
+FL,Longboat Key Beach,,27.37317,-82.63202,2/6/2024,14:20,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134877
+FL,Juno Beach Fishing Pier,,26.89372,-80.0542,2/7/2024,,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134460
+FL,Geiger Point; Melbourne Causeway at (Indian River),,28.08245,-80.59505,2/7/2024,17:45,0.2,Karenia,brevis,not observed,0,cells/L,1,17.7,ppt,1,16,deg. C,1,,,9,,,9,2134449
+FL,Ramp Road Park Boat Ramp (Banana River),,28.30903,-80.61428,2/7/2024,16:50,0.2,Karenia,brevis,not observed,0,cells/L,1,16.9,ppt,1,15.3,deg. C,1,,,9,,,9,2134447
+FL,Eau Gallie Pier (Indian River),,28.13248,-80.62418,2/7/2024,17:25,0.2,Karenia,brevis,not observed,0,cells/L,1,18.5,ppt,1,17.1,deg. C,1,,,9,,,9,2134448
+FL,520 Slick Boat Ramp (Banana River),,28.35713,-80.62844,2/7/2024,16:15,0.2,Karenia,brevis,not observed,0,cells/L,1,18.4,ppt,1,15.9,deg. C,1,,,9,,,9,2134446
+FL,Kelly Park (Banana River),,28.4017,-80.66245,2/7/2024,15:55,0.2,Karenia,brevis,not observed,0,cells/L,1,21.7,ppt,1,15.8,deg. C,1,,,9,,,9,2134445
+FL,NASA Causeway; SE side of (Indian River),,28.52641,-80.7391,2/7/2024,15:10,0.2,Karenia,brevis,not observed,0,cells/L,1,25.6,ppt,1,15.1,deg. C,1,,,9,,,9,2135128
+FL,Port St. John Boat Ramp (Indian River),,28.47508,-80.76653,2/7/2024,15:30,0.2,Karenia,brevis,very low,333,cells/L,1,25.2,ppt,1,18.2,deg. C,1,,,9,,,9,2135129
+FL,Parrish Park Boat Ramp (Indian River),,28.62365,-80.79552,2/7/2024,14:40,0.2,Karenia,brevis,not observed,0,cells/L,1,28.2,ppt,1,13.1,deg. C,1,,,9,,,9,2135127
+FL,Round Key; N of (Fakahatchee Pass),,25.85167,-81.52467,2/7/2024,18:42,0.2,Karenia,brevis,not observed,0,cells/L,1,34,ppt,1,18.3,deg. C,1,,,9,,,9,2135125
+FL,Shell Key; S of (Gullivan Bay),,25.89167,-81.60883,2/7/2024,16:50,0.2,Karenia,brevis,not observed,0,cells/L,1,34.9,ppt,1,17.5,deg. C,1,,,9,,,9,2135124
+FL,Coon Key; S of (Gullivan Bay),,25.8815,-81.63217,2/7/2024,16:03,0.2,Karenia,brevis,not observed,0,cells/L,1,34.7,ppt,1,16.9,deg. C,1,,,9,,,9,2135123
+FL,Cape Romano; 2.3 mi E of (Gullivan Bay),,25.84,-81.643,2/7/2024,15:40,0.2,Karenia,brevis,not observed,0,cells/L,1,34.2,ppt,1,17.4,deg. C,1,,,9,,,9,2135126
+FL,Bonita Beach Park,,26.331,-81.8462,2/7/2024,15:37,0.5,Karenia,brevis,not observed,0,cells/L,1,34,ppt,1,17.1,deg. C,1,,,9,,,9,2134457
+FL,Lovers Key State Park,,26.39,-81.88,2/7/2024,15:04,0.5,Karenia,brevis,not observed,0,cells/L,1,35,ppt,1,16.3,deg. C,1,,,9,,,9,2134456
+FL,Lynn Hall Park,,26.4535,-81.9582,2/7/2024,14:20,0.5,Karenia,brevis,not observed,0,cells/L,1,30,ppt,1,15,deg. C,1,,,9,,,9,2134455
+FL,Lighthouse Beach,,26.4512,-82.0151,2/7/2024,13:45,0.5,Karenia,brevis,not observed,0,cells/L,1,31,ppt,1,13.7,deg. C,1,,,9,,,9,2134454
+FL,Tarpon Bay Road Beach,,26.4217,-82.0801,2/7/2024,13:23,0.5,Karenia,brevis,not observed,0,cells/L,1,36,ppt,1,14.8,deg. C,1,,,9,,,9,2134453
+FL,Alison Hagerup Beach Park,,26.5264,-82.1945,2/7/2024,12:50,0.5,Karenia,brevis,not observed,0,cells/L,1,36,ppt,1,15.3,deg. C,1,,,9,,,9,2134452
+FL,Boca Grande Pier (Gasparilla Sound),,26.80562,-82.27415,2/7/2024,13:00,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134451
+FL,Englewood Beach,,26.92467,-82.36189,2/7/2024,15:00,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134450
+FL,Indian Mound Park; NW of (Lemon Bay),,26.96082,-82.37427,2/7/2024,15:14,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134505
+FL,Indian Mound Park; NW of (Lemon Bay),,26.96082,-82.37427,2/7/2024,15:19,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134506
+FL,Leachs Key; SE of (Lemon Bay),,26.97051,-82.38546,2/7/2024,15:34,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134504
+FL,Forked Creek; W of (Lemon Bay),,26.99164,-82.39818,2/7/2024,16:00,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134503
+FL,Manasota Beach Bridge; NW of (ICW),,27.02398,-82.41938,2/7/2024,16:26,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134502
+FL,Shamrock Park; S of (ICW),,27.04416,-82.43241,2/7/2024,16:48,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134501
+FL,Venice Avenue Bridge; S of (ICW),,27.097,-82.4393,2/7/2024,17:18,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134500
+FL,Venice Marina Park; NW of (ICW),,27.1057,-82.448,2/7/2024,17:42,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134499
+FL,Dona Bay,,27.1206,-82.4516,2/7/2024,17:25,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134497
+FL,Bird Island; NW of (Dona Bay),,27.1146,-82.4612,2/7/2024,18:03,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134498
+FL,Lyons Bay,,27.1228,-82.4635,2/7/2024,18:53,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134496
+FL,Albee Road Bridge; N of (Blackburn Bay),,27.13347,-82.46917,2/7/2024,15:22,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134494
+FL,Albee Road Bridge; N of (Blackburn Bay),,27.13347,-82.46917,2/7/2024,15:27,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134495
+FL,Southern Blackburn Bay,,27.14384,-82.47175,2/7/2024,16:13,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134493
+FL,Mid-Blackburn Bay,,27.15301,-82.48082,2/7/2024,16:27,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134492
+FL,Northern Blackburn Bay,,27.16061,-82.48471,2/7/2024,16:45,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134491
+FL,Dryman Bay,,27.17026,-82.49108,2/7/2024,17:13,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134490
+FL,Blackburn Point Road; N of (Little Sarasota Bay),,27.18644,-82.4984,2/7/2024,17:40,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134489
+FL,Spanish Point; S of (Little Sarasota Bay),,27.19453,-82.50167,2/7/2024,18:00,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134488
+FL,Bird Keys; NE of (Little Sarasota Bay),,27.21638,-82.5043,2/7/2024,18:21,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134487
+FL,Blind Pass; N of (Little Sarasota Bay),,27.22582,-82.51452,2/7/2024,18:42,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134486
+FL,Coral Cove; S of (Little Sarasota Bay),,27.23565,-82.51529,2/7/2024,19:04,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134485
+FL,Coral Cove; NW of (Little Sarasota Bay),,27.24812,-82.52477,2/7/2024,19:26,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134484
+FL,Stickney Point Bridge; Canal NW of,,27.25521,-82.53337,2/7/2024,19:45,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134483
+FL,Philippe Creek; S of (Roberts Bay; Sarasota),,27.26242,-82.53693,2/7/2024,20:03,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134482
+FL,Bay Island Park; N of (Sarasota Bay),,27.3127,-82.54251,2/7/2024,18:11,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134472
+FL,Philippe Creek; N of (Roberts Bay; Sarasota),,27.2842,-82.54711,2/7/2024,20:24,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134481
+FL,Island Park; SW of (Sarasota Bay),,27.32305,-82.5499,2/7/2024,17:59,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134471
+FL,Edwards Island; SW (Roberts Bay; Sarasota),,27.29469,-82.5502,2/7/2024,20:47,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134480
+FL,Bay Island; N of (Sarasota Bay),,27.30761,-82.55623,2/7/2024,18:45,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134465
+FL,Centennial Park; W of (Sarasota Bay),,27.34727,-82.5564,2/7/2024,16:57,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134468
+FL,Causeway Park; W of (Sarasota Bay),,27.33591,-82.55658,2/7/2024,17:49,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134470
+FL,Bird Key; W of (Sarasota Bay),,27.31019,-82.56429,2/7/2024,18:29,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134464
+FL,Indian Beach; W of (Sarasota Bay),,27.36783,-82.56561,2/7/2024,16:11,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134466
+FL,Indian Beach; W of (Sarasota Bay),,27.36783,-82.56561,2/7/2024,16:16,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134467
+FL,City Island; NE of (Sarasota Bay),,27.34098,-82.56656,2/7/2024,17:10,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134462
+FL,Stephens Point; NW of (Sarasota Bay),,27.38079,-82.57216,2/7/2024,15:55,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134478
+FL,City Island; N of (Sarasota Bay),,27.35361,-82.57388,2/7/2024,16:44,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134461
+FL,Bay Dock (Sarasota Bay),,27.3316,-82.5779,2/7/2024,16:15,0.5,Karenia,brevis,not observed,0,cells/L,1,35.22,ppt,1,16.3,deg. C,1,,,9,,,9,2135119
+FL,New Pass Dock (Sarasota Bay),,27.33375,-82.57938,2/7/2024,16:25,0.5,Karenia,brevis,not observed,0,cells/L,1,35.22,ppt,1,16.7,deg. C,1,,,9,,,9,2135120
+FL,Mid-Sarasota Bay,,27.38169,-82.57971,2/7/2024,15:48,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134477
+FL,New Pass (Sarasota Bay),,27.33438,-82.57998,2/7/2024,17:29,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134463
+FL,Longboat Key; E of (Sarasota Bay),,27.3606,-82.5899,2/7/2024,16:30,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134479
+FL,Bishops Point; E of (Sarasota Bay),,27.3746,-82.5948,2/7/2024,15:28,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134476
+FL,Bishops Point; S of (Sarasota Bay),,27.3669,-82.6151,2/7/2024,15:14,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134474
+FL,Bishops Point; S of (Sarasota Bay),,27.3669,-82.6151,2/7/2024,15:19,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134475
+FL,Bailey Bridge; E of (North Bay),,30.25867,-85.64581,2/7/2024,17:32,0.3,Karenia,brevis,not observed,0,cells/L,1,12,ppt,1,15.1,deg. C,1,,,9,,,9,2134772
+FL,Little Oyster Bar Point; NW of (North Bay),,30.25689,-85.68422,2/7/2024,17:04,0.3,Karenia,brevis,not observed,0,cells/L,1,16.7,ppt,1,14.5,deg. C,1,,,9,,,9,2134771
+FL,West Bay Point; SE of (North Bay),,30.22422,-85.71397,2/7/2024,16:29,0.3,Karenia,brevis,not observed,0,cells/L,1,23,ppt,1,14,deg. C,1,,,9,,,9,2134770
+FL,Gulf Lagoon Beach,,30.147,-85.7634,2/7/2024,18:00,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134459
+FL,Laurie Avenue; S of (Grand Lagoon),,30.16743,-85.78242,2/7/2024,17:35,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134458
+FL,Card Sound Bridge (Little Card Sound),,25.28925,-80.37308,2/8/2024,17:38,0.5,Karenia,brevis,not observed,0,cells/L,1,25.2,ppt,1,19.4,deg. C,1,,,9,,,9,2134596
+FL,Jewfish Creek Bridge; SW of (Blackwater Sound),,25.18275,-80.38919,2/8/2024,15:05,0.5,Karenia,brevis,not observed,0,cells/L,1,22.5,ppt,1,18.7,deg. C,1,,,9,,,9,2134593
+FL,Rowell''s Waterfront Park (Blackwater Sound),,25.15086,-80.39408,2/8/2024,15:45,0.5,Karenia,brevis,not observed,0,cells/L,1,22,ppt,1,19.2,deg. C,1,,,9,,,9,2134594
+FL,Harry Harris Park,,25.02456,-80.49403,2/8/2024,16:37,0.5,Karenia,brevis,not observed,0,cells/L,1,31.9,ppt,1,20,deg. C,1,,,9,,,9,2134595
+FL,St. Johns Inlet,,30.4056,-81.4086,2/8/2024,15:49,0.3,Karenia,brevis,not observed,0,cells/L,1,31.03,ppt,1,13.6,deg. C,1,,,9,,,9,2134588
+FL,Ft. George Inlet,,30.4204,-81.4201,2/8/2024,15:33,0.3,Karenia,brevis,not observed,0,cells/L,1,31.1,ppt,1,12.8,deg. C,1,,,9,,,9,2134589
+FL,St. Marys Inlet,,30.7012,-81.4269,2/8/2024,13:48,0.3,Karenia,brevis,not observed,0,cells/L,1,30.65,ppt,1,12.2,deg. C,1,,,9,,,9,2134592
+FL,Ft. George Inland,,30.4411,-81.439,2/8/2024,16:21,0.3,Karenia,brevis,not observed,0,cells/L,1,30.22,ppt,1,12.7,deg. C,1,,,9,,,9,2134590
+FL,Nassau Inlet,,30.5134,-81.4576,2/8/2024,15:14,0.3,Karenia,brevis,not observed,0,cells/L,1,30.55,ppt,1,13,deg. C,1,,,9,,,9,2134591
+FL,St. Johns Inland,,30.391,-81.4648,2/8/2024,16:48,0.3,Karenia,brevis,not observed,0,cells/L,1,30.77,ppt,1,14.4,deg. C,1,,,9,,,9,2134587
+FL,South Marco Beach,,25.9117,-81.7294,2/8/2024,16:33,0.5,Karenia,brevis,not observed,0,cells/L,1,33,ppt,1,23.3,deg. C,1,,,9,,,9,2134584
+FL,Naples Pier,,26.1316,-81.8067,2/8/2024,15:16,0.5,Karenia,brevis,not observed,0,cells/L,1,32,ppt,1,19.4,deg. C,1,,,9,,,9,2134583
+FL,Seagate,,26.2073,-81.8169,2/8/2024,14:45,0.5,Karenia,brevis,not observed,0,cells/L,1,33,ppt,1,16.6,deg. C,1,,,9,,,9,2134582
+FL,Vanderbilt Beach,,26.25375,-81.82377,2/8/2024,14:14,0.5,Karenia,brevis,not observed,0,cells/L,1,32,ppt,1,15,deg. C,1,,,9,,,9,2134581
+FL,Barefoot Beach State Preserve,,26.30481,-81.8362,2/8/2024,13:42,0.5,Karenia,brevis,not observed,0,cells/L,1,33,ppt,1,13.3,deg. C,1,,,9,,,9,2134511
+FL,Cotton Key; W of (Charlotte Harbor),,26.802,-82.069,2/8/2024,16:11,1.3,Karenia,brevis,not observed,0,cells/L,1,26.1,ppt,1,17.6,deg. C,1,,,9,,,9,2134586
+FL,Sister Ponds Creek; E of (Charlotte Harbor),,26.8325,-82.14805,2/8/2024,15:36,0.8,Karenia,brevis,not observed,0,cells/L,1,20.67,ppt,1,16.8,deg. C,1,,,9,,,9,2134585
+FL,Bay Dock (Sarasota Bay),,27.3316,-82.5779,2/8/2024,17:40,0.5,Karenia,brevis,not observed,0,cells/L,1,35.02,ppt,1,17.1,deg. C,1,,,9,,,9,2134507
+FL,New Pass Dock (Sarasota Bay),,27.33375,-82.57938,2/8/2024,17:45,0.5,Karenia,brevis,not observed,0,cells/L,1,35.16,ppt,1,16.8,deg. C,1,,,9,,,9,2134508
+FL,Bay Pines Terrace; NE of (Hurricane Hole),,27.81318,-82.78473,2/8/2024,17:19,0.2,Karenia,brevis,not observed,0,cells/L,1,33.26,ppt,1,16.56,deg. C,1,,,9,,,9,2134469
+FL,Bay Pines Terrace; E of (Boca Ciega Bay),,27.8096,-82.78628,2/8/2024,17:33,0.2,Karenia,brevis,not observed,0,cells/L,1,32.788,ppt,1,16.8,deg. C,1,,,9,,,9,2134473
+FL,Sunset Beach; 2.7 mi W of,,27.746,-82.805,2/8/2024,,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134708
+FL,Upham Beach Park; 7.6 mi W of,,27.733,-82.876,2/8/2024,,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134709
+FL,Alligator Pass; 4.2 mi SW of,,29.2417,-83.2083,2/8/2024,14:29,0.1,Karenia,brevis,not observed,0,cells/L,1,22.97,ppt,1,13.7,deg. C,1,,,9,,,9,2134784
+FL,Drum Point; 2.4 mi S of,,29.4417,-83.3417,2/8/2024,15:28,0.1,Karenia,brevis,not observed,0,cells/L,1,27.64,ppt,1,13.4,deg. C,1,,,9,,,9,2134785
+FL,Posten Bayou; NW of (West Bay),,30.19556,-85.7225,2/8/2024,16:37,0.3,Karenia,brevis,not observed,0,cells/L,1,24.3,ppt,1,14.2,deg. C,1,,,9,,,9,2134767
+FL,Cedar Hammock; W of (West Bay),,30.25969,-85.74908,2/8/2024,18:24,0.3,Karenia,brevis,not observed,0,cells/L,1,22.3,ppt,1,14.6,deg. C,1,,,9,,,9,2134769
+FL,Vireo Lane; 1 mi S of (West  Bay),,30.27653,-85.83794,2/8/2024,17:29,0.3,Karenia,brevis,not observed,0,cells/L,1,19.5,ppt,1,14.7,deg. C,1,,,9,,,9,2134768
+FL,Bay Dock (Sarasota Bay),,27.3316,-82.5779,2/9/2024,16:40,0.5,Karenia,brevis,not observed,0,cells/L,1,35.21,ppt,1,17.3,deg. C,1,,,9,,,9,2134597
+FL,New Pass Dock (Sarasota Bay),,27.33375,-82.57938,2/9/2024,16:50,0.5,Karenia,brevis,not observed,0,cells/L,1,35.02,ppt,1,17.1,deg. C,1,,,9,,,9,2134598
+FL,Pine Island; 11 mi W of,,28.595,-82.831,2/9/2024,,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134706
+FL,Eagle Nest Island; 19 mi W of,,28.585,-82.953,2/9/2024,,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134707
+FL,Snipe Point; 1.5 mi NW of,,24.717,-81.687,2/12/2024,,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134718
+FL,Snipe Point; 3.3 mi NW of,,24.725,-81.717,2/12/2024,,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134720
+FL,Snipe Point; 5.4 mi NW of,,24.735,-81.749,2/12/2024,,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134721
+FL,Snipe Point; 7.2 mi NW of,,24.749,-81.773,2/12/2024,,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134722
+FL,Mule Key; N of,,24.5657,-81.86236,2/12/2024,,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134842
+FL,Blind Pass Beach,,26.96324,-82.38565,2/12/2024,13:05,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134705
+FL,Manasota Beach,,27.01031,-82.41312,2/12/2024,13:30,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134704
+FL,Caspersen Beach,,27.05703,-82.4436,2/12/2024,14:10,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134703
+FL,Brohard Beach,,27.06631,-82.448,2/12/2024,14:30,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134702
+FL,Venice Fishing Pier; N of,,27.0735,-82.4515,2/12/2024,14:50,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134701
+FL,Service Club Park,,27.07827,-82.45286,2/12/2024,15:05,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134700
+FL,Venice Beach,,27.10034,-82.46089,2/12/2024,15:30,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134699
+FL,North Jetty,,27.11382,-82.46883,2/12/2024,16:05,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134698
+FL,Nokomis Beach,,27.12332,-82.47122,2/12/2024,16:25,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134697
+FL,Turtle Beach,,27.21843,-82.51711,2/12/2024,16:25,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134696
+FL,Siesta Beach,,27.26518,-82.5531,2/12/2024,15:55,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134695
+FL,Ringling Causeway,,27.32682,-82.56244,2/12/2024,13:45,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134602
+FL,South Lido Park,,27.29818,-82.56739,2/12/2024,15:05,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134694
+FL,Lido Beach Casino,,27.311,-82.57718,2/12/2024,14:50,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134693
+FL,Bay Dock (Sarasota Bay),,27.3316,-82.5779,2/12/2024,16:10,0.5,Karenia,brevis,not observed,0,cells/L,1,35.11,ppt,1,20.4,deg. C,1,,,9,,,9,2134599
+FL,New Pass Dock (Sarasota Bay),,27.33375,-82.57938,2/12/2024,16:20,0.5,Karenia,brevis,not observed,0,cells/L,1,35.27,ppt,1,19.2,deg. C,1,,,9,,,9,2134600
+FL,North Lido Beach,,27.31561,-82.58171,2/12/2024,14:40,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134692
+FL,Longboat Key Beach,,27.37317,-82.63202,2/12/2024,14:15,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134601
+FL,Geiger Point; Melbourne Causeway at (Indian River),,28.08245,-80.59505,2/13/2024,19:05,0.2,Karenia,brevis,not observed,0,cells/L,1,17.8,ppt,1,20.4,deg. C,1,,,9,,,9,2134780
+FL,Diamond Bay (Banana River),,28.35034,-80.61298,2/13/2024,13:50,0.5,Karenia,brevis,not observed,0,cells/L,1,17.6,ppt,1,20,deg. C,1,,,9,,,9,2134841
+FL,Bay Dock (Sarasota Bay),,27.3316,-82.5779,2/13/2024,16:40,0.5,Karenia,brevis,not observed,0,cells/L,1,35.06,ppt,1,19.9,deg. C,1,,,9,,,9,2134714
+FL,New Pass Dock (Sarasota Bay),,27.33375,-82.57938,2/13/2024,16:45,0.5,Karenia,brevis,not observed,0,cells/L,1,35.13,ppt,1,19.8,deg. C,1,,,9,,,9,2134715
+FL,Eden Island (Smacks Bayou),,27.80439,-82.61196,2/13/2024,19:00,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134761
+FL,Granada Terrace Park; E of (Coffeepot Bayou),,27.79405,-82.63093,2/13/2024,19:15,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134762
+FL,Fort De Soto Dog Park Beach Pier (Lower Tampa Bay),,27.6175,-82.7257,2/13/2024,15:30,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,17,deg. C,1,,,9,,,9,2134831
+FL,Frank Pate Park Boat Ramp (St. Joseph Bay),,29.811,-85.30567,2/13/2024,15:42,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134766
+FL,Parker Avenue; W of (St. Joseph Sound),,29.8409,-85.3199,2/13/2024,15:30,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134765
+FL,St. Joseph Bay Preserve Canoe Launch (Lighthouse Bayou),,29.679,-85.3643,2/13/2024,15:05,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134764
+FL,Eagle Harbor Boat Ramp,,29.7648,-85.403,2/13/2024,14:46,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134763
+FL,Destin Beach; 2.9 mi S of,,30.34077,-86.47078,2/13/2024,20:35,0.1,Karenia,brevis,not observed,0,cells/L,1,,,9,16.67,deg. C,1,,,9,,,9,2134840
+FL,Brooks Bridge; W of (Santa Rosa Sound),,30.4008,-86.6008,2/13/2024,19:55,0.1,Karenia,brevis,not observed,0,cells/L,1,,,9,19.5,deg. C,1,,,9,,,9,2134839
+FL,Upper Harbor Key; 5.2 mi N of,,24.888,-81.454,2/14/2024,,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134723
+FL,Upper Harbor Key; 7.2 mi N of,,24.917,-81.459,2/14/2024,,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134724
+FL,Content Keys; 9.2 mi N of,,24.936,-81.47,2/14/2024,,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134725
+FL,Content Passage; 11 mi N of,,24.962,-81.489,2/14/2024,,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134726
+FL,Bay Dock (Sarasota Bay),,27.3316,-82.5779,2/14/2024,14:45,0.5,Karenia,brevis,not observed,0,cells/L,1,35.16,ppt,1,18.8,deg. C,1,,,9,,,9,2134832
+FL,New Pass Dock (Sarasota Bay),,27.33375,-82.57938,2/14/2024,14:55,0.5,Karenia,brevis,not observed,0,cells/L,1,35.12,ppt,1,18.1,deg. C,1,,,9,,,9,2134833
+FL,C. Campbell Causeway; S of (Old Tampa Bay),,27.957,-82.622,2/14/2024,18:51,4.4,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134834
+FL,North Shore Park Beach (Middle Tampa Bay),,27.7843,-82.6237,2/14/2024,13:37,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134828
+FL,Spa Beach (Middle Tampa Bay),,27.7746,-82.627,2/14/2024,13:14,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134781
+FL,Lassing Park (Middle Tampa Bay),,27.752,-82.63,2/14/2024,12:55,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134782
+FL,Maximo Park (Lower Tampa Bay),,27.7097,-82.6829,2/14/2024,12:30,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134829
+FL,Bungalow Pass; E of,,28.99376,-82.75643,2/14/2024,,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134844
+FL,Treasure Island Beach,,27.77,-82.7755,2/14/2024,14:40,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134830
+FL,Bird Creek Boat Ramp; 2.6 mi W of,,29.00946,-82.80417,2/14/2024,,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134843
+FL,Deer Island; 2.9 mi W of (Suwannee Sound),,29.23133,-83.12867,2/14/2024,16:52,0.5,Karenia,brevis,not observed,0,cells/L,1,11.1,ppt,1,16.1,deg. C,1,,,9,,,9,2134835
+FL,Alligator Pass; 1.8 mi S of (Suwannee Sound),,29.2635,-83.171,2/14/2024,17:08,0.5,Karenia,brevis,not observed,0,cells/L,1,10.7,ppt,1,16.3,deg. C,1,,,9,,,9,2134836
+FL,Bumblebee Creek; N mouth of,,29.3615,-83.18983,2/14/2024,17:45,0.5,Karenia,brevis,not observed,0,cells/L,1,13.7,ppt,1,16.8,deg. C,1,,,9,,,9,2134838
+FL,Cat Island; 1.4 mi SW of,,29.31867,-83.19867,2/14/2024,17:23,0.5,Karenia,brevis,not observed,0,cells/L,1,20,ppt,1,16.8,deg. C,1,,,9,,,9,2134837
+FL,Bird Island; 2.2 mi W of,,29.593,-83.447,2/14/2024,,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134740
+FL,Steinhatchee River; 8.6 mi SW of,,29.588,-83.527,2/14/2024,,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134741
+FL,Hollywood Beach,,26.02125,-80.11394,2/15/2024,20:26,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134979
+FL,Crandon Beach,,25.7073,-80.15223,2/15/2024,17:55,0.5,Karenia,brevis,not observed,0,cells/L,1,32.8,ppt,1,24.1,deg. C,1,,,9,,,9,2134555
+FL,Cape Florida Beach,,25.6674,-80.15503,2/15/2024,17:11,0.5,Karenia,brevis,not observed,0,cells/L,1,29.9,ppt,1,23.5,deg. C,1,,,9,,,9,2134554
+FL,Matheson Hammock Park,,25.68012,-80.25663,2/15/2024,17:30,0.5,Karenia,brevis,not observed,0,cells/L,1,26,ppt,1,22.8,deg. C,1,,,9,,,9,2134538
+FL,Deering Estate People''s Dock (Biscayne Bay),,25.61437,-80.30582,2/15/2024,18:15,0.5,Karenia,brevis,not observed,0,cells/L,1,22.2,ppt,1,23.2,deg. C,1,,,9,,,9,2134551
+FL,Black Point Boat Launch (Black Creek),,25.53888,-80.3275,2/15/2024,19:10,0.5,Karenia,brevis,not observed,0,cells/L,1,4.87,ppt,1,23.8,deg. C,1,,,9,,,9,2134553
+FL,Homestead Bayfront Park,,25.46288,-80.33658,2/15/2024,20:00,0.5,Karenia,brevis,not observed,0,cells/L,1,19.3,ppt,1,23.8,deg. C,1,,,9,,,9,2134540
+FL,Crow Key; 2.2 mi W of (Charlotte Harbor),,26.7996,-82.0979,2/15/2024,19:57,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2135072
+FL,Crow Key; 2.2 mi W of (Charlotte Harbor),,26.7996,-82.0979,2/15/2024,19:57,5.1,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2135073
+FL,Crow Key; 2.2 mi W of (Charlotte Harbor),,26.7996,-82.0979,2/15/2024,20:09,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2135074
+FL,Big Smokehouse Key; 2.4 mi N of (Charlotte Harbor),,26.7185,-82.1035,2/15/2024,20:46,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2135097
+FL,Big Smokehouse Key; 2.4 mi N of (Charlotte Harbor),,26.7185,-82.1035,2/15/2024,20:46,3.2,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2135098
+FL,Locust Point; 2 mi SE of (Charlotte Harbor),,26.9084,-82.1132,2/15/2024,19:00,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2135070
+FL,Locust Point; 2 mi SE of (Charlotte Harbor),,26.9084,-82.1132,2/15/2024,19:00,4.9,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2135071
+FL,Mangrove Point; 3.5 mi SE of (Charlotte Harbor),,26.8578,-82.1353,2/15/2024,17:47,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2135066
+FL,Mangrove Point; 3.5 mi SE of (Charlotte Harbor),,26.8578,-82.1353,2/15/2024,17:47,3.4,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2135067
+FL,Cape Haze; 2.2 mi SE of (Charlotte Harbor),,26.7552,-82.1381,2/15/2024,16:54,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2135064
+FL,Cape Haze; 2.2 mi SE of (Charlotte Harbor),,26.7552,-82.1381,2/15/2024,16:54,4,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2135065
+FL,Shoal Point; 1.5 mi S of (Charlotte Harbor),,26.9034,-82.1606,2/15/2024,18:04,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2135068
+FL,Shoal Point; 1.5 mi S of (Charlotte Harbor),,26.9034,-82.1606,2/15/2024,18:04,3.4,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2135069
+FL,Gasparilla Island State Park; 1.8 mi E of (Charlotte Harbor),,26.7318,-82.2311,2/15/2024,15:52,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2135062
+FL,Gasparilla Island State Park; 1.8 mi E of (Charlotte Harbor),,26.7318,-82.2311,2/15/2024,15:52,4.4,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2135063
+FL,Boca Grande Pass; 2 mi W of,,26.70117,-82.28919,2/15/2024,14:56,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2135060
+FL,Boca Grande Pass; 2 mi W of,,26.70117,-82.28919,2/15/2024,14:56,8.9,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2135061
+FL,MacDill AFB; 3.2 mi S of (Middle Tampa Bay),,27.7837,-82.5204,2/15/2024,13:17,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134935
+FL,MacDill AFB; 3.2 mi S of (Middle Tampa Bay),,27.7837,-82.5204,2/15/2024,13:17,16.4,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134936
+FL,Sand Key; 2.2 mi NW of (Middle Tampa Bay),,27.7306,-82.53,2/15/2024,13:50,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134933
+FL,Sand Key; 2.2 mi NW of (Middle Tampa Bay),,27.7306,-82.53,2/15/2024,13:50,6.9,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134934
+FL,Bay Dock (Sarasota Bay),,27.3316,-82.5779,2/15/2024,16:00,0.5,Karenia,brevis,not observed,0,cells/L,1,35.36,ppt,1,18.49,deg. C,1,,,9,,,9,2134845
+FL,Little Redfish Creek; 1.1 mi NW of (Lower Tampa Bay),,27.63262,-82.5782,2/15/2024,15:19,0.2,Karenia,brevis,not observed,0,cells/L,1,32.7,ppt,1,18.2,deg. C,1,,,9,,,9,2134922
+FL,New Pass Dock (Sarasota Bay),,27.33375,-82.57938,2/15/2024,16:10,0.5,Karenia,brevis,not observed,0,cells/L,1,35.25,ppt,1,18.2,deg. C,1,,,9,,,9,2134846
+FL,Beacon Key; 2.7 mi W of (Middle Tampa Bay),,27.6798,-82.5799,2/15/2024,14:35,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134931
+FL,Beacon Key; 2.7 mi W of (Middle Tampa Bay),,27.6798,-82.5799,2/15/2024,14:35,6.3,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134932
+FL,Joe Island; N of (Lower Tampa Bay),,27.59551,-82.5912,2/15/2024,16:14,0.2,Karenia,brevis,not observed,0,cells/L,1,32,ppt,1,18.3,deg. C,1,,,9,,,9,2134923
+FL,Pinellas Point; 2.5 mi SE of (Middle Tampa Bay),,27.6811,-82.6072,2/15/2024,13:02,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134939
+FL,Pinellas Point; 2.5 mi SE of (Middle Tampa Bay),,27.6811,-82.6072,2/15/2024,13:02,5.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134940
+FL,Coquina Key; E of (Middle Tampa Bay),,27.7311,-82.6125,2/15/2024,14:06,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134937
+FL,Coquina Key; E of (Middle Tampa Bay),,27.7311,-82.6125,2/15/2024,14:06,6.2,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134938
+FL,South Skyway Rest Area; NW of (Lower Tampa Bay),,27.58743,-82.61895,2/15/2024,17:09,0.2,Karenia,brevis,not observed,0,cells/L,1,32.7,ppt,1,18.2,deg. C,1,,,9,,,9,2134921
+FL,North Skyway Fishing Pier; 2.7 mi E of (Lower Tampa Bay),,27.634,-82.6222,2/15/2024,15:04,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134929
+FL,North Skyway Fishing Pier; 2.7 mi E of (Lower Tampa Bay),,27.634,-82.6222,2/15/2024,15:04,8.6,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134930
+FL,South Skyway Causeway; NE end of (Lower Tampa Bay),,27.59275,-82.62907,2/15/2024,14:35,0.2,Karenia,brevis,not observed,0,cells/L,1,32.6,ppt,1,18.2,deg. C,1,,,9,,,9,2134849
+FL,Mead Point (Lower Tampa Bay),,27.51477,-82.68395,2/15/2024,14:12,0.2,Karenia,brevis,not observed,0,cells/L,1,31.4,ppt,1,18.09,deg. C,1,,,9,,,9,2134847
+FL,Mullet Key; 1.8 mi S of (Lower Tampa Bay),,27.5991,-82.7,2/15/2024,15:36,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134927
+FL,Mullet Key; 1.8 mi S of (Lower Tampa Bay),,27.5991,-82.7,2/15/2024,15:36,6.7,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134928
+FL,School Key; NE of (Lower Tampa Bay),,27.52983,-82.704,2/15/2024,14:25,0.2,Karenia,brevis,not observed,0,cells/L,1,31.8,ppt,1,18.3,deg. C,1,,,9,,,9,2134848
+FL,Egmont Key; 2.3 mi SW of,,27.55661,-82.78781,2/15/2024,16:05,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134924
+FL,Egmont Key; 2.3 mi SW of,,27.55661,-82.78781,2/15/2024,16:05,7,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134925
+FL,Egmont Key; 2.3 mi SW of,,27.55661,-82.78781,2/15/2024,16:05,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134926
+FL,Deadmans Key; 2.5 mi SW of,,29.091,-83.108,2/15/2024,,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134742
+FL,Deadmans Key; 8.3 mi SW of,,29.042,-83.184,2/15/2024,,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134743
+FL,Hidden Beach; North of,,25.74437,-80.1437,2/16/2024,19:25,0.5,Karenia,brevis,not observed,0,cells/L,1,33.2,ppt,1,23.7,deg. C,1,,,9,,,9,2134604
+FL,Hidden Beach,,25.74003,-80.14682,2/16/2024,19:45,0.5,Karenia,brevis,not observed,0,cells/L,1,31.7,ppt,1,23.8,deg. C,1,,,9,,,9,2134603
+FL,Crandon Park Marina Boat Ramp,,25.72385,-80.15525,2/16/2024,16:10,0.5,Karenia,brevis,not observed,0,cells/L,1,28.4,ppt,1,22.8,deg. C,1,,,9,,,9,2134550
+FL,Virginia Key Beach Park,,25.7351,-80.1559,2/16/2024,18:40,0.5,Karenia,brevis,not observed,0,cells/L,1,29.6,ppt,1,24.6,deg. C,1,,,9,,,9,2134556
+FL,No Name Harbor,,25.67682,-80.1641,2/16/2024,16:50,0.5,Karenia,brevis,not observed,0,cells/L,1,28.6,ppt,1,22.2,deg. C,1,,,9,,,9,2134552
+FL,Rickenbacker Causeway; canal E of,,25.74103,-80.16765,2/16/2024,20:10,0.5,Karenia,brevis,not observed,0,cells/L,1,30.3,ppt,1,23.3,deg. C,1,,,9,,,9,2134557
+FL,Hobie Island Beach Park,,25.74538,-80.17642,2/16/2024,15:53,0.5,Karenia,brevis,not observed,0,cells/L,1,29.63,ppt,1,23.3,deg. C,1,,,9,,,9,2134548
+FL,Sandsprit Park Boat Ramp (Manatee Pocket),,27.16226,-80.1939,2/16/2024,15:15,0.7,Karenia,brevis,not observed,0,cells/L,1,30.13,ppt,1,21.6,deg. C,1,,,9,,,9,2134982
+FL,Hobie Island Beach Park North,,25.74595,-80.19905,2/16/2024,15:49,0.5,Karenia,brevis,not observed,0,cells/L,1,28.7,ppt,1,23.7,deg. C,1,,,9,,,9,2134546
+FL,Indian Riverside Park Pier (Indian River),,27.22476,-80.21126,2/16/2024,16:15,0.7,Karenia,brevis,not observed,0,cells/L,1,32.74,ppt,1,20.7,deg. C,1,,,9,,,9,2134981
+FL,Halissee Street; SE of,,25.73952,-80.21653,2/16/2024,15:10,0.5,Karenia,brevis,not observed,0,cells/L,1,18.74,ppt,1,22.4,deg. C,1,,,9,,,9,2134543
+FL,Dinner Key Marina,,25.72708,-80.23695,2/16/2024,14:45,0.5,Karenia,brevis,not observed,0,cells/L,1,16.7,ppt,1,22.9,deg. C,1,,,9,,,9,2134541
+FL,East Midway Road; N of (Indian River),,27.38745,-80.2971,2/16/2024,13:15,0.5,Karenia,brevis,not observed,0,cells/L,1,33.02,ppt,1,20,deg. C,1,,,9,,,9,2134984
+FL,Indian River Veterans Memorial Park Boat Ramp (Indian River),,27.45181,-80.32274,2/16/2024,12:45,1,Karenia,brevis,not observed,0,cells/L,1,35.12,ppt,1,21.3,deg. C,1,,,9,,,9,2134983
+FL,Redfish Cove; S of (Caloosahatchee River),,26.5326,-81.9639,2/16/2024,14:15,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2135106
+FL,Redfish Cove; S of (Caloosahatchee River),,26.5326,-81.9639,2/16/2024,14:15,1.6,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2135107
+FL,Fort Myers Beach; 1.6 mi SW of,,26.4331,-81.9711,2/16/2024,15:50,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134516
+FL,Fort Myers Beach; 1.6 mi SW of,,26.4331,-81.9711,2/16/2024,15:50,3.3,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134517
+FL,Sanibel Beach; 4.9 mi SE of,,26.3878,-81.97891,2/16/2024,16:33,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134518
+FL,Sanibel Beach; 4.9 mi SE of,,26.3878,-81.97891,2/16/2024,16:33,7,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134519
+FL,Lighthouse Park; 1.3 mi NE of (San Carlos Bay),,26.4619,-81.9963,2/16/2024,15:16,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134514
+FL,Lighthouse Park; 1.3 mi NE of (San Carlos Bay),,26.4619,-81.9963,2/16/2024,15:16,4.1,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134515
+FL,Kitchel Key; NE of (San Carlos Bay),,26.5087,-82.0156,2/16/2024,14:54,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134512
+FL,Kitchel Key; NE of (San Carlos Bay),,26.5087,-82.0156,2/16/2024,14:54,2.6,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134513
+FL,Picnic Island; NE of (San Carlos Bay),,26.4936,-82.0471,2/16/2024,12:55,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2135103
+FL,Picnic Island; NE of (San Carlos Bay),,26.4936,-82.0471,2/16/2024,12:55,1.7,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2135104
+FL,Picnic Island; NE of (San Carlos Bay),,26.4936,-82.0471,2/16/2024,13:07,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2135105
+FL,Rag Island; E of (Matlacha Pass),,26.5333,-82.0585,2/16/2024,13:27,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2135101
+FL,Rag Island; E of (Matlacha Pass),,26.5333,-82.0585,2/16/2024,13:27,1.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2135102
+FL,Tarpon Bay Road Beach; 1 mi S of,,26.407,-82.083,2/16/2024,19:25,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134545
+FL,York Island; S of (San Carlos Bay),,26.4748,-82.1068,2/16/2024,12:15,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2135099
+FL,York Island; S of (San Carlos Bay),,26.4748,-82.1068,2/16/2024,12:15,6.4,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2135100
+FL,Bowmans Beach; 9.5 mi SW of,,26.347,-82.246,2/16/2024,15:15,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134544
+FL,Lemon Bay Drive; canal E pf,,26.93678,-82.34655,2/16/2024,23:15,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,21.67,deg. C,1,,,9,,,9,2134662
+FL,Bay Dock (Sarasota Bay),,27.3316,-82.5779,2/16/2024,15:30,0.5,Karenia,brevis,not observed,0,cells/L,1,35.36,ppt,1,18.8,deg. C,1,,,9,,,9,2134941
+FL,New Pass Dock (Sarasota Bay),,27.33375,-82.57938,2/16/2024,15:40,0.5,Karenia,brevis,not observed,0,cells/L,1,35.15,ppt,1,18.6,deg. C,1,,,9,,,9,2134964
+FL,Boca Grande; 30 mi W of,,26.7446,-82.75298,2/16/2024,20:20,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,19.43,deg. C,1,,,9,,,9,2134661
+FL,Deadmans Key; 3.6 mi W of,,28.975,-82.825,2/16/2024,16:09,0.1,Karenia,brevis,not observed,0,cells/L,1,24.09,ppt,1,17.3,deg. C,1,,,9,,,9,2134980
+FL,Millender Street; S of (St. George Sound),,29.7301,-84.88478,2/16/2024,18:31,0.1,Karenia,brevis,not observed,0,cells/L,1,14.91,ppt,1,17.4,deg. C,1,,,9,,,9,2134623
+FL,Pensacola Beach Pier,,30.3273,-87.1419,2/16/2024,20:12,0.5,Karenia,brevis,not observed,0,cells/L,1,31,ppt,1,15.55,deg. C,1,,,9,,,9,2134658
+FL,South Bob Sikes Fishing Pier (Santa Rosa Sound),,30.34613,-87.1518,2/16/2024,21:10,0.5,Karenia,brevis,not observed,0,cells/L,1,24,ppt,1,15.55,deg. C,1,,,9,,,9,2134659
+FL,Pensacola Bay Fishing Bridge,,30.4084,-87.18982,2/16/2024,19:14,0.5,Karenia,brevis,not observed,0,cells/L,1,15,ppt,1,15.55,deg. C,1,,,9,,,9,2134660
+FL,Sheridan Street; S of (West Lake),,26.03367,-80.12358,2/17/2024,,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134904
+FL,East Bahia Honda Key; 8.9 mi NE of,,24.894,-81.159,2/17/2024,,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134728
+FL,East Bahia Honda Key; 10 mi N of,,24.925,-81.2,2/17/2024,,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134730
+FL,East Bahia Honda Key; 12 mi N of,,24.954,-81.235,2/17/2024,,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134731
+FL,West Bahia Honda Key; 14 mi N of,,24.974,-81.283,2/17/2024,,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134732
+FL,Kemp Channel Bridge; 1.6 mi SE of,,24.64009,-81.45865,2/17/2024,12:15,0.5,Karenia,brevis,not observed,0,cells/L,1,35.9,ppt,1,23.4,deg. C,1,,,9,,,9,2134965
+FL,Sawyer Key; 1.7 mi N of,,24.78364,-81.56958,2/17/2024,12:37,0.5,Karenia,brevis,not observed,0,cells/L,1,35.4,ppt,1,21.6,deg. C,1,,,9,,,9,2134966
+FL,Marvin Key; 3.9 mi N of,,24.76532,-81.65648,2/17/2024,12:48,0.5,Karenia,brevis,not observed,0,cells/L,1,35.6,ppt,1,21,deg. C,1,,,9,,,9,2134967
+FL,West Harbor Key; 6.6 mi N of,,24.75,-81.74417,2/17/2024,13:00,0.5,Karenia,brevis,not observed,0,cells/L,1,35.7,ppt,1,20.89,deg. C,1,,,9,,,9,2134968
+FL,Key West; 5.5 mi S of,,24.46773,-81.78203,2/17/2024,15:00,0.5,Karenia,brevis,not observed,0,cells/L,1,35.8,ppt,1,23.4,deg. C,1,,,9,,,9,2134978
+FL,Key West; 2.3 mi S of,,24.51067,-81.80447,2/17/2024,14:50,0.5,Karenia,brevis,not observed,0,cells/L,1,35.8,ppt,1,23,deg. C,1,,,9,,,9,2134977
+FL,Key West; 12 mi N of,,24.73238,-81.83607,2/17/2024,13:10,0.5,Karenia,brevis,not observed,0,cells/L,1,35.8,ppt,1,21.3,deg. C,1,,,9,,,9,2134969
+FL,Key West; 3 mi NW of,,24.58325,-81.84827,2/17/2024,14:30,0.5,Karenia,brevis,not observed,0,cells/L,1,35.8,ppt,1,23.2,deg. C,1,,,9,,,9,2134976
+FL,Key West; 5.5 mi NW of,,24.6128,-81.87297,2/17/2024,14:25,0.5,Karenia,brevis,not observed,0,cells/L,1,35.8,ppt,1,22.8,deg. C,1,,,9,,,9,2134975
+FL,Key West; 8.6 mi NW of,,24.64097,-81.89827,2/17/2024,14:17,0.5,Karenia,brevis,not observed,0,cells/L,1,35.8,ppt,1,22.1,deg. C,1,,,9,,,9,2134974
+FL,Key West; 10 mi NW of,,24.68048,-81.90799,2/17/2024,14:11,0.5,Karenia,brevis,not observed,0,cells/L,1,35.8,ppt,1,21.7,deg. C,1,,,9,,,9,2134973
+FL,Smith Shoals,,24.71724,-81.92366,2/17/2024,13:23,0.5,Karenia,brevis,not observed,0,cells/L,1,35.8,ppt,1,21.6,deg. C,1,,,9,,,9,2134970
+FL,Key West; 18 mi NW of,,24.71799,-82.02452,2/17/2024,13:36,0.5,Karenia,brevis,not observed,0,cells/L,1,35.8,ppt,1,21.7,deg. C,1,,,9,,,9,2134971
+FL,Marquesas Keys; 8.3 mi N of,,24.71731,-82.12366,2/17/2024,13:47,0.5,Karenia,brevis,not observed,0,cells/L,1,35.8,ppt,1,21.7,deg. C,1,,,9,,,9,2134972
+FL,Tom Stuart Causeway; N of (Boca Ciega Bay),,27.809,-82.79417,2/17/2024,17:50,0.2,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134547
+FL,Bunces Pass; 5.8 mi W of,,27.64966,-82.84019,2/17/2024,19:42,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2135024
+FL,Bunces Pass; 5.8 mi W of,,27.64966,-82.84019,2/17/2024,19:42,9,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2135025
+FL,Bunces Pass; 11 mi W of,,27.64966,-82.92147,2/17/2024,19:15,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2135022
+FL,Bunces Pass; 11 mi W of,,27.64966,-82.92147,2/17/2024,19:15,12,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2135023
+FL,Bunces Pass; 21 mi W of,,27.64966,-83.08443,2/17/2024,18:26,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2135019
+FL,Bunces Pass; 21 mi W of,,27.64966,-83.08443,2/17/2024,18:26,10,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2135020
+FL,Bunces Pass; 21 mi W of,,27.64966,-83.08443,2/17/2024,18:26,19.9,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2135021
+FL,Bunces Pass; 31 mi W of,,27.64966,-83.2474,2/17/2024,17:30,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2135016
+FL,Bunces Pass; 31 mi W of,,27.64966,-83.2474,2/17/2024,17:30,15,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2135017
+FL,Bunces Pass; 31 mi W of,,27.64966,-83.2474,2/17/2024,17:30,29.4,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2135018
+FL,Pass-a-Grille Beach; 34 mi W of,,27.7014,-83.2979,2/17/2024,15:45,5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2135009
+FL,Pass-a-Grille Beach; 34 mi W of,,27.7014,-83.2979,2/17/2024,15:45,11,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2135010
+FL,Pass-a-Grille Beach; 34 mi W of,,27.7014,-83.2979,2/17/2024,15:45,20,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2135011
+FL,Pass-a-Grille Beach; 34 mi W of,,27.7014,-83.2979,2/17/2024,15:45,30,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2135012
+FL,Bunces Pass; 41 mi W of,,27.64966,-83.41037,2/17/2024,16:32,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2135013
+FL,Bunces Pass; 41 mi W of,,27.64966,-83.41037,2/17/2024,16:32,17.4,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2135014
+FL,Bunces Pass; 41 mi W of,,27.64966,-83.41037,2/17/2024,16:32,35,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2135015
+FL,Jupiter Inlet; NW of (Loxahatchee River),,26.94533,-80.07425,2/18/2024,14:30,0.5,Karenia,brevis,not observed,0,cells/L,1,33.2,ppt,1,22,deg. C,1,,,9,,,9,2134549
+FL,Blind Pass Beach,,26.96324,-82.38565,2/19/2024,13:45,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134535
+FL,Manasota Beach,,27.01031,-82.41312,2/19/2024,14:10,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134534
+FL,Caspersen Beach,,27.05703,-82.4436,2/19/2024,14:50,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134533
+FL,Brohard Beach,,27.06631,-82.448,2/19/2024,15:10,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134532
+FL,Service Club Park,,27.07827,-82.45286,2/19/2024,15:35,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134530
+FL,Venice Fishing Pier,,27.0726,-82.4529,2/19/2024,15:20,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134531
+FL,Venice Beach,,27.10034,-82.46089,2/19/2024,15:55,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134529
+FL,North Jetty,,27.11382,-82.46883,2/19/2024,16:25,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134528
+FL,Nokomis Beach,,27.12332,-82.47122,2/19/2024,16:40,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134527
+FL,Turtle Beach,,27.21843,-82.51711,2/19/2024,16:10,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134526
+FL,Siesta Beach,,27.26518,-82.5531,2/19/2024,15:45,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134525
+FL,Ringling Causeway,,27.32682,-82.56244,2/19/2024,13:45,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134521
+FL,South Lido Park,,27.29818,-82.56739,2/19/2024,14:55,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134524
+FL,Lido Beach Casino,,27.311,-82.57718,2/19/2024,14:35,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134523
+FL,Bay Dock (Sarasota Bay),,27.3316,-82.5779,2/19/2024,15:40,0.5,Karenia,brevis,not observed,0,cells/L,1,34.79,ppt,1,17.8,deg. C,1,,,9,,,9,2134536
+FL,New Pass Dock (Sarasota Bay),,27.33375,-82.57938,2/19/2024,15:50,0.5,Karenia,brevis,not observed,0,cells/L,1,34.87,ppt,1,18,deg. C,1,,,9,,,9,2134537
+FL,North Lido Beach,,27.31561,-82.58171,2/19/2024,14:25,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134522
+FL,Fletcher Point (Lower Tampa Bay),,27.58512,-82.61482,2/19/2024,17:18,0.5,Karenia,brevis,not observed,0,cells/L,1,29.67,ppt,1,19.73,deg. C,1,,,9,,,9,2135027
+FL,FWRI Peninsula; SE tip of (Bayboro Harbor),,27.7598,-82.63127,2/19/2024,16:08,0.5,Karenia,brevis,not observed,0,cells/L,1,29.36,ppt,1,18.27,deg. C,1,,,9,,,9,2134985
+FL,FWRI Peninsula; SE tip of (Bayboro Harbor),,27.7598,-82.63127,2/19/2024,16:13,3.8,Karenia,brevis,not observed,0,cells/L,1,30.1,ppt,1,18.21,deg. C,1,,,9,,,9,2135008
+FL,Longboat Key Beach,,27.37317,-82.63202,2/19/2024,14:05,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134520
+FL,Skyway Fishing Pier; South (Lower Tampa Bay),,27.5965,-82.6372,2/19/2024,13:55,0.5,Karenia,brevis,not observed,0,cells/L,1,32.32,ppt,1,17.47,deg. C,1,,,9,,,9,2135026
+FL,Palma Sola Bay Bridge,,27.4959,-82.6522,2/19/2024,14:41,0.5,Karenia,brevis,not observed,0,cells/L,1,30.53,ppt,1,16.96,deg. C,1,,,9,,,9,2135028
+FL,Longboat Pass Boat Ramp (Sarasota Bay),,27.4479,-82.6883,2/19/2024,16:10,0.5,Karenia,brevis,not observed,0,cells/L,1,33.63,ppt,1,17.6,deg. C,1,,,9,,,9,2135029
+FL,Wallace Cove (Boca Ciega Bay),,27.7117,-82.69014,2/19/2024,19:10,0.1,Karenia,brevis,not observed,0,cells/L,1,31.29,ppt,1,19.67,deg. C,1,,,9,,,9,2135057
+FL,Via Cipriani; dock S of (Old Tampa Bay),,27.94067,-82.7225,2/19/2024,14:30,0.2,Karenia,brevis,not observed,0,cells/L,1,25.6,ppt,1,18,deg. C,1,,,9,,,9,2135058
+FL,Mullet Key; Gulf Pier,,27.6133,-82.7391,2/19/2024,18:21,0.5,Karenia,brevis,not observed,0,cells/L,1,33.52,ppt,1,17.58,deg. C,1,,,9,,,9,2135056
+FL,Anna Maria Island Rod & Reel Pier (Lower Tampa Bay),,27.5385,-82.7402,2/19/2024,15:15,0.5,Karenia,brevis,not observed,0,cells/L,1,32.7,ppt,1,17.48,deg. C,1,,,9,,,9,2135030
+FL,Country Club Road North; SW of (Boca Ciega Bay),,27.7784,-82.7466,2/19/2024,13:33,0.2,Karenia,brevis,not observed,0,cells/L,1,31.96,ppt,1,17.26,deg. C,1,,,9,,,9,2135059
+FL,Treasure Island Beach,,27.77,-82.7755,2/19/2024,23:30,1,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134666
+FL,La Contessa Pier,,27.8121,-82.81915,2/19/2024,16:45,0.5,Karenia,brevis,not observed,0,cells/L,1,33.12,ppt,1,16.98,deg. C,1,,,9,,,9,2135055
+FL,Clearwater Beach Pier 60,,27.9777,-82.8323,2/19/2024,15:37,0.5,Karenia,brevis,not observed,0,cells/L,1,33.55,ppt,1,16.31,deg. C,1,,,9,,,9,2135054
+FL,Wetland Preserve; E of (Lake Worth),,26.52888,-80.05387,2/20/2024,18:50,0.5,Karenia,brevis,not observed,0,cells/L,1,20.1,ppt,1,20.4,deg. C,1,,,9,,,9,2134905
+FL,Loggia Beach Park; SE of,,25.9628,-80.117,2/20/2024,15:00,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134657
+FL,53rd Street Park; NE of,,25.8333,-80.1174,2/20/2024,14:35,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134656
+FL,Crandon Park; E of,,25.7111,-80.1436,2/20/2024,13:55,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134654
+FL,Bayfront Park; E of (Biscayne Bay),,25.7743,-80.1844,2/20/2024,14:15,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134655
+FL,Ballyshannon Street; E of,,28.0164,-80.532,2/20/2024,12:30,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134727
+FL,Macfarlane Street; W of (Indian River),,28.015,-80.5387,2/20/2024,12:45,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134729
+FL,Geiger Point; Melbourne Causeway at (Indian River),,28.08245,-80.59505,2/20/2024,18:00,0.2,Karenia,brevis,not observed,0,cells/L,1,18.7,ppt,1,16.7,deg. C,1,,,9,,,9,2134622
+FL,Diamond Bay (Banana River),,28.35034,-80.61298,2/20/2024,14:00,0.5,Karenia,brevis,not observed,0,cells/L,1,16.8,ppt,1,14,deg. C,1,,,9,,,9,2134663
+FL,Ramp Road Park Boat Ramp (Banana River),,28.30903,-80.61428,2/20/2024,16:45,0.2,Karenia,brevis,not observed,0,cells/L,1,13.6,ppt,1,16,deg. C,1,,,9,,,9,2134620
+FL,Eau Gallie Pier (Indian River),,28.13248,-80.62418,2/20/2024,17:35,0.2,Karenia,brevis,not observed,0,cells/L,1,19.4,ppt,1,17.8,deg. C,1,,,9,,,9,2134621
+FL,520 Slick Boat Ramp (Banana River),,28.35713,-80.62844,2/20/2024,16:10,0.2,Karenia,brevis,not observed,0,cells/L,1,17.5,ppt,1,16.8,deg. C,1,,,9,,,9,2134619
+FL,Kelly Park (Banana River),,28.4017,-80.66245,2/20/2024,15:50,0.2,Karenia,brevis,not observed,0,cells/L,1,20,ppt,1,16.1,deg. C,1,,,9,,,9,2134618
+FL,NASA Causeway; SE side of (Indian River),,28.52641,-80.7391,2/20/2024,15:10,0.2,Karenia,brevis,not observed,0,cells/L,1,26,ppt,1,15.6,deg. C,1,,,9,,,9,2134616
+FL,Port St. John Boat Ramp (Indian River),,28.47508,-80.76653,2/20/2024,15:30,0.2,Karenia,brevis,not observed,0,cells/L,1,25.9,ppt,1,18,deg. C,1,,,9,,,9,2134617
+FL,Parrish Park Boat Ramp (Indian River),,28.62365,-80.79552,2/20/2024,14:45,0.2,Karenia,brevis,not observed,0,cells/L,1,27.4,ppt,1,14.1,deg. C,1,,,9,,,9,2134615
+FL,Pavilion Key; 1 mi SW of,,25.679,-81.361,2/20/2024,16:00,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134870
+FL,Pavilion Key; 9.1 mi SW of,,25.616,-81.472,2/20/2024,19:50,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134869
+FL,South Marco Beach,,25.9117,-81.7294,2/20/2024,16:49,0.5,Karenia,brevis,not observed,0,cells/L,1,34,ppt,1,18.9,deg. C,1,,,9,,,9,2134614
+FL,Naples Pier,,26.1316,-81.8067,2/20/2024,15:47,0.5,Karenia,brevis,not observed,0,cells/L,1,33,ppt,1,18,deg. C,1,,,9,,,9,2134613
+FL,Seagate,,26.2073,-81.8169,2/20/2024,15:11,0.5,Karenia,brevis,not observed,0,cells/L,1,33,ppt,1,18,deg. C,1,,,9,,,9,2134612
+FL,Vanderbilt Beach,,26.25375,-81.82377,2/20/2024,14:40,0.5,Karenia,brevis,not observed,0,cells/L,1,33,ppt,1,17.7,deg. C,1,,,9,,,9,2134611
+FL,Barefoot Beach State Preserve,,26.30481,-81.8362,2/20/2024,14:02,0.5,Karenia,brevis,not observed,0,cells/L,1,31,ppt,1,13.8,deg. C,1,,,9,,,9,2134610
+FL,South Venice Beach Ferry Dock (Lemon Bay),,27.0395,-82.4284,2/20/2024,16:10,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134664
+FL,Venice Fishing Pier,,27.0726,-82.4529,2/20/2024,17:00,0.1,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134665
+FL,Ben T. Davis Beach (Old Tampa Bay),,27.96864,-82.5742,2/20/2024,1:20,1,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134719
+FL,Bay Dock (Sarasota Bay),,27.3316,-82.5779,2/20/2024,18:55,0.5,Karenia,brevis,not observed,0,cells/L,1,34.67,ppt,1,18.5,deg. C,1,,,9,,,9,2134605
+FL,New Pass Dock (Sarasota Bay),,27.33375,-82.57938,2/20/2024,18:55,0.5,Karenia,brevis,not observed,0,cells/L,1,34.96,ppt,1,18.4,deg. C,1,,,9,,,9,2134606
+FL,Sunset Beach (St. Joseph Sound),,28.14389,-82.79028,2/20/2024,,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134738
+FL,Howard Park Beach (Anclote Anchorage),,28.15583,-82.80528,2/20/2024,,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134739
+FL,Millender Street; S of (St. George Sound),,29.7301,-84.88478,2/20/2024,17:32,0.1,Karenia,brevis,not observed,0,cells/L,1,11.35,ppt,1,15.5,deg. C,1,,,9,,,9,2134647
+FL,Little Oyster Bar Point; NE of (East Bay),,30.05403,-85.50433,2/20/2024,16:57,0.3,Karenia,brevis,not observed,0,cells/L,1,11,ppt,1,12.8,deg. C,1,,,9,,,9,2134609
+FL,Cedar Point; NE of (East Bay),,30.10361,-85.55653,2/20/2024,16:32,0.3,Karenia,brevis,not observed,0,cells/L,1,16.2,ppt,1,12.9,deg. C,1,,,9,,,9,2134608
+FL,Military Point; W of (East Bay),,30.12411,-85.631,2/20/2024,16:08,0.3,Karenia,brevis,not observed,0,cells/L,1,22.8,ppt,1,13.7,deg. C,1,,,9,,,9,2134607
+FL,Bunker Ranch Road; W of (Lake Worth Lagoon),,26.66486,-80.04177,2/21/2024,19:25,0.5,Karenia,brevis,not observed,0,cells/L,1,29.88,ppt,1,20.4,deg. C,1,,,9,,,9,2134906
+FL,Juno Beach Fishing Pier,,26.89372,-80.0542,2/21/2024,,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134907
+FL,Gordon''s Pass; W of,,26.09117,-81.81033,2/21/2024,15:07,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,21.11,deg. C,1,,,9,,,9,2134794
+FL,Port Royal Beach; W of,,26.10625,-81.81132,2/21/2024,15:15,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,21.11,deg. C,1,,,9,,,9,2134797
+FL,Bonita Beach Park,,26.331,-81.8462,2/21/2024,15:42,0.5,Karenia,brevis,not observed,0,cells/L,1,35,ppt,1,18.5,deg. C,1,,,9,,,9,2134759
+FL,Long Key; E of (Estero Bay),,26.3853,-81.85583,2/21/2024,17:45,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134800
+FL,Lovers Key State Park,,26.39,-81.88,2/21/2024,15:02,0.5,Karenia,brevis,not observed,0,cells/L,1,35,ppt,1,17.6,deg. C,1,,,9,,,9,2134758
+FL,Lynn Hall Park,,26.4535,-81.9582,2/21/2024,14:19,0.5,Karenia,brevis,not observed,0,cells/L,1,25,ppt,1,16.8,deg. C,1,,,9,,,9,2134757
+FL,Lighthouse Beach,,26.4512,-82.0151,2/21/2024,13:44,0.5,Karenia,brevis,not observed,0,cells/L,1,29,ppt,1,15.5,deg. C,1,,,9,,,9,2134756
+FL,Merwin Key; W of (San Carlos Bay),,26.50028,-82.0475,2/21/2024,17:32,0.2,Karenia,brevis,not observed,0,cells/L,1,16.1,ppt,1,18.7,deg. C,1,,,9,,,9,2134750
+FL,McCardle Island; SW of (Matlacha Pass),,26.5857,-82.0645,2/21/2024,15:46,0.2,Karenia,brevis,not observed,0,cells/L,1,24.3,ppt,1,17.3,deg. C,1,,,9,,,9,2134749
+FL,Matlacha Pass Bridge; S of,,26.62962,-82.066,2/21/2024,20:28,0.2,Karenia,brevis,not observed,0,cells/L,1,21.3,ppt,1,19.5,deg. C,1,,,9,,,9,2134748
+FL,Matlacha Pass Bridge; NW of,,26.63532,-82.07101,2/21/2024,20:24,0.2,Karenia,brevis,not observed,0,cells/L,1,22.3,ppt,1,19.3,deg. C,1,,,9,,,9,2134747
+FL,Tarpon Bay Road Beach,,26.4217,-82.0801,2/21/2024,13:25,0.5,Karenia,brevis,not observed,0,cells/L,1,35,ppt,1,15,deg. C,1,,,9,,,9,2134755
+FL,Jug Creek Point; E of (Matlacha Pass),,26.7003,-82.1208,2/21/2024,20:04,0.2,Karenia,brevis,not observed,0,cells/L,1,28.5,ppt,1,17.6,deg. C,1,,,9,,,9,2134746
+FL,Alison Hagerup Beach Park,,26.5264,-82.1945,2/21/2024,12:52,0.5,Karenia,brevis,not observed,0,cells/L,1,36,ppt,1,16.1,deg. C,1,,,9,,,9,2134754
+FL,Boca Grande Pier (Gasparilla Sound),,26.80562,-82.27415,2/21/2024,16:20,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134783
+FL,Englewood Beach,,26.92467,-82.36189,2/21/2024,17:51,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134760
+FL,Bay Dock (Sarasota Bay),,27.3316,-82.5779,2/21/2024,15:40,0.5,Karenia,brevis,not observed,0,cells/L,1,35,ppt,1,17.1,deg. C,1,,,9,,,9,2134744
+FL,New Pass Dock (Sarasota Bay),,27.33375,-82.57938,2/21/2024,14:45,0.5,Karenia,brevis,not observed,0,cells/L,1,34.72,ppt,1,17,deg. C,1,,,9,,,9,2134745
+FL,North Shore Park Beach (Middle Tampa Bay),,27.7843,-82.6237,2/21/2024,12:42,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134735
+FL,Spa Beach (Middle Tampa Bay),,27.7746,-82.627,2/21/2024,13:01,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134733
+FL,Lassing Park (Middle Tampa Bay),,27.752,-82.63,2/21/2024,13:31,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134734
+FL,2nd Avenue Northeast; S of (Middle Tampa Bay),,27.7732,-82.6305,2/21/2024,16:15,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,17.8,deg. C,1,,,9,,,9,2135155
+FL,Pine Island; N of,,28.57895,-82.65427,2/21/2024,16:42,0.5,Karenia,brevis,not observed,0,cells/L,1,21,ppt,1,16.9,deg. C,1,,,9,,,9,2134791
+FL,Maximo Park (Lower Tampa Bay),,27.7097,-82.6829,2/21/2024,14:10,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134736
+FL,Round Island; 3 mi W of,,28.51453,-82.73455,2/21/2024,14:56,0.5,Karenia,brevis,not observed,0,cells/L,1,25,ppt,1,15.2,deg. C,1,,,9,,,9,2134790
+FL,South Point; 3.6 mi W of,,28.6583,-82.735,2/21/2024,14:35,0.5,Karenia,brevis,not observed,0,cells/L,1,29,ppt,1,14.7,deg. C,1,,,9,,,9,2134792
+FL,Indian Key; 3.5 mi W of,,28.4566,-82.7433,2/21/2024,13:30,0.5,Karenia,brevis,not observed,0,cells/L,1,30,ppt,1,14.8,deg. C,1,,,9,,,9,2134793
+FL,Treasure Island Beach,,27.77,-82.7755,2/21/2024,14:51,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134737
+FL,Rock Island; 7.7 mi W of,,28.56492,-82.78085,2/21/2024,14:11,0.5,Karenia,brevis,not observed,0,cells/L,1,32,ppt,1,15.1,deg. C,1,,,9,,,9,2134789
+FL,Sunset Beach; 2.7 mi W of,,27.746,-82.805,2/21/2024,,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2135424
+FL,Centipede Bay; 10 mi W of,,28.515,-82.833,2/21/2024,13:56,0.5,Karenia,brevis,not observed,0,cells/L,1,34,ppt,1,14.9,deg. C,1,,,9,,,9,2134788
+FL,Johns Pass; 12 mi W of,,27.783,-82.983,2/21/2024,,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2135423
+FL,Pine Log Island; 3.3 mi SW of,,29.625,-83.45833,2/21/2024,,0.1,Karenia,brevis,not observed,0,cells/L,1,29.33,ppt,1,14.6,deg. C,1,,,9,,,9,2134786
+FL,Dark Island; 3.3 mi W of,,29.799,-83.644,2/21/2024,,0.1,Karenia,brevis,not observed,0,cells/L,1,29.86,ppt,1,14.27,deg. C,1,,,9,,,9,2134787
+FL,Motes Point; S of (Choctawhatchee Bay),,30.44492,-86.18419,2/21/2024,16:33,0.3,Karenia,brevis,not observed,0,cells/L,1,17.2,ppt,1,13.5,deg. C,1,,,9,,,9,2134751
+FL,Harstvedt Road; NE of (Choctawhatchee Bay),,30.40303,-86.20028,2/21/2024,19:46,0.3,Karenia,brevis,not observed,0,cells/L,1,0.8,ppt,1,15.7,deg. C,1,,,9,,,9,2134753
+FL,Basin Bayou; S of (Choctawhatchee Bay),,30.483,-86.25217,2/21/2024,16:54,0.3,Karenia,brevis,not observed,0,cells/L,1,2.4,ppt,1,13.7,deg. C,1,,,9,,,9,2134752
+FL,Card Sound Road (Little Card Sound),,25.2844,-80.35948,2/22/2024,18:30,0.5,Karenia,brevis,not observed,0,cells/L,1,24.8,ppt,1,21.76,deg. C,1,,,9,,,9,2134901
+FL,PonTunes Key Largo Boat Ramp; W of (Blackwater Sound),,25.18275,-80.38915,2/22/2024,15:20,0.5,Karenia,brevis,not observed,0,cells/L,1,23,ppt,1,19.5,deg. C,1,,,9,,,9,2134898
+FL,Rowell''s Waterfront Park (Blackwater Sound),,25.15025,-80.39412,2/22/2024,16:00,0.5,Karenia,brevis,not observed,0,cells/L,1,23.9,ppt,1,20.2,deg. C,1,,,9,,,9,2134899
+FL,Harry Harris County Park Boat Ramp,,25.02457,-80.49402,2/22/2024,17:00,0.5,Karenia,brevis,not observed,0,cells/L,1,31.9,ppt,1,20.5,deg. C,1,,,9,,,9,2134900
+FL,Marco Island; 7.2 mi NW of,,26,-81.859,2/22/2024,14:00,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134868
+FL,Caxambas Pass; 15 mi W of,,25.908,-81.962,2/22/2024,17:10,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134867
+FL,Sanibel Beach; 4.9 mi SE of,,26.3878,-81.97891,2/22/2024,15:48,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134859
+FL,Sanibel Beach; 4.9 mi SE of,,26.3878,-81.97891,2/22/2024,15:48,6.7,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134860
+FL,Barefoot Beach; 10 mi W of,,26.3141,-82.00202,2/22/2024,16:10,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134857
+FL,Barefoot Beach; 10 mi W of,,26.3141,-82.00202,2/22/2024,16:10,9.4,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134858
+FL,Tarpon Bay Road Beach; 6.2 mi SW of,,26.339,-82.119,2/22/2024,16:29,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134855
+FL,Tarpon Bay Road Beach; 6.2 mi SW of,,26.339,-82.119,2/22/2024,16:29,9.3,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134856
+FL,Bowmans Beach; 4 mi SW of,,26.41634,-82.2026,2/22/2024,15:21,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134853
+FL,Bowmans Beach; 4 mi SW of,,26.41634,-82.2026,2/22/2024,15:21,7.8,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134854
+FL,Captiva Island; 5.2 mi W of,,26.50312,-82.27413,2/22/2024,15:04,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134851
+FL,Captiva Island; 5.2 mi W of,,26.50312,-82.27413,2/22/2024,15:04,8.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134852
+FL,Boca Grande Pass; 2 mi W of,,26.70117,-82.28919,2/22/2024,14:09,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134824
+FL,Boca Grande Pass; 2 mi W of,,26.70117,-82.28919,2/22/2024,14:09,9.4,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134825
+FL,Boca Grande Pass; 2 mi W of,,26.70117,-82.28919,2/22/2024,14:22,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134826
+FL,Captiva Pass; 4.2 mi W of,,26.61003,-82.29105,2/22/2024,14:44,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134827
+FL,Captiva Pass; 4.2 mi W of,,26.61003,-82.29105,2/22/2024,14:44,9.2,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134850
+FL,Wiggins Pass; 32 mi W of,,26.28597,-82.34245,2/22/2024,16:59,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134863
+FL,Wiggins Pass; 32 mi W of,,26.28597,-82.34245,2/22/2024,16:59,15.2,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134864
+FL,Little Gasparilla Island; 3.8 mi W of,,26.82491,-82.3501,2/22/2024,13:47,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134822
+FL,Little Gasparilla Island; 3.8 mi W of,,26.82491,-82.3501,2/22/2024,13:47,9.2,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134823
+FL,Punta Gorda Beach; 3.3 mi W of,,26.91813,-82.41211,2/22/2024,13:28,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134820
+FL,Punta Gorda Beach; 3.3 mi W of,,26.91813,-82.41211,2/22/2024,13:28,9.4,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134821
+FL,North Jetty,,27.11382,-82.46883,2/22/2024,11:45,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,15,deg. C,1,,,9,,,9,2134872
+FL,Manasota Beach; 3.4 mi W of,,27.01283,-82.46982,2/22/2024,13:10,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134818
+FL,Manasota Beach; 3.4 mi W of,,27.01283,-82.46982,2/22/2024,13:10,9,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134819
+FL,Nokomis Beach,,27.12332,-82.47122,2/22/2024,11:40,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,15,deg. C,1,,,9,,,9,2134871
+FL,Venice Inlet; 3 mi W of,,27.11184,-82.51702,2/22/2024,12:51,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134816
+FL,Venice Inlet; 3 mi W of,,27.11184,-82.51702,2/22/2024,12:51,9.6,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134817
+FL,Turtle Beach; 4 mi W of,,27.20647,-82.57573,2/22/2024,15:03,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134810
+FL,Turtle Beach; 4 mi W of,,27.20647,-82.57573,2/22/2024,15:03,10.1,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134811
+FL,Bay Dock (Sarasota Bay),,27.3316,-82.5779,2/22/2024,16:20,0.5,Karenia,brevis,not observed,0,cells/L,1,34.83,ppt,1,17.2,deg. C,1,,,9,,,9,2134795
+FL,Gasparilla Pass; 18 mi W of,,26.79666,-82.57846,2/22/2024,18:11,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134861
+FL,Gasparilla Pass; 18 mi W of,,26.79666,-82.57846,2/22/2024,18:11,18.4,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134862
+FL,New Pass Dock (Sarasota Bay),,27.33375,-82.57938,2/22/2024,16:25,0.5,Karenia,brevis,not observed,0,cells/L,1,34.71,ppt,1,17.4,deg. C,1,,,9,,,9,2134796
+FL,Lido Beach; 2.3 mi W of,,27.30897,-82.61293,2/22/2024,19:30,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134807
+FL,Lido Beach; 2.3 mi W of,,27.30897,-82.61293,2/22/2024,19:30,8.6,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134808
+FL,Lido Beach; 2.3 mi W of,,27.30897,-82.61293,2/22/2024,19:30,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134809
+FL,Longboat Key; 4.1 mi W of,,27.36557,-82.69319,2/22/2024,19:10,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134805
+FL,Longboat Key; 4.1 mi W of,,27.36557,-82.69319,2/22/2024,19:10,10.6,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134806
+FL,Casey Key; 18 mi W of,,27.1364,-82.76011,2/22/2024,15:44,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134814
+FL,Casey Key; 18 mi W of,,27.1364,-82.76011,2/22/2024,15:44,20.2,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134815
+FL,Coquina Beach; 4.6 mi W of,,27.4504,-82.76839,2/22/2024,18:48,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134803
+FL,Coquina Beach; 4.6 mi W of,,27.4504,-82.76839,2/22/2024,18:48,10.1,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134804
+FL,Bay Pines Terrace; NE of (Hurricane Hole),,27.81318,-82.78473,2/22/2024,16:33,0.3,Karenia,brevis,not observed,0,cells/L,1,32,ppt,1,18,deg. C,1,,,9,,,9,2134798
+FL,Bay Pines Terrace; E of (Boca Ciega Bay),,27.8096,-82.78628,2/22/2024,16:50,0.4,Karenia,brevis,not observed,0,cells/L,1,33.2,ppt,1,17.5,deg. C,1,,,9,,,9,2134799
+FL,Egmont Key; 2.3 mi SW of,,27.55661,-82.78781,2/22/2024,17:45,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134801
+FL,Egmont Key; 2.3 mi SW of,,27.55661,-82.78781,2/22/2024,17:45,6.7,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134802
+FL,Pine Island; 11 mi W of,,28.595,-82.831,2/22/2024,,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2135422
+FL,Longboat Key; 19 mi W of,,27.35832,-82.92915,2/22/2024,16:40,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134812
+FL,Longboat Key; 19 mi W of,,27.35832,-82.92915,2/22/2024,16:40,19.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134813
+FL,Eagle Nest Island; 19 mi W of,,28.585,-82.953,2/22/2024,,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2135421
+FL,Pensacola Beach Pier,,30.3273,-87.1419,2/22/2024,18:37,1,Karenia,brevis,not observed,0,cells/L,1,31,ppt,1,14.4,deg. C,1,,,9,,,9,2134865
+FL,South Bob Sikes Fishing Pier (Santa Rosa Sound),,30.34613,-87.1518,2/22/2024,18:52,1,Karenia,brevis,not observed,0,cells/L,1,23,ppt,1,14.4,deg. C,1,,,9,,,9,2134866
+FL,Snipe Point; 1.5 mi NW of,,24.717,-81.687,2/23/2024,,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2135509
+FL,Snipe Point; 3.3 mi NW of,,24.725,-81.717,2/23/2024,,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2135534
+FL,Snipe Point; 5.4 mi NW of,,24.735,-81.749,2/23/2024,,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2135535
+FL,Snipe Point; 7.2 mi NW of,,24.749,-81.773,2/23/2024,,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2135536
+FL,Bay Dock (Sarasota Bay),,27.3316,-82.5779,2/23/2024,15:30,0.5,Karenia,brevis,not observed,0,cells/L,1,34.63,ppt,1,17.9,deg. C,1,,,9,,,9,2134902
+FL,New Pass Dock (Sarasota Bay),,27.33375,-82.57938,2/23/2024,15:35,0.5,Karenia,brevis,not observed,0,cells/L,1,34.71,ppt,1,17.9,deg. C,1,,,9,,,9,2134903
+FL,Eau Gallie Causeway (Indian River),,28.13591,-80.60545,2/24/2024,17:57,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2135044
+FL,Jupiter Inlet; NW of (Loxahatchee River),,26.94533,-80.07425,2/25/2024,14:30,0.5,Karenia,brevis,not observed,0,cells/L,1,35,ppt,1,22,deg. C,1,,,9,,,9,2134992
+FL,Tropic; SW of (Indian River),,28.1505,-80.635,2/25/2024,,0.5,Karenia,brevis,not observed,0,cells/L,1,20.8,ppt,1,17.2,deg. C,1,,,9,,,9,2134993
+FL,Deerfield Beach Fishing Pier,,26.31648,-80.07265,2/26/2024,14:49,1,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2135036
+FL,Pompano Beach Fisher Family Pier,,26.235,-80.0863,2/26/2024,15:30,1,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2135035
+FL,Dania Beach Fishing Pier,,26.05801,-80.10887,2/26/2024,16:46,1,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2135034
+FL,Upper Harbor Key; 5.2 mi N of,,24.888,-81.454,2/26/2024,,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2135537
+FL,Upper Harbor Key; 7.2 mi N of,,24.917,-81.459,2/26/2024,,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2135538
+FL,Content Keys; 9.2 mi N of,,24.936,-81.47,2/26/2024,,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2135539
+FL,Content Passage; 11 mi N of,,24.962,-81.489,2/26/2024,,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2135540
+FL,Goodland Bridge; SE end (Goodland Bay),,25.9333,-81.6497,2/26/2024,15:15,0.5,Karenia,brevis,not observed,0,cells/L,1,30,ppt,1,20,deg. C,1,,,9,,,9,2134962
+FL,Aquamarine Avenue; canal N of,,26.05038,-81.69126,2/26/2024,13:30,0.5,Karenia,brevis,not observed,0,cells/L,1,5,ppt,1,21,deg. C,1,,,9,,,9,2134990
+FL,Collier Boulevard Boating Park (Flotilla Passage),,25.9802,-81.7033,2/26/2024,15:55,0.5,Karenia,brevis,not observed,0,cells/L,1,30,ppt,1,20,deg. C,1,,,9,,,9,2134963
+FL,Caxambas Park (Caxambas Bay),,25.9124,-81.7171,2/26/2024,14:10,0.5,Karenia,brevis,not observed,0,cells/L,1,30.5,ppt,1,20,deg. C,1,,,9,,,9,2134961
+FL,Lee Avenue; docks NE of (Big Marco Pass),,25.9733,-81.7275,2/26/2024,14:40,0.5,Karenia,brevis,not observed,0,cells/L,1,29.5,ppt,1,20,deg. C,1,,,9,,,9,2134960
+FL,South Marco Beach,,25.9117,-81.7294,2/26/2024,17:27,0.5,Karenia,brevis,not observed,0,cells/L,1,34,ppt,1,21.6,deg. C,1,,,9,,,9,2134959
+FL,Good Fortune II Boat Dock (Rookery Bay),,26.02677,-81.73009,2/26/2024,14:00,0.5,Karenia,brevis,not observed,0,cells/L,1,28,ppt,1,20,deg. C,1,,,9,,,9,2134991
+FL,Naples Pier,,26.1316,-81.8067,2/26/2024,16:17,0.5,Karenia,brevis,not observed,0,cells/L,1,36,ppt,1,21.6,deg. C,1,,,9,,,9,2134958
+FL,Seagate,,26.2073,-81.8169,2/26/2024,15:52,0.5,Karenia,brevis,not observed,0,cells/L,1,36,ppt,1,21.6,deg. C,1,,,9,,,9,2134957
+FL,Vanderbilt Beach,,26.25375,-81.82377,2/26/2024,15:29,0.5,Karenia,brevis,not observed,0,cells/L,1,35,ppt,1,21.6,deg. C,1,,,9,,,9,2134956
+FL,Barefoot Beach State Preserve,,26.30481,-81.8362,2/26/2024,14:54,0.5,Karenia,brevis,not observed,0,cells/L,1,31,ppt,1,18.8,deg. C,1,,,9,,,9,2134955
+FL,Blind Pass Beach,,26.96324,-82.38565,2/26/2024,13:00,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134946
+FL,Manasota Beach Park Boat Ramp,,27.0102,-82.41035,2/26/2024,19:20,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134986
+FL,Manasota Beach,,27.01031,-82.41312,2/26/2024,13:20,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134945
+FL,Caspersen Beach,,27.05703,-82.4436,2/26/2024,13:55,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134944
+FL,Brohard Beach,,27.06631,-82.448,2/26/2024,14:10,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134943
+FL,Service Club Park,,27.07827,-82.45286,2/26/2024,14:40,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134920
+FL,Venice Fishing Pier,,27.0726,-82.4529,2/26/2024,14:25,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134942
+FL,Venice Fishing Pier,,27.0726,-82.4529,2/26/2024,20:17,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134987
+FL,Venice Beach,,27.10034,-82.46089,2/26/2024,15:00,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134919
+FL,North Jetty,,27.11382,-82.46883,2/26/2024,15:40,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134918
+FL,Nokomis Beach,,27.12332,-82.47122,2/26/2024,16:10,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134917
+FL,Turtle Beach,,27.21843,-82.51711,2/26/2024,15:25,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134916
+FL,Siesta Beach,,27.26518,-82.5531,2/26/2024,15:07,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134915
+FL,Ringling Causeway,,27.32682,-82.56244,2/26/2024,12:58,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134911
+FL,South Lido Park,,27.29818,-82.56739,2/26/2024,14:23,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134914
+FL,Lido Beach Casino,,27.311,-82.57718,2/26/2024,14:01,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134913
+FL,Bay Dock (Sarasota Bay),,27.3316,-82.5779,2/26/2024,19:40,0.5,Karenia,brevis,not observed,0,cells/L,1,34.8,ppt,1,20.4,deg. C,1,,,9,,,9,2134947
+FL,New Pass Dock (Sarasota Bay),,27.33375,-82.57938,2/26/2024,19:50,0.5,Karenia,brevis,not observed,0,cells/L,1,34.96,ppt,1,18.7,deg. C,1,,,9,,,9,2134948
+FL,North Lido Beach,,27.31561,-82.58171,2/26/2024,13:47,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134912
+FL,FWRI Peninsula; SE tip of (Bayboro Harbor),,27.7598,-82.63127,2/26/2024,15:53,0.5,Karenia,brevis,not observed,0,cells/L,1,29.72,ppt,1,18.72,deg. C,1,,,9,,,9,2134908
+FL,FWRI Peninsula; SE tip of (Bayboro Harbor),,27.7598,-82.63127,2/26/2024,16:03,4.5,Karenia,brevis,not observed,0,cells/L,1,30.33,ppt,1,18.7,deg. C,1,,,9,,,9,2134909
+FL,Longboat Key Beach,,27.37317,-82.63202,2/26/2024,13:19,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134910
+FL,Wallace Cove (Boca Ciega Bay),,27.7117,-82.69014,2/26/2024,17:41,0.5,Karenia,brevis,not observed,0,cells/L,1,33.11,ppt,1,19.99,deg. C,1,,,9,,,9,2134952
+FL,Fort De Soto East Beach; SW of (Lower Tampa Bay),,27.6339,-82.7006,2/26/2024,16:52,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,20,deg. C,1,,,9,,,9,2134988
+FL,Via Cipriani; dock S of (Old Tampa Bay),,27.94067,-82.7225,2/26/2024,14:16,0.5,Karenia,brevis,not observed,0,cells/L,1,25.84,ppt,1,18.44,deg. C,1,,,9,,,9,2134953
+FL,Mullet Key; Gulf Pier,,27.6133,-82.7391,2/26/2024,17:06,0.5,Karenia,brevis,not observed,0,cells/L,1,33.81,ppt,1,18.33333333,deg. C,5,,,9,,,9,2134951
+FL,Fort De Soto North Beach,,27.6413,-82.743,2/26/2024,17:22,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,19,deg. C,1,,,9,,,9,2134989
+FL,Country Club Road North; SW of (Boca Ciega Bay),,27.7784,-82.7466,2/26/2024,13:36,0.5,Karenia,brevis,not observed,0,cells/L,1,31.71,ppt,1,19.58,deg. C,1,,,9,,,9,2134954
+FL,La Contessa Pier,,27.8121,-82.81915,2/26/2024,15:56,0.5,Karenia,brevis,not observed,0,cells/L,1,33.32,ppt,1,18,deg. C,4,,,9,,,9,2134950
+FL,Clearwater Beach Pier 60,,27.9777,-82.8323,2/26/2024,15:04,0.5,Karenia,brevis,not observed,0,cells/L,1,33.1,ppt,1,18.33,deg. C,1,,,9,,,9,2134949
+FL,Bird Island; 2.2 mi W of,,29.593,-83.447,2/26/2024,,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2135087
+FL,Steinhatchee River; 8.6 mi SW of,,29.588,-83.527,2/26/2024,,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2135085
+FL,Destin Beach; 1.3 mi S of,,30.36373,-86.49515,2/26/2024,17:00,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,16.83,deg. C,1,,,9,,,9,2135043
+FL,Brooks Bridge; W of (Santa Rosa Sound),,30.4008,-86.6008,2/26/2024,15:15,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,16.94,deg. C,1,,,9,,,9,2135042
+FL,Ballyshannon Street; E of,,28.0164,-80.532,2/27/2024,11:45,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2135040
+FL,Macfarlane Street; W of (Indian River),,28.015,-80.5387,2/27/2024,12:00,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2135041
+FL,Geiger Point; Melbourne Causeway at (Indian River),,28.08245,-80.59505,2/27/2024,23:11,0.5,Karenia,brevis,not observed,0,cells/L,1,36,ppt,1,21.5,deg. C,1,,,9,,,9,2135084
+FL,Scurrahs Landing (Indian River),,28.07222,-80.59861,2/27/2024,21:55,0.5,Karenia,brevis,not observed,0,cells/L,1,17,ppt,1,22.5,deg. C,1,,,9,,,9,2135081
+FL,Front Street Park (Indian River),,28.07944,-80.59972,2/27/2024,22:56,0.5,Karenia,brevis,not observed,0,cells/L,1,18,ppt,1,22,deg. C,1,,,9,,,9,2135083
+FL,Crane Creek,,28.07667,-80.60444,2/27/2024,22:42,0.5,Karenia,brevis,not observed,0,cells/L,1,11,ppt,1,22,deg. C,1,,,9,,,9,2135082
+FL,Bonita Beach (Estero Bay),,26.35497,-81.84452,2/27/2024,17:41,0.8,Karenia,brevis,not observed,0,cells/L,1,27.53,ppt,1,21.3,deg. C,1,,,9,,,9,2135039
+FL,Long Key (Estero Bay),,26.38591,-81.84631,2/27/2024,17:16,1,Karenia,brevis,not observed,0,cells/L,1,32.25,ppt,1,21,deg. C,1,,,9,,,9,2135038
+FL,Estero Island (Estero Bay),,26.43494,-81.91138,2/27/2024,16:02,0.4,Karenia,brevis,not observed,0,cells/L,1,28.04,ppt,1,20.49,deg. C,1,,,9,,,9,2135037
+FL,Garfield Court; SW of (Placida Harbor),,26.8385,-82.2795,2/27/2024,16:22,0.2,Karenia,brevis,not observed,0,cells/L,1,34.4,ppt,1,20.4,deg. C,1,,,9,,,9,2135004
+FL,Gasparilla Pass,,26.81617,-82.2805,2/27/2024,15:44,0.2,Karenia,brevis,not observed,0,cells/L,1,34.8,ppt,1,19.2,deg. C,1,,,9,,,9,2135031
+FL,Stump Pass (Lemon Bay),,26.89867,-82.33933,2/27/2024,17:30,0.2,Karenia,brevis,not observed,0,cells/L,1,34.7,ppt,1,18.6,deg. C,1,,,9,,,9,2135006
+FL,Tom Adams Bridge; S of (Lemon Bay),,26.9307,-82.3498,2/27/2024,18:05,0.2,Karenia,brevis,not observed,0,cells/L,1,33.7,ppt,1,20.3,deg. C,1,,,9,,,9,2135005
+FL,Blind Pass Beach; E of (Lemon Bay),,26.96324,-82.3747,2/27/2024,18:45,0.2,Karenia,brevis,not observed,0,cells/L,1,32.1,ppt,1,20.6,deg. C,1,,,9,,,9,2135033
+FL,Bay Dock (Sarasota Bay),,27.3316,-82.5779,2/27/2024,18:40,0.5,Karenia,brevis,not observed,0,cells/L,1,34.82,ppt,1,20.3,deg. C,1,,,9,,,9,2134997
+FL,New Pass Dock (Sarasota Bay),,27.33375,-82.57938,2/27/2024,18:50,0.5,Karenia,brevis,not observed,0,cells/L,1,35.04,ppt,1,19.4,deg. C,1,,,9,,,9,2134998
+FL,Eden Island (Smacks Bayou),,27.80439,-82.61196,2/27/2024,19:15,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134995
+FL,Granada Terrace Park; E of (Coffeepot Bayou),,27.79405,-82.63093,2/27/2024,19:30,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134996
+FL,Booker Creek; mouth of (Bayboro Harbor),,27.75854,-82.63629,2/27/2024,17:00,0.5,Karenia,brevis,not observed,0,cells/L,1,21.57,ppt,1,19.37,deg. C,1,,,9,,,9,2134994
+FL,Juno Beach Fishing Pier,,26.89372,-80.0542,2/28/2024,,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2135080
+FL,Bonita Beach Park,,26.331,-81.8462,2/28/2024,15:31,0.5,Karenia,brevis,not observed,0,cells/L,1,35,ppt,1,20.2,deg. C,1,,,9,,,9,2135077
+FL,Lovers Key State Park,,26.39,-81.88,2/28/2024,15:01,0.5,Karenia,brevis,not observed,0,cells/L,1,35,ppt,1,20.4,deg. C,1,,,9,,,9,2135076
+FL,Lynn Hall Park,,26.4535,-81.9582,2/28/2024,14:14,0.5,Karenia,brevis,not observed,0,cells/L,1,34,ppt,1,19.89,deg. C,1,,,9,,,9,2135075
+FL,Lighthouse Beach,,26.4512,-82.0151,2/28/2024,13:38,0.5,Karenia,brevis,not observed,0,cells/L,1,34,ppt,1,19.4,deg. C,1,,,9,,,9,2135053
+FL,Tarpon Bay Road Beach,,26.4217,-82.0801,2/28/2024,13:16,0.5,Karenia,brevis,not observed,0,cells/L,1,35,ppt,1,18.9,deg. C,1,,,9,,,9,2135052
+FL,Alison Hagerup Beach Park,,26.5264,-82.1945,2/28/2024,12:45,0.5,Karenia,brevis,not observed,0,cells/L,1,36,ppt,1,18.6,deg. C,1,,,9,,,9,2135051
+FL,Boca Grande Pier (Gasparilla Sound),,26.80562,-82.27415,2/28/2024,13:00,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2135079
+FL,Englewood Beach,,26.92467,-82.36189,2/28/2024,18:00,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2135078
+FL,John Ringling Causeway Bridge; W of (Sarasota Bay),,27.33028,-82.56158,2/28/2024,,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2135532
+FL,Bay Dock (Sarasota Bay),,27.3316,-82.5779,2/28/2024,15:40,0.5,Karenia,brevis,not observed,0,cells/L,1,34.87,ppt,1,20,deg. C,1,,,9,,,9,2135007
+FL,New Pass Dock (Sarasota Bay),,27.33375,-82.57938,2/28/2024,15:50,0.5,Karenia,brevis,not observed,0,cells/L,1,34.98,ppt,1,18.99,deg. C,1,,,9,,,9,2135032
+FL,North Shore Park Beach (Middle Tampa Bay),,27.7843,-82.6237,2/28/2024,14:10,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2135001
+FL,Spa Beach (Middle Tampa Bay),,27.7746,-82.627,2/28/2024,13:49,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2134999
+FL,Emerson Point Preserve (Manatee River),,27.53125,-82.62854,2/28/2024,,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2135531
+FL,Lassing Park (Middle Tampa Bay),,27.752,-82.63,2/28/2024,13:32,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2135000
+FL,Maximo Park (Lower Tampa Bay),,27.7097,-82.6829,2/28/2024,13:04,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2135002
+FL,Passe-a-Grill North Channel,,27.67667,-82.73139,2/28/2024,15:03,0.4,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2135160
+FL,Shell Key Beach,,27.67139,-82.7425,2/28/2024,14:28,0.4,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2135159
+FL,Treasure Island Beach,,27.77,-82.7755,2/28/2024,12:25,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2135003
+FL,Deadmans Key; 2.5 mi SW of,,29.091,-83.108,2/28/2024,,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2135086
+FL,Millender Street; S of (St. George Sound),,29.7301,-84.88478,2/28/2024,14:02,0.1,Karenia,brevis,not observed,0,cells/L,1,3.02,ppt,1,18.7,deg. C,1,,,9,,,9,2135148
+FL,Sand Island; NE of (Pensacola Bay),,30.3348,-87.3153,2/28/2024,18:07,0.3,Karenia,brevis,not observed,0,cells/L,1,30.6,ppt,1,18.3,deg. C,1,,,9,,,9,2135050
+FL,Hidden Beach; North of,,25.74442,-80.14368,2/29/2024,19:18,0.4,Karenia,brevis,not observed,0,cells/L,1,38,ppt,1,25.2,deg. C,1,,,9,,,9,2135225
+FL,Virginia Key Beach Park; NE of,,25.73865,-80.14888,2/29/2024,18:58,0.4,Karenia,brevis,not observed,0,cells/L,1,37.8,ppt,1,24.89,deg. C,1,,,9,,,9,2135228
+FL,Crandon Beach,,25.7074,-80.15222,2/29/2024,18:15,0.5,Karenia,brevis,not observed,0,cells/L,1,38.3,ppt,1,25.69,deg. C,1,,,9,,,9,2135224
+FL,Cape Florida Beach,,25.66742,-80.15508,2/29/2024,17:49,0.5,Karenia,brevis,not observed,0,cells/L,1,36,ppt,1,23.69,deg. C,1,,,9,,,9,2135223
+FL,Crandon Park Marina Boat Ramp (Biscayne Bay),,25.72385,-80.15528,2/29/2024,16:56,0.5,Karenia,brevis,not observed,0,cells/L,1,37.2,ppt,1,23.3,deg. C,1,,,9,,,9,2135221
+FL,Virginia Key Beach Park,,25.73525,-80.15563,2/29/2024,18:38,0.5,Karenia,brevis,not observed,0,cells/L,1,37.8,ppt,1,25,deg. C,1,,,9,,,9,2135227
+FL,No Name Harbor,,25.67683,-80.16415,2/29/2024,17:27,0.5,Karenia,brevis,not observed,0,cells/L,1,34.1,ppt,1,22.7,deg. C,1,,,9,,,9,2135222
+FL,Rickenbacker Causeway; canal E of,,25.74095,-80.16755,2/29/2024,19:35,0.4,Karenia,brevis,not observed,0,cells/L,1,36.2,ppt,1,24.6,deg. C,1,,,9,,,9,2135226
+FL,Rickenbacker Causeway Beach (Biscayne Bay),,25.74097,-80.1713,2/29/2024,16:37,0.4,Karenia,brevis,not observed,0,cells/L,1,35.1,ppt,1,23.4,deg. C,1,,,9,,,9,2135220
+FL,Hobie Island Beach Park North (Biscayne Bay),,25.74558,-80.19692,2/29/2024,16:18,0.2,Karenia,brevis,not observed,0,cells/L,1,35.3,ppt,1,24.79,deg. C,1,,,9,,,9,2135219
+FL,Mercy Way; SE of (Biscayne Bay),,25.73958,-80.21243,2/29/2024,15:55,0.5,Karenia,brevis,not observed,0,cells/L,1,32.7,ppt,1,23.2,deg. C,1,,,9,,,9,2135218
+FL,Kenneth Myers Bayside Park Boat Ramp; SE of (Biscayne Bay),,25.72711,-80.23742,2/29/2024,15:30,0.5,Karenia,brevis,not observed,0,cells/L,1,30.4,ppt,1,23.2,deg. C,1,,,9,,,9,2135217
+FL,John Pennekamp Coral Reef State Park; 4 mi SE of,,25.13857,-80.2951,2/29/2024,15:40,5,Karenia,brevis,not observed,0,cells/L,1,35,ppt,1,24,deg. C,1,,,9,,,9,2135216
+FL,Sanibel Boat Ramp; N of (San Carlos Bay),,26.45418,-82.0357,2/29/2024,17:35,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2135154
+FL,Tarpon Bay Road Beach; 1 mi S of,,26.407,-82.083,2/29/2024,17:40,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2135153
+FL,Hog Island; S of (Charlotte Harbor),,26.91167,-82.15883,2/29/2024,15:46,0.1,Karenia,brevis,not observed,0,cells/L,1,18.4,ppt,1,21.8,deg. C,1,,,9,,,9,2135092
+FL,GDC Cove; mouth of (Myakka River),,26.9441,-82.1947,2/29/2024,16:38,0.1,Karenia,brevis,not observed,0,cells/L,1,16.3,ppt,1,21.8,deg. C,1,,,9,,,9,2135093
+FL,Bowmans Beach; 9.5 mi SW of,,26.347,-82.246,2/29/2024,15:08,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2135152
+FL,Bay Dock (Sarasota Bay),,27.3316,-82.5779,2/29/2024,18:05,0.5,Karenia,brevis,not observed,0,cells/L,1,34.84,ppt,1,21.5,deg. C,1,,,9,,,9,2135088
+FL,New Pass Dock (Sarasota Bay),,27.33375,-82.57938,2/29/2024,18:15,0.5,Karenia,brevis,not observed,0,cells/L,1,34.91,ppt,1,20.29,deg. C,1,,,9,,,9,2135089
+FL,38th Street South; E of (Boca Ciega Bay),,27.7285,-82.683,2/29/2024,13:23,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2135156
+FL,Robert K. Rees Memorial Park,,28.2535,-82.7572,2/29/2024,15:06,0.5,Karenia,brevis,not observed,0,cells/L,1,24.1,ppt,1,20.8,deg. C,1,,,9,,,9,2135145
+FL,Bay Pines Terrace; NE of (Hurricane Hole),,27.81318,-82.78473,2/29/2024,16:30,0.1,Karenia,brevis,not observed,0,cells/L,1,28.77,ppt,1,22.63,deg. C,1,,,9,,,9,2135090
+FL,Key Vista Nature Park (Anclote Anchorage),,28.19825,-82.78522,2/29/2024,15:41,0.5,Karenia,brevis,not observed,0,cells/L,1,28,ppt,1,24.49,deg. C,1,,,9,,,9,2135147
+FL,Bay Pines Terrace; E of (Boca Ciega Bay),,27.8096,-82.78628,2/29/2024,16:42,0.2,Karenia,brevis,not observed,0,cells/L,1,31.32,ppt,1,21.41,deg. C,1,,,9,,,9,2135091
+FL,Anclote Gulf Park Pier (Anclote Anchorage),,28.193,-82.7888,2/29/2024,16:11,0.5,Karenia,brevis,not observed,0,cells/L,1,30.4,ppt,1,20.8,deg. C,1,,,9,,,9,2135144
+FL,Anclote River Park Boat Ramp,,28.1763,-82.789,2/29/2024,15:57,0.5,Karenia,brevis,not observed,0,cells/L,1,26.6,ppt,1,23.2,deg. C,1,,,9,,,9,2135146
+FL,Pensacola Beach Pier,,30.3273,-87.1419,2/29/2024,17:54,0.5,Karenia,brevis,not observed,0,cells/L,1,37,ppt,1,16.1,deg. C,1,,,9,,,9,2135149
+FL,South Bob Sikes Fishing Pier (Santa Rosa Sound),,30.34613,-87.1518,2/29/2024,18:17,0.5,Karenia,brevis,not observed,0,cells/L,1,27,ppt,1,16,deg. C,1,,,9,,,9,2135150
+FL,Sandsprit Park Boat Ramp (Manatee Pocket),,27.16226,-80.1939,3/1/2024,19:15,0.7,Karenia,brevis,not observed,0,cells/L,1,23.24,ppt,1,24.7,deg. C,1,,,9,,,9,2135213
+FL,Indian Riverside Park Pier (Indian River),,27.22476,-80.21126,3/1/2024,19:45,0.7,Karenia,brevis,not observed,0,cells/L,1,26.48,ppt,1,24.09,deg. C,1,,,9,,,9,2135212
+FL,East Midway Road; N of (Indian River),,27.38745,-80.2971,3/1/2024,13:45,0.5,Karenia,brevis,not observed,0,cells/L,1,31.99,ppt,1,22.3,deg. C,1,,,9,,,9,2135215
+FL,Indian River Veterans Memorial Park Boat Ramp (Indian River),,27.45181,-80.32274,3/1/2024,13:15,1,Karenia,brevis,not observed,0,cells/L,1,33.62,ppt,1,22.5,deg. C,1,,,9,,,9,2135214
+FL,Jupiter Inlet; NW of (Loxahatchee River),,26.94533,-80.07425,3/3/2024,14:30,0.5,Karenia,brevis,not observed,0,cells/L,1,32.2,ppt,1,23.5,deg. C,1,,,9,,,9,2135365
+FL,Tropic; SW of (Indian River),,28.1505,-80.635,3/3/2024,,0.5,Karenia,brevis,not observed,0,cells/L,1,20.6,ppt,1,22.7,deg. C,1,,,9,,,9,2135368
+FL,15th Street South; E of,,29.469,-81.1211,3/3/2024,19:45,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2135501
+FL,Moody Boulevard Bridge; N of (Matanzas River),,29.4778,-81.1366,3/3/2024,19:30,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2135500
+FL,Marco Island Beach,,25.9412,-81.74168,3/3/2024,14:56,0.1,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2135418
+FL,North Marco Island Beach (Marco Bay),,25.97057,-81.74459,3/3/2024,13:57,0.1,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2135417
+FL,Ballyshannon Street; E of,,28.0164,-80.532,3/4/2024,12:05,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2135494
+FL,Macfarlane Street; W of (Indian River),,28.015,-80.5387,3/4/2024,12:20,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2135495
+FL,Diamond Bay (Banana River),,28.35034,-80.61298,3/4/2024,14:05,0.5,Karenia,brevis,not observed,0,cells/L,1,17,ppt,1,22,deg. C,1,,,9,,,9,2135493
+FL,South Marco Beach,,25.9117,-81.7294,3/4/2024,16:29,0.5,Karenia,brevis,not observed,0,cells/L,1,31,ppt,1,26.59,deg. C,1,,,9,,,9,2135354
+FL,Naples Pier,,26.1316,-81.8067,3/4/2024,15:33,0.5,Karenia,brevis,not observed,0,cells/L,1,32,ppt,1,24.99,deg. C,1,,,9,,,9,2135353
+FL,Seagate,,26.2073,-81.8169,3/4/2024,15:04,0.5,Karenia,brevis,not observed,0,cells/L,1,33,ppt,1,23.8,deg. C,1,,,9,,,9,2135352
+FL,Vanderbilt Beach,,26.25375,-81.82377,3/4/2024,14:35,0.5,Karenia,brevis,not observed,0,cells/L,1,33,ppt,1,23.3,deg. C,1,,,9,,,9,2135351
+FL,Barefoot Beach State Preserve,,26.30481,-81.8362,3/4/2024,14:00,0.5,Karenia,brevis,not observed,0,cells/L,1,33,ppt,1,22.19,deg. C,1,,,9,,,9,2135350
+FL,Pelican Bay Nature Park Pier (Estero Bay),,26.3584,-81.8375,3/4/2024,11:51,0.5,Karenia,brevis,not observed,0,cells/L,1,30.65,ppt,1,23.5,deg. C,1,,,9,,,9,2135362
+FL,Estero River; upstream,,26.43861,-81.84,3/4/2024,12:15,0.5,Karenia,brevis,not observed,0,cells/L,1,6.19,ppt,1,23.29,deg. C,1,,,9,,,9,2135364
+FL,Estero River; mouth of (Estero Bay),,26.4294,-81.858,3/4/2024,12:15,0.5,Karenia,brevis,not observed,0,cells/L,1,29.49,ppt,1,23.9,deg. C,1,,,9,,,9,2135359
+FL,Carl Johnson Park Boat Ramp (Estero Bay),,26.3936,-81.8655,3/4/2024,11:46,0.5,Karenia,brevis,not observed,0,cells/L,1,33.31,ppt,1,22.7,deg. C,1,,,9,,,9,2135361
+FL,Mound House Dock (Estero Bay),,26.4462,-81.9272,3/4/2024,11:44,0.5,Karenia,brevis,not observed,0,cells/L,1,29.65,ppt,1,23.9,deg. C,1,,,9,,,9,2135363
+FL,Matanzas Pass (Estero Bay),,26.4577,-81.9532,3/4/2024,11:28,0.5,Karenia,brevis,not observed,0,cells/L,1,30.06,ppt,1,23.09,deg. C,1,,,9,,,9,2135358
+FL,Punta Gorda Boat Ramp (Charlotte Harbor),,26.9092,-82.0953,3/4/2024,12:52,0.5,Karenia,brevis,not observed,0,cells/L,1,23.72,ppt,1,22.1,deg. C,1,,,9,,,9,2135360
+FL,Black Key; NE of (Pine Island Sound),,26.6623,-82.1702,3/4/2024,12:40,0.5,Karenia,brevis,not observed,0,cells/L,1,32.72,ppt,1,22.8,deg. C,1,,,9,,,9,2135357
+FL,Pelican Bay (Pine Island Sound),,26.6908,-82.2447,3/4/2024,12:10,0.5,Karenia,brevis,not observed,0,cells/L,1,33.9,ppt,1,22.8,deg. C,1,,,9,,,9,2135356
+FL,Fletcher Point (Lower Tampa Bay),,27.58512,-82.61482,3/4/2024,18:20,0.5,Karenia,brevis,not observed,0,cells/L,1,32.07,ppt,1,24.8,deg. C,1,,,9,,,9,2135315
+FL,FWRI Peninsula; SE tip of (Bayboro Harbor),,27.7598,-82.63127,3/4/2024,15:16,0.5,Karenia,brevis,not observed,0,cells/L,1,29.33,ppt,1,21.44,deg. C,1,,,9,,,9,2135210
+FL,FWRI Peninsula; SE tip of (Bayboro Harbor),,27.7598,-82.63127,3/4/2024,15:20,4.2,Karenia,brevis,not observed,0,cells/L,1,30.38,ppt,1,21.21,deg. C,1,,,9,,,9,2135211
+FL,Skyway Fishing Pier; South (Lower Tampa Bay),,27.5965,-82.6372,3/4/2024,18:05,0.5,Karenia,brevis,not observed,0,cells/L,1,32.36,ppt,1,22.24,deg. C,1,,,9,,,9,2135314
+FL,Palma Sola Bay Bridge,,27.4959,-82.6522,3/4/2024,19:01,0.5,Karenia,brevis,not observed,0,cells/L,1,31.99,ppt,1,23.47,deg. C,1,,,9,,,9,2135316
+FL,Longboat Pass Boat Ramp (Sarasota Bay),,27.4479,-82.6883,3/4/2024,20:47,0.5,Karenia,brevis,not observed,0,cells/L,1,34.44,ppt,1,21.63,deg. C,1,,,9,,,9,2135317
+FL,Wallace Cove (Boca Ciega Bay),,27.7117,-82.69014,3/4/2024,17:36,0.5,Karenia,brevis,not observed,0,cells/L,1,33.3,ppt,1,23.03,deg. C,1,,,9,,,9,2135311
+FL,Via Cipriani; dock S of (Old Tampa Bay),,27.94067,-82.7225,3/4/2024,14:09,0.5,Karenia,brevis,not observed,0,cells/L,1,23.18,ppt,1,22.15,deg. C,1,,,9,,,9,2135312
+FL,Mullet Key; Gulf Pier,,27.6133,-82.7391,3/4/2024,16:44,0.5,Karenia,brevis,not observed,0,cells/L,1,34.23,ppt,1,20.8,deg. C,1,,,9,,,9,2135310
+FL,Anna Maria Island Rod & Reel Pier (Lower Tampa Bay),,27.5385,-82.7402,3/4/2024,19:41,0.5,Karenia,brevis,not observed,0,cells/L,1,34.09,ppt,1,22.17,deg. C,1,,,9,,,9,2135318
+FL,Country Club Road North; SW of (Boca Ciega Bay),,27.7784,-82.7466,3/4/2024,13:27,0.5,Karenia,brevis,not observed,0,cells/L,1,32.9,ppt,1,22.23,deg. C,1,,,9,,,9,2135313
+FL,Speckled Trout Marina (St. Joseph Sound),,28.06917,-82.78056,3/4/2024,14:30,0.9,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2135370
+FL,Howard Park Causeway; S of (St. Joseph Sound),,28.15233,-82.80183,3/4/2024,14:00,0.9,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2135369
+FL,Sunset Beach; 2.7 mi W of,,27.746,-82.805,3/4/2024,,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2135420
+FL,La Contessa Pier,,27.8121,-82.81915,3/4/2024,15:42,0.5,Karenia,brevis,not observed,0,cells/L,1,39.96,ppt,1,21.42,deg. C,1,,,9,,,9,2135309
+FL,South Mangrove Point; NW of,,29.07983,-82.82017,3/4/2024,15:58,0.5,Karenia,brevis,not observed,0,cells/L,1,21.8,ppt,1,22.1,deg. C,1,,,9,,,9,2135319
+FL,Clearwater Beach Pier 60,,27.9777,-82.8323,3/4/2024,14:52,0.5,Karenia,brevis,not observed,0,cells/L,1,33.79,ppt,1,20.47,deg. C,1,,,9,,,9,2135281
+FL,Ramsey Point; 2.9 mi W of (Waccasassa Bay),,29.1265,-82.8495,3/4/2024,16:10,0.5,Karenia,brevis,not observed,0,cells/L,1,21.8,ppt,1,21,deg. C,1,,,9,,,9,2135320
+FL,Tripod Point; 2.9 mi S of,,29.1234,-82.9124,3/4/2024,16:30,0.5,Karenia,brevis,not observed,0,cells/L,1,22.4,ppt,1,21,deg. C,1,,,9,,,9,2135321
+FL,Johns Pass; 12 mi W of,,27.783,-82.983,3/4/2024,,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2135419
+FL,Atsena Otie Key; 1.5 mi E of,,29.123,-83.00017,3/4/2024,16:42,0.5,Karenia,brevis,not observed,0,cells/L,1,26.3,ppt,1,20.8,deg. C,1,,,9,,,9,2135322
+FL,"Deer Point Boat Ramp, E of (North Bay)",,30.26686,-85.60321,3/4/2024,14:14,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2135366
+FL,Bailey Bridge; E of (North Bay),,30.25867,-85.64581,3/4/2024,17:13,0.3,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2135328
+FL,McKenzie Road Boat Ramp (North Bay),,30.2726,-85.6499,3/4/2024,14:24,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2135367
+FL,Little Oyster Bar Point; NW of (North Bay),,30.25689,-85.68422,3/4/2024,17:00,0.3,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2135327
+FL,West Bay Point; SE of (North Bay),,30.22422,-85.71397,3/4/2024,16:44,0.3,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2135326
+FL,Motes Point; S of (Choctawhatchee Bay),,30.44492,-86.18419,3/4/2024,18:17,0.3,Karenia,brevis,not observed,0,cells/L,1,11,ppt,1,20.19,deg. C,1,,,9,,,9,2135324
+FL,Kellogg Bayside Park; NE of (Choctawhatchee Bay),,30.41203,-86.20433,3/4/2024,17:20,0.3,Karenia,brevis,not observed,0,cells/L,1,10.6,ppt,1,19.19,deg. C,1,,,9,,,9,2135325
+FL,Basin Bayou; S of (Choctawhatchee Bay),,30.483,-86.25217,3/4/2024,17:54,0.3,Karenia,brevis,not observed,0,cells/L,1,11.5,ppt,1,20.7,deg. C,1,,,9,,,9,2135323
+FL,St. Augustine Inlet; 5.8 mi E of,,29.9117,-81.1883,3/5/2024,16:43,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,17.1,deg. C,1,,,9,,,9,2135497
+FL,St. Augustine Inlet; 3.5 mi E of,,29.9117,-81.2267,3/5/2024,16:15,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,16.9,deg. C,1,,,9,,,9,2135496
+FL,Pavilion Key; 1 mi SW of,,25.679,-81.361,3/5/2024,19:00,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2135948
+FL,Pavilion Key; 9.1 mi SW of,,25.616,-81.472,3/5/2024,15:00,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2135947
+FL,Palm Point; NE of (Lemon Bay),,26.89908,-82.33118,3/5/2024,20:40,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,23.1,deg. C,1,,,9,,,9,2135593
+FL,Stump Pass; 2.3 mi SW of,,26.86887,-82.36462,3/5/2024,18:20,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,22.09,deg. C,1,,,9,,,9,2135592
+FL,Manasota Beach Park Boat Ramp,,27.01014,-82.41044,3/5/2024,19:15,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2135498
+FL,Venice Fishing Pier,,27.0726,-82.4529,3/5/2024,20:05,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2135499
+FL,Mashes Sands Beach,,29.97333,-84.3405,3/5/2024,16:30,0.3,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2135491
+FL,Bottoms Road Boat Ramp (Apalachee Bay),,30.01583,-84.3683,3/5/2024,16:42,0.3,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2135492
+FL,Alligator Harbor Boat Ramp,,29.9235,-84.41417,3/5/2024,16:10,0.3,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2135490
+FL,Indian Pass (St. Vincent Sound),,29.6821,-85.2217,3/5/2024,14:45,0.3,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2135488
+FL,Neptune Street; N of (Indian Lagoon),,29.683,-85.23767,3/5/2024,14:53,0.3,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2135489
+FL,Ramrod Key,,24.65823,-81.42032,3/6/2024,15:19,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2135589
+FL,Ramrod Key; W of (Niles Channel),,24.65796,-81.42098,3/6/2024,17:30,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2135583
+FL,Bonita Beach Park,,26.331,-81.8462,3/6/2024,15:29,0.5,Karenia,brevis,not observed,0,cells/L,1,35,ppt,1,22.49,deg. C,1,,,9,,,9,2135556
+FL,Lovers Key State Park,,26.39,-81.88,3/6/2024,15:00,0.5,Karenia,brevis,not observed,0,cells/L,1,35,ppt,1,23.19,deg. C,1,,,9,,,9,2135555
+FL,Avalon Drive; N of (Bimini Basin),,26.55838,-81.95534,3/6/2024,16:26,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2135687
+FL,Lynn Hall Park,,26.4535,-81.9582,3/6/2024,14:16,0.5,Karenia,brevis,not observed,0,cells/L,1,34,ppt,1,22.69,deg. C,1,,,9,,,9,2135554
+FL,Lighthouse Beach,,26.4512,-82.0151,3/6/2024,13:38,0.5,Karenia,brevis,not observed,0,cells/L,1,34,ppt,1,22.29,deg. C,1,,,9,,,9,2135553
+FL,Cotton Key; W of (Charlotte Harbor),,26.802,-82.069,3/6/2024,16:31,1.6,Karenia,brevis,not observed,0,cells/L,1,26.36,ppt,1,24,deg. C,1,,,9,,,9,2135588
+FL,Tarpon Bay Road Beach,,26.4217,-82.0801,3/6/2024,13:15,0.5,Karenia,brevis,not observed,0,cells/L,1,35,ppt,1,22.3,deg. C,1,,,9,,,9,2135552
+FL,Sister Ponds Creek; E of (Charlotte Harbor),,26.8325,-82.14805,3/6/2024,16:15,1.1,Karenia,brevis,not observed,0,cells/L,1,24.35,ppt,1,22.99,deg. C,1,,,9,,,9,2135587
+FL,Alison Hagerup Beach Park,,26.5264,-82.1945,3/6/2024,12:43,0.5,Karenia,brevis,not observed,0,cells/L,1,36,ppt,1,21.59,deg. C,1,,,9,,,9,2135551
+FL,Boca Grande Pier (Gasparilla Sound),,26.80562,-82.27415,3/6/2024,13:00,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2135585
+FL,Englewood Beach,,26.92467,-82.36189,3/6/2024,15:30,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2135584
+FL,North Shore Park Beach (Middle Tampa Bay),,27.7843,-82.6237,3/6/2024,12:27,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2135504
+FL,Spa Beach (Middle Tampa Bay),,27.7746,-82.627,3/6/2024,12:46,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2135502
+FL,Lassing Park (Middle Tampa Bay),,27.752,-82.63,3/6/2024,13:16,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2135503
+FL,Maximo Park (Lower Tampa Bay),,27.7097,-82.6829,3/6/2024,13:53,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2135505
+FL,Mangrove Point; 1.7 mi NW of (Crystal Bay),,28.8921,-82.7427,3/6/2024,14:58,0.1,Karenia,brevis,not observed,0,cells/L,1,25.65,ppt,1,21.39,deg. C,1,,,9,,,9,2135771
+FL,Treasure Island Beach,,27.77,-82.7755,3/6/2024,14:35,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2135506
+FL,Mar Marina (Anclote River),,28.16305,-82.77606,3/6/2024,,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2135590
+FL,Wacassassa Street; W of (Anclote River),,28.16907,-82.78302,3/6/2024,19:15,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2135591
+FL,Pine Island; 11 mi W of,,28.595,-82.831,3/6/2024,,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2135765
+FL,Eagle Nest Island; 19 mi W of,,28.585,-82.953,3/6/2024,,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2135766
+FL,Millender Street; S of (St. George Sound),,29.7301,-84.88478,3/6/2024,16:50,0.1,Karenia,brevis,not observed,0,cells/L,1,23.93,ppt,1,21.99,deg. C,1,,,9,,,9,2135557
+FL,Posten Bayou; NW of (West Bay),,30.19556,-85.7225,3/6/2024,16:13,0.3,Karenia,brevis,not observed,0,cells/L,1,23.6,ppt,1,19.79,deg. C,1,,,9,,,9,2135768
+FL,Cedar Hammock; W of (West Bay),,30.25969,-85.74908,3/6/2024,17:58,0.3,Karenia,brevis,not observed,0,cells/L,1,23.3,ppt,1,20.09,deg. C,1,,,9,,,9,2135770
+FL,Coon Point; 1.1 mi SW of (West Bay),,30.27136,-85.82661,3/6/2024,17:13,0.3,Karenia,brevis,not observed,0,cells/L,1,22.1,ppt,1,20.69,deg. C,1,,,9,,,9,2135769
+FL,Sand Island; NE of (Pensacola Bay),,30.33353,-87.31652,3/6/2024,17:38,0.3,Karenia,brevis,not observed,0,cells/L,1,29.8,ppt,1,18.39,deg. C,1,,,9,,,9,2135767
+FL,Juno Beach Fishing Pier,,26.89372,-80.0542,3/7/2024,17:30,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2135755
+FL,Marineland Beach,,29.66628,-81.21073,3/7/2024,16:03,0.1,Karenia,brevis,not observed,0,cells/L,1,33.32,ppt,1,17.7,deg. C,1,,,9,,,9,2135164
+FL,Fort Matanzas (Matanzas Bay),,29.7427,-81.2447,3/7/2024,13:09,0.1,Karenia,brevis,not observed,0,cells/L,1,32.63,ppt,1,20,deg. C,1,,,9,,,9,2135111
+FL,Crescent Beach,,29.7687,-81.251,3/7/2024,15:37,0.1,Karenia,brevis,not observed,0,cells/L,1,33.28,ppt,1,18,deg. C,1,,,9,,,9,2135163
+FL,Faver-Dykes (Pellicer Creek),,29.66822,-81.2631,3/7/2024,15:38,0.1,Karenia,brevis,not observed,0,cells/L,1,8.62,ppt,1,21.69,deg. C,1,,,9,,,9,2135110
+FL,St. Augustine Beach,,29.85138,-81.26473,3/7/2024,15:08,0.1,Karenia,brevis,not observed,0,cells/L,1,33.76,ppt,1,16.7,deg. C,1,,,9,,,9,2135162
+FL,Vilano Beach,,29.9378,-81.29897,3/7/2024,14:02,0.1,Karenia,brevis,not observed,0,cells/L,1,32.72,ppt,1,17.2,deg. C,1,,,9,,,9,2135161
+FL,San Sebastian (Matanzas River),,29.8694,-81.3077,3/7/2024,13:30,0.1,Karenia,brevis,not observed,0,cells/L,1,31.46,ppt,1,18.14,deg. C,1,,,9,,,9,2135112
+FL,South Ponte Vedra,,30.02262,-81.32263,3/7/2024,13:40,0.1,Karenia,brevis,not observed,0,cells/L,1,33.24,ppt,1,16.9,deg. C,1,,,9,,,9,2135117
+FL,North Ponte Vedra,,30.11688,-81.34444,3/7/2024,13:22,0.1,Karenia,brevis,not observed,0,cells/L,1,32.68,ppt,1,16.4,deg. C,1,,,9,,,9,2135116
+FL,Pine Island; S of (Tolomato River),,30.0516,-81.3669,3/7/2024,15:00,0.1,Karenia,brevis,not observed,0,cells/L,1,17.37,ppt,1,20.64,deg. C,1,,,9,,,9,2135113
+FL,South Anclote Key Beach; SW of,,28.1537,-82.84497,3/7/2024,17:38,0.9,Karenia,brevis,not observed,0,cells/L,1,,,9,21,deg. C,1,,,9,,,9,2135340
+FL,North Anclote Key; NW of,,28.2183,-82.85382,3/7/2024,18:10,0.9,Karenia,brevis,not observed,0,cells/L,1,,,9,20.99,deg. C,1,,,9,,,9,2135341
+FL,Old St. George Island Causeway; E of (St. George Sound),,29.70213,-84.88018,3/7/2024,14:05,1,Karenia,brevis,not observed,0,cells/L,1,11.37,ppt,1,19.29,deg. C,1,,,9,,,9,2135754
+FL,Long Point; S of (East Bay),,29.7308,-84.94518,3/7/2024,13:48,0.5,Karenia,brevis,not observed,0,cells/L,1,0.95,ppt,1,18.59,deg. C,1,,,9,,,9,2135752
+FL,Sikes Cut; SE of,,29.60668,-84.94665,3/7/2024,15:16,0.5,Karenia,brevis,not observed,0,cells/L,1,30.31,ppt,1,17.7,deg. C,1,,,9,,,9,2135753
+FL,Mid-Apalachicola Bay,,29.66768,-84.99402,3/7/2024,17:16,0.5,Karenia,brevis,not observed,0,cells/L,1,12,ppt,1,19.39,deg. C,1,,,9,,,9,2135751
+FL,St. Vincent Point; E of (Apalachicola Bay),,29.67467,-85.05833,3/7/2024,16:39,1,Karenia,brevis,not observed,0,cells/L,1,24.07,ppt,1,19.09,deg. C,1,,,9,,,9,2135700
+FL,West Pass; NE of (Apalachicola Bay),,29.63798,-85.08902,3/7/2024,16:16,0.5,Karenia,brevis,not observed,0,cells/L,1,24.9,ppt,1,18.89,deg. C,1,,,9,,,9,2135699
+FL,Jolly Bay; 1 mi S of (Choctawhatchee Bay),,30.4094,-86.1453,3/7/2024,18:12,0.5,Karenia,brevis,not observed,0,cells/L,1,4.98,ppt,1,21.66666667,deg. C,5,,,9,,,9,2135759
+FL,Wheeler Point; 1.7 mi SW of (Choctawhatchee Bay),,30.4232,-86.183,3/7/2024,17:53,0.5,Karenia,brevis,not observed,0,cells/L,1,8.74,ppt,1,20.55555556,deg. C,5,,,9,,,9,2135758
+FL,Alaque Point; 1.7 mi W of (Choctawhatchee Bay),,30.46967,-86.26386,3/7/2024,17:31,0.3,Karenia,brevis,not observed,0,cells/L,1,15.4,ppt,1,19.99,deg. C,1,,,9,,,9,2135688
+FL,Basin Bayou; 2.3 mi SW of (Choctawhatchee Bay),,30.4571,-86.2712,3/7/2024,17:19,0.5,Karenia,brevis,not observed,0,cells/L,1,14.84,ppt,1,20.43,deg. C,1,,,9,,,9,2135757
+FL,Fourmile Point; N of (Choctawhatchee Bay),,30.42819,-86.31303,3/7/2024,19:09,0.3,Karenia,brevis,not observed,0,cells/L,1,14.4,ppt,1,20.79,deg. C,1,,,9,,,9,2135690
+FL,Big Hammock Point; 1.8 mi SE of (Choctawhatchee Bay),,30.4431,-86.3365,3/7/2024,16:58,0.5,Karenia,brevis,not observed,0,cells/L,1,14.94,ppt,1,20.27,deg. C,1,,,9,,,9,2135756
+FL,White Point; 1.1 mi S of (Choctawhatchee Bay),,30.4361,-86.4253,3/7/2024,16:15,0.5,Karenia,brevis,not observed,0,cells/L,1,14.87,ppt,1,19.66,deg. C,1,,,9,,,9,2135761
+FL,Buccaroo Point; 1.8 mi SE of (Choctawhatchee Bay),,30.4436,-86.4714,3/7/2024,15:51,0.5,Karenia,brevis,not observed,0,cells/L,1,14.65,ppt,1,19.55,deg. C,1,,,9,,,9,2135762
+FL,Piney Point; 1.2 mi N of  (Choctawhatchee Bay),,30.42758,-86.48731,3/7/2024,18:21,0.3,Karenia,brevis,not observed,0,cells/L,1,14.3,ppt,1,21.09,deg. C,1,,,9,,,9,2135689
+FL,Lake Lorraine; 1.7 mi SE of (Choctawhatchee Bay),,30.4162,-86.5343,3/7/2024,15:22,0.5,Karenia,brevis,not observed,0,cells/L,1,15.09,ppt,1,19.32,deg. C,1,,,9,,,9,2135760
+FL,Navarre Pier,,30.376,-86.8631,3/7/2024,,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,18.19,deg. C,1,,,9,,,9,2135586
+FL,Matheson Hammock Park; Canal N of,,25.67875,-80.2622,3/8/2024,14:40,0.5,Karenia,brevis,not observed,0,cells/L,1,22.2,ppt,1,25.19,deg. C,1,,,9,,,9,2135943
+FL,Deering Estate People''s Dock (Biscayne Bay),,25.61437,-80.30582,3/8/2024,16:22,0.5,Karenia,brevis,not observed,0,cells/L,1,26.7,ppt,1,27.49,deg. C,1,,,9,,,9,2135944
+FL,Black Point Boat Launch (Black Creek),,25.53888,-80.32753,3/8/2024,17:25,0.5,Karenia,brevis,not observed,0,cells/L,1,5.5,ppt,1,26.99,deg. C,1,,,9,,,9,2135949
+FL,Homestead Bayfront Park (Biscayne Bay),,25.46288,-80.3366,3/8/2024,18:44,0.5,Karenia,brevis,not observed,0,cells/L,1,25.7,ppt,1,27.89,deg. C,1,,,9,,,9,2135950
+FL,Guana River,,29.9985,-81.3267,3/8/2024,13:30,0.1,Karenia,brevis,not observed,0,cells/L,1,25.65,ppt,1,19.49,deg. C,1,,,9,,,9,2135115
+FL,Guana Reserve Middle Beach; W of (Lake Ponte Vedra),,30.08302,-81.34286,3/8/2024,14:47,0.1,Karenia,brevis,not observed,0,cells/L,1,4.19,ppt,1,20.59,deg. C,1,,,9,,,9,2135114
+FL,Marco Island; 7.2 mi NW of,,26,-81.859,3/8/2024,17:30,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2135946
+FL,Caxambas Pass; 15 mi W of,,25.908,-81.962,3/8/2024,14:40,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2135945
+FL,North Blind Creek; W of (Chassahowitzka Bay),,28.67,-82.66968,3/9/2024,20:00,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,24.21,deg. C,1,,,9,,,9,2135342
+FL,South Blind Creek; 2.4 mi W of,,28.66045,-82.69482,3/9/2024,20:30,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,24,deg. C,1,,,9,,,9,2135343
+FL,Jupiter Inlet; NW of (Loxahatchee River),,26.94533,-80.07425,3/10/2024,13:30,0.5,Karenia,brevis,not observed,0,cells/L,1,35.6,ppt,1,23,deg. C,1,,,9,,,9,2135335
+FL,Ocean Park,,28.06861,-80.55611,3/10/2024,23:28,0.5,Karenia,brevis,not observed,0,cells/L,1,41,ppt,1,20,deg. C,1,,,9,,,9,2135481
+FL,Melbourne Beach,,28.09028,-80.56444,3/10/2024,22:56,0.5,Karenia,brevis,not observed,0,cells/L,1,42,ppt,1,20,deg. C,1,,,9,,,9,2135480
+FL,Tropic; SW of (Indian River),,28.1505,-80.635,3/10/2024,,0.5,Karenia,brevis,not observed,0,cells/L,1,20.4,ppt,1,24.4,deg. C,1,,,9,,,9,2135336
+FL,Marco Island Beach,,25.94181,-81.74167,3/10/2024,20:35,0.1,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2135558
+FL,North Marco Island Beach,,25.97072,-81.74526,3/10/2024,19:42,0.1,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2135533
+FL,Lewis Cut (Biscayne Bay),,25.52142,-80.17476,3/11/2024,15:38,1,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2135473
+FL,Sands Cut (Biscayne Bay),,25.49465,-80.17763,3/11/2024,15:10,1,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2135472
+FL,Caesar Creek (Biscayne Bay),,25.3951,-80.23246,3/11/2024,14:15,1,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2135471
+FL,Ballyshannon Street; E of,,28.0164,-80.532,3/11/2024,12:15,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2135337
+FL,Macfarlane Street; W of (Indian River),,28.015,-80.5387,3/11/2024,12:35,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2135338
+FL,Diamond Bay (Banana River),,28.35034,-80.61298,3/11/2024,13:03,0.5,Karenia,brevis,not observed,0,cells/L,1,17.4,ppt,1,20,deg. C,1,,,9,,,9,2135339
+FL,Shell Key; S of (Gullivan Bay),,25.89167,-81.60883,3/11/2024,16:26,0.2,Karenia,brevis,not observed,0,cells/L,1,33.5,ppt,1,24,deg. C,1,,,9,,,9,2135330
+FL,Coon Key; S of (Gullivan Bay),,25.8815,-81.63217,3/11/2024,15:47,0.2,Karenia,brevis,not observed,0,cells/L,1,33.3,ppt,1,23.39,deg. C,1,,,9,,,9,2135329
+FL,Goodland Bridge; SE end (Goodland Bay),,25.9333,-81.6497,3/11/2024,14:40,0.5,Karenia,brevis,not observed,0,cells/L,1,30.5,ppt,1,22.5,deg. C,1,,,9,,,9,2135333
+FL,Aquamarine Avenue; canal N of,,26.05038,-81.69126,3/11/2024,14:30,0.5,Karenia,brevis,not observed,0,cells/L,1,9,ppt,1,24,deg. C,1,,,9,,,9,2135346
+FL,Collier Boulevard Boating Park (Flotilla Passage),,25.9802,-81.7033,3/11/2024,15:20,0.5,Karenia,brevis,not observed,0,cells/L,1,31,ppt,1,22,deg. C,1,,,9,,,9,2135334
+FL,Caxambas Park (Caxambas Bay),,25.9124,-81.7171,3/11/2024,13:35,0.5,Karenia,brevis,not observed,0,cells/L,1,31,ppt,1,23,deg. C,1,,,9,,,9,2135332
+FL,Lee Avenue; docks NE of (Big Marco Pass),,25.9733,-81.7275,3/11/2024,14:07,0.5,Karenia,brevis,not observed,0,cells/L,1,30.5,ppt,1,22.5,deg. C,1,,,9,,,9,2135331
+FL,Good Fortune II Boat Dock (Rookery Bay),,26.02677,-81.73009,3/11/2024,15:00,0.5,Karenia,brevis,not observed,0,cells/L,1,30,ppt,1,22,deg. C,1,,,9,,,9,2135347
+FL,Manasota Beach Park Boat Ramp,,27.01016,-82.41036,3/11/2024,16:24,0.2,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2135344
+FL,Venice Fishing Pier,,27.0726,-82.4529,3/11/2024,17:18,0.2,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2135345
+FL,FWRI Peninsula; SE tip of (Bayboro Harbor),,27.7598,-82.63127,3/11/2024,15:31,3.3,Karenia,brevis,not observed,0,cells/L,1,30.33,ppt,1,22.84,deg. C,1,,,9,,,9,2135109
+FL,FWRI Peninsula; SE tip of (Bayboro Harbor),,27.7598,-82.63127,3/11/2024,15:26,0.5,Karenia,brevis,not observed,0,cells/L,1,30.19,ppt,1,22.73,deg. C,1,,,9,,,9,2135108
+FL,Wallace Cove (Boca Ciega Bay),,27.7117,-82.69014,3/11/2024,16:23,0.5,Karenia,brevis,not observed,0,cells/L,1,32.94,ppt,1,23.01,deg. C,1,,,9,,,9,2135185
+FL,Via Cipriani; dock S of (Old Tampa Bay),,27.94067,-82.7225,3/11/2024,12:50,0.5,Karenia,brevis,not observed,0,cells/L,1,26.19,ppt,1,22.82,deg. C,1,,,9,,,9,2135186
+FL,Mullet Key; Gulf Pier,,27.6133,-82.7391,3/11/2024,15:45,0.5,Karenia,brevis,not observed,0,cells/L,1,34.31,ppt,1,21.1,deg. C,1,,,9,,,9,2135184
+FL,Country Club Road North; SW of (Boca Ciega Bay),,27.7784,-82.7466,3/11/2024,11:29,0.1,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2135230
+FL,Tom Stuart Causeway; N of (Boca Ciega Bay),,27.809,-82.79417,3/11/2024,22:35,0.2,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2135474
+FL,La Contessa Pier,,27.8121,-82.81915,3/11/2024,14:41,0.5,Karenia,brevis,not observed,0,cells/L,1,34.48,ppt,1,20.78,deg. C,1,,,9,,,9,2135183
+FL,Clearwater Beach Pier 60,,27.9777,-82.8323,3/11/2024,13:41,0.5,Karenia,brevis,not observed,0,cells/L,1,34.04,ppt,1,21.6,deg. C,1,,,9,,,9,2135182
+FL,Tyndall DuPont Bridge (East Bay),,30.1017,-85.6109,3/11/2024,16:28,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2135482
+FL,West 15th St; N of (Lake Huntington),,30.1761,-85.707,3/11/2024,16:36,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2135483
+FL,Henderson Beach Park; 3 mi S of,,30.34157,-86.4712,3/11/2024,13:55,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,18.32,deg. C,1,,,9,,,9,2135349
+FL,Brooks Bridge; W of (Santa Rosa Sound),,30.4008,-86.6008,3/11/2024,12:30,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,16.28,deg. C,1,,,9,,,9,2135348
+FL,Loggia Beach Park; SE of,,25.9628,-80.117,3/12/2024,13:55,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2135465
+FL,53rd Street Park; NE of,,25.8333,-80.1174,3/12/2024,13:35,0.5,Karenia,brevis,very low,333,cells/L,1,,,9,,,9,,,9,,,9,2135464
+FL,Crandon Park; E of,,25.7111,-80.1436,3/12/2024,12:50,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2135415
+FL,Bayfront Park; E of (Biscayne Bay),,25.7743,-80.1844,3/12/2024,13:10,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2135416
+FL,Barefoot Bay Pier; NE of (Indian River),,27.88805,-80.49474,3/12/2024,16:28,0.5,Karenia,brevis,not observed,0,cells/L,1,29.3,ppt,1,22.6,deg. C,1,,,9,,,9,2135485
+FL,Ballyshannon Street; SW of (Indian River),,28.01546,-80.53888,3/12/2024,14:21,0.5,Karenia,brevis,not observed,0,cells/L,1,18.8,ppt,1,22.39,deg. C,1,,,9,,,9,2135484
+FL,South Marco Beach,,25.9117,-81.7294,3/12/2024,15:42,0.5,Karenia,brevis,not observed,0,cells/L,1,33,ppt,1,25.5,deg. C,1,,,9,,,9,2135470
+FL,Naples Pier,,26.1316,-81.8067,3/12/2024,14:43,0.5,Karenia,brevis,not observed,0,cells/L,1,34,ppt,1,23.8,deg. C,1,,,9,,,9,2135469
+FL,Seagate,,26.2073,-81.8169,3/12/2024,14:12,0.5,Karenia,brevis,not observed,0,cells/L,1,35,ppt,1,21.6,deg. C,1,,,9,,,9,2135468
+FL,Vanderbilt Beach,,26.25375,-81.82377,3/12/2024,13:45,0.5,Karenia,brevis,not observed,0,cells/L,1,35,ppt,1,21.1,deg. C,1,,,9,,,9,2135467
+FL,Barefoot Beach State Preserve,,26.30481,-81.8362,3/12/2024,12:53,0.5,Karenia,brevis,not observed,0,cells/L,1,32,ppt,1,17.7,deg. C,1,,,9,,,9,2135466
+FL,Deer Stop Keys; SW of (Matlacha Pass),,26.5627,-82.0704,3/12/2024,14:26,0.8,Karenia,brevis,not observed,0,cells/L,1,13.67,ppt,1,22.6,deg. C,1,,,9,,,9,2135527
+FL,Porpoise Point Island; SW of (Matlacha Pass),,26.625,-82.0742,3/12/2024,15:37,1.2,Karenia,brevis,not observed,0,cells/L,1,15.05,ppt,1,22.59,deg. C,1,,,9,,,9,2135528
+FL,Ben Coleman Keys (Matlacha Pass),,26.6678,-82.0946,3/12/2024,15:07,0.8,Karenia,brevis,not observed,0,cells/L,1,18.18,ppt,1,22.79,deg. C,1,,,9,,,9,2135526
+FL,Sandfly Key; W of (Gasparilla Sound),,26.78426,-82.24111,3/12/2024,16:13,0.3,Karenia,brevis,not observed,0,cells/L,1,35,ppt,1,22.89,deg. C,1,,,9,,,9,2135206
+FL,Gasparilla Island; E of (Gasparilla Sound),,26.75082,-82.25153,3/12/2024,16:45,0.3,Karenia,brevis,not observed,0,cells/L,1,33,ppt,1,22.6,deg. C,1,,,9,,,9,2135207
+FL,Garfield Court; SW of (Placida Harbor),,26.8385,-82.2795,3/12/2024,14:21,0.2,Karenia,brevis,not observed,0,cells/L,1,33.8,ppt,1,22.8,deg. C,1,,,9,,,9,2135397
+FL,Gasparilla Pass,,26.81617,-82.2805,3/12/2024,13:47,0.2,Karenia,brevis,not observed,0,cells/L,1,34.1,ppt,1,21.8,deg. C,1,,,9,,,9,2135400
+FL,Stump Pass (Lemon Bay),,26.89867,-82.33933,3/12/2024,15:05,0.2,Karenia,brevis,not observed,0,cells/L,1,33.9,ppt,1,22,deg. C,1,,,9,,,9,2135399
+FL,Tom Adams Bridge; S of (Lemon Bay),,26.9307,-82.3498,3/12/2024,15:49,0.2,Karenia,brevis,not observed,0,cells/L,1,33.6,ppt,1,22.1,deg. C,1,,,9,,,9,2135398
+FL,Blind Pass Beach; E of (Lemon Bay),,26.96324,-82.3747,3/12/2024,16:53,0.2,Karenia,brevis,not observed,0,cells/L,1,32.8,ppt,1,22.7,deg. C,1,,,9,,,9,2135401
+FL,Fort De Soto East Beach; SW of (Lower Tampa Bay),,27.634,-82.7006,3/12/2024,15:52,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,18,deg. C,1,,,9,,,9,2135529
+FL,Fort DeSoto North Beach,,27.6389,-82.7414,3/12/2024,16:20,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,18,deg. C,1,,,9,,,9,2135530
+FL,Bird Creek Boat Ramp; 1 mi W of (Withlacoochee Bay),,29.0036,-82.77853,3/12/2024,,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2135663
+FL,Bird Creek Boat Ramp; 2.6 mi W of,,29.00946,-82.80417,3/12/2024,,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2135662
+FL,Gomez Keys; W of,,29.14933,-83.08,3/12/2024,15:27,0.5,Karenia,brevis,not observed,0,cells/L,1,25.4,ppt,1,18,deg. C,1,,,9,,,9,2135410
+FL,Derrick Key; S of,,29.1865,-83.08433,3/12/2024,15:33,0.5,Karenia,brevis,not observed,0,cells/L,1,19.8,ppt,1,18.29,deg. C,1,,,9,,,9,2135411
+FL,Deer Island; 2.9 mi W of (Suwannee Sound),,29.23133,-83.12867,3/12/2024,15:45,0.5,Karenia,brevis,not observed,0,cells/L,1,12.7,ppt,1,18.69,deg. C,1,,,9,,,9,2135412
+FL,Alligator Pass; 1.8 mi S of (Suwannee Sound),,29.2635,-83.171,3/12/2024,16:02,0.5,Karenia,brevis,not observed,0,cells/L,1,19.1,ppt,1,18.79,deg. C,1,,,9,,,9,2135413
+FL,Cat Island; 1.4 mi SW of,,29.31867,-83.19867,3/12/2024,16:15,0.5,Karenia,brevis,not observed,0,cells/L,1,24.8,ppt,1,19.1,deg. C,1,,,9,,,9,2135414
+FL,Patton Bayou; W of (St. Joseph Bay),,29.7987,-85.3045,3/12/2024,15:40,1,Karenia,brevis,not observed,0,cells/L,1,30.8,ppt,1,18.8,deg. C,1,,,9,,,9,2135402
+FL,Blacks Island; E of (St. Joseph Bay),,29.7202,-85.3228,3/12/2024,15:20,1,Karenia,brevis,not observed,0,cells/L,1,29.85,ppt,1,16.6,deg. C,1,,,9,,,9,2135403
+FL,Mid-St. Joseph Bay,,29.785,-85.3477,3/12/2024,14:10,1,Karenia,brevis,not observed,0,cells/L,1,30.4,ppt,1,17.7,deg. C,1,,,9,,,9,2135406
+FL,Pig Island; 0.7 mi E of (St. Joseph Bay),,29.704,-85.3588,3/12/2024,15:08,1,Karenia,brevis,not observed,0,cells/L,1,30.2,ppt,1,16.2,deg. C,1,,,9,,,9,2135404
+FL,Eagle Harbor; SE of (St. Joseph Bay),,29.7588,-85.3847,3/12/2024,14:48,1,Karenia,brevis,not observed,0,cells/L,1,30.6,ppt,1,17.3,deg. C,1,,,9,,,9,2135405
+FL,Little Oyster Bar Point; NE of (East Bay),,30.05403,-85.50433,3/12/2024,16:51,0.3,Karenia,brevis,not observed,0,cells/L,1,9.1,ppt,1,15.9,deg. C,1,,,9,,,9,2135409
+FL,Cedar Point; NE of (East Bay),,30.10361,-85.55653,3/12/2024,16:26,0.3,Karenia,brevis,not observed,0,cells/L,1,18.3,ppt,1,17.5,deg. C,1,,,9,,,9,2135408
+FL,Military Point; W of (East Bay),,30.12411,-85.631,3/12/2024,15:55,0.3,Karenia,brevis,not observed,0,cells/L,1,23.6,ppt,1,18.2,deg. C,1,,,9,,,9,2135407
+FL,Juno Beach Fishing Pier,,26.89372,-80.0542,3/13/2024,17:45,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2135199
+FL,Fort Matanzas Bridge (Matanzas Inlet),,29.70492,-81.22786,3/13/2024,17:50,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2135392
+FL,Fort Matanzas National Monument Dock (Matanzas Inlet),,29.71453,-81.23508,3/13/2024,18:10,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2135393
+FL,Bonita Beach Park,,26.331,-81.8462,3/13/2024,14:32,0.5,Karenia,brevis,not observed,0,cells/L,1,35,ppt,1,23.3,deg. C,1,,,9,,,9,2135196
+FL,Lovers Key State Park,,26.39,-81.88,3/13/2024,14:02,0.5,Karenia,brevis,not observed,0,cells/L,1,34,ppt,1,23.3,deg. C,1,,,9,,,9,2135195
+FL,Lynn Hall Park,,26.4535,-81.9582,3/13/2024,13:16,0.5,Karenia,brevis,not observed,0,cells/L,1,32,ppt,1,22.8,deg. C,1,,,9,,,9,2135194
+FL,Lighthouse Beach,,26.4512,-82.0151,3/13/2024,12:34,0.5,Karenia,brevis,not observed,0,cells/L,1,33,ppt,1,22.2,deg. C,1,,,9,,,9,2135193
+FL,Tarpon Bay Road Beach,,26.4217,-82.0801,3/13/2024,12:14,0.5,Karenia,brevis,not observed,0,cells/L,1,34,ppt,1,21.29,deg. C,1,,,9,,,9,2135190
+FL,York Island; W of (Pine Island Sound),,26.4887,-82.1073,3/13/2024,16:09,0.2,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2135136
+FL,Regla Island; W of (Pine Island Sound),,26.538,-82.1257,3/13/2024,16:17,0.2,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2135137
+FL,Cork Island; W of (Pine Island Sound),,26.5767,-82.1347,3/13/2024,16:22,0.2,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2135138
+FL,Hemp Key; S of (Pine Island Sound),,26.5902,-82.1561,3/13/2024,15:17,0.2,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2135187
+FL,Buck Key; 1.9 mi NE of (Pine Island Sound),,26.53212,-82.15667,3/13/2024,15:55,0.2,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2135134
+FL,Redfish Pass; 1.8 mi E of (Pine Island Sound),,26.56042,-82.17082,3/13/2024,15:49,0.2,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2135133
+FL,Buck Key; S of (Blind Pass),,26.488,-82.1815,3/13/2024,16:00,0.2,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2135135
+FL,Little Bokeelia Island; N of (Charlotte Harbor),,26.705,-82.1837,3/13/2024,15:44,0.2,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2135188
+FL,Captiva Rocks; SW of (Pine Island Sound),,26.59925,-82.18463,3/13/2024,15:30,0.2,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2135131
+FL,Alison Hagerup Beach Park,,26.5264,-82.1945,3/13/2024,11:41,0.5,Karenia,brevis,not observed,0,cells/L,1,36,ppt,1,21.4,deg. C,1,,,9,,,9,2135189
+FL,Redfish Pass (Pine Island Sound),,26.5535,-82.1963,3/13/2024,15:42,0.2,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2135132
+FL,Mondongo Island; W of (Pine Island Sound),,26.6798,-82.2196,3/13/2024,15:10,0.2,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2135560
+FL,Captiva Pass,,26.6092,-82.221,3/13/2024,15:23,0.2,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2135130
+FL,Boca Grande Pass,,26.7117,-82.2583,3/13/2024,15:01,0.2,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2135559
+FL,Boca Grande Pier (Gasparilla Sound),,26.80562,-82.27415,3/13/2024,12:00,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2135198
+FL,Englewood Beach,,26.92467,-82.36189,3/13/2024,14:30,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2135197
+FL,North Shore Park Beach (Middle Tampa Bay),,27.7843,-82.6237,3/13/2024,11:26,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2135477
+FL,Spa Beach (Middle Tampa Bay),,27.7746,-82.627,3/13/2024,11:55,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2135475
+FL,Lassing Park (Middle Tampa Bay),,27.752,-82.63,3/13/2024,12:23,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2135476
+FL,Maximo Park (Lower Tampa Bay),,27.7097,-82.6829,3/13/2024,12:55,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2135478
+FL,Treasure Island Beach,,27.77,-82.7755,3/13/2024,13:36,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2135479
+FL,Turtle Creek Bay; 3 mi W of (Waccasassa Bay),,29.1083,-82.8583,3/13/2024,12:58,0.1,Karenia,brevis,not observed,0,cells/L,1,23.05,ppt,1,20.39,deg. C,1,,,9,,,9,2135205
+FL,Bird Island; 2.2 mi W of,,29.593,-83.447,3/13/2024,,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2135661
+FL,Steinhatchee River; 8.6 mi SW of,,29.588,-83.527,3/13/2024,,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2135660
+FL,Tarpon Bay Road Beach; 1 mi S of,,26.407,-82.083,3/14/2024,18:19,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2135657
+FL,Bowmans Beach; 9.5 mi SW of,,26.347,-82.246,3/14/2024,14:20,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2135656
+FL,Pass-a-Grille North Channel,,27.67667,-82.73111,3/14/2024,14:25,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2135457
+FL,Mendit Key; 2.7 mi W of (Homosassa Bay),,28.7583,-82.7417,3/14/2024,14:46,0.1,Karenia,brevis,not observed,0,cells/L,1,26.33,ppt,1,21.6,deg. C,1,,,9,,,9,2135463
+FL,Shell Key,,27.67056,-82.74278,3/14/2024,13:34,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2135456
+FL,Treasure Island Beach; 1.9 mi SW of,,27.75898,-82.8051,3/14/2024,22:47,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2135667
+FL,Dutchman Key; E of (Anclote Anchorage),,28.19667,-82.835,3/14/2024,,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2135672
+FL,North Anclote Key; NE of,,28.22028,-82.8375,3/14/2024,,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2135671
+FL,Passage Key; 21 mi W of,,27.52053,-83.088,3/14/2024,18:25,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,21.1,deg. C,1,,,9,,,9,2135666
+FL,Deadmans Key; 2.5 mi SW of,,29.091,-83.108,3/14/2024,,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2135659
+FL,Deadmans Key; 8.3 mi SW of,,29.042,-83.184,3/14/2024,,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2135658
+FL,Pensacola Beach Pier,,30.3273,-87.1419,3/14/2024,15:49,0.5,Karenia,brevis,not observed,0,cells/L,1,34,ppt,1,18.3,deg. C,1,,,9,,,9,2135389
+FL,South Bob Sikes Fishing Pier (Santa Rosa Sound),,30.34613,-87.1518,3/14/2024,16:06,0.5,Karenia,brevis,not observed,0,cells/L,1,22,ppt,1,18.3,deg. C,1,,,9,,,9,2135390
+FL,Pensacola Bay Fishing Bridge,,30.4084,-87.18982,3/14/2024,14:39,0.5,Karenia,brevis,not observed,0,cells/L,1,14,ppt,1,18,deg. C,1,,,9,,,9,2135391
+FL,Sandsprit Park Boat Ramp (Manatee Pocket),,27.16226,-80.1939,3/15/2024,14:30,0.7,Karenia,brevis,not observed,0,cells/L,1,23.71,ppt,1,23.89,deg. C,1,,,9,,,9,2135459
+FL,Indian Riverside Park Pier (Indian River),,27.22476,-80.21126,3/15/2024,15:15,0.7,Karenia,brevis,not observed,0,cells/L,1,29.41,ppt,1,24,deg. C,1,,,9,,,9,2135458
+FL,East Midway Road; N of (Indian River),,27.38745,-80.2971,3/15/2024,12:15,0.5,Karenia,brevis,not observed,0,cells/L,1,29.66,ppt,1,23.49,deg. C,1,,,9,,,9,2135461
+FL,Indian River Veterans Memorial Park Boat Ramp (Indian River),,27.45181,-80.32274,3/15/2024,11:45,1,Karenia,brevis,not observed,0,cells/L,1,34.83,ppt,1,23.2,deg. C,1,,,9,,,9,2135460
+FL,Tom Stuart Causeway; N of (Boca Ciega Bay),,27.809,-82.79417,3/15/2024,21:35,0.2,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2135784
+FL,Deadmans Key; 3.6 mi W of,,28.975,-82.825,3/15/2024,14:59,0.1,Karenia,brevis,not observed,0,cells/L,1,25.34,ppt,1,21.79,deg. C,1,,,9,,,9,2135462
+FL,Madeira Beach; 20 mi W of,,27.7955,-83.12683,3/15/2024,9:25,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2135807
+FL,Madeira Beach; 20 mi W of,,27.7955,-83.12683,3/15/2024,9:25,20.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2135808
+FL,Millender Street; S of (St. George Sound),,29.7301,-84.88478,3/15/2024,19:38,0.1,Karenia,brevis,not observed,0,cells/L,1,11.34,ppt,1,23.79,deg. C,1,,,9,,,9,2135783
+FL,Porter Park Boat Ramp (North Bay),,30.2535,-85.6459,3/15/2024,14:59,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2135668
+FL,Carl Gray Park (West Bay),,30.1877,-85.7284,3/15/2024,16:01,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2135669
+FL,Dolphin Boat Ramp (Grand Lagoon),,30.151,-85.7575,3/15/2024,16:16,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2135670
+FL,North Blind Creek; W of (Chassahowitzka Bay),,28.67,-82.66968,3/16/2024,16:15,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,23.27,deg. C,1,,,9,,,9,2135828
+FL,South Blind Creek; 2.4 mi W of,,28.66045,-82.69482,3/16/2024,16:30,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,23.05555556,deg. C,5,,,9,,,9,2135829
+FL,Jupiter Inlet; NW of (Loxahatchee River),,26.94533,-80.07425,3/17/2024,13:30,0.5,Karenia,brevis,not observed,0,cells/L,1,34.2,ppt,1,24,deg. C,1,,,9,,,9,2135785
+FL,Tropic; SW of (Indian River),,28.1505,-80.635,3/17/2024,,0.5,Karenia,brevis,not observed,0,cells/L,1,20.4,ppt,1,24.69,deg. C,1,,,9,,,9,2135786
+FL,Diamond Bay (Banana River),,28.35034,-80.61298,3/18/2024,13:00,0.5,Karenia,brevis,not observed,0,cells/L,1,18,ppt,1,23.99,deg. C,1,,,9,,,9,2135825
+FL,South Marco Beach,,25.9117,-81.7294,3/18/2024,16:30,0.5,Karenia,brevis,not observed,0,cells/L,1,31,ppt,1,26,deg. C,1,,,9,,,9,2135820
+FL,Naples Pier,,26.1316,-81.8067,3/18/2024,17:30,0.5,Karenia,brevis,not observed,0,cells/L,1,32,ppt,1,25.99,deg. C,1,,,9,,,9,2135821
+FL,Seagate,,26.2073,-81.8169,3/18/2024,19:15,0.5,Karenia,brevis,not observed,0,cells/L,1,34.63,ppt,1,28.29,deg. C,1,,,9,,,9,2135822
+FL,Vanderbilt Beach,,26.25375,-81.82377,3/18/2024,18:53,0.5,Karenia,brevis,not observed,0,cells/L,1,32.35,ppt,1,28.09,deg. C,1,,,9,,,9,2135823
+FL,Barefoot Beach State Preserve,,26.30481,-81.8362,3/18/2024,19:41,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2135824
+FL,Fletcher Point (Lower Tampa Bay),,27.58512,-82.61482,3/18/2024,13:08,0.3,Karenia,brevis,not observed,0,cells/L,1,32.75,ppt,1,24.95,deg. C,1,,,9,,,9,2135745
+FL,FWRI Peninsula; SE tip of (Bayboro Harbor),,27.7598,-82.63127,3/18/2024,14:39,0.5,Karenia,brevis,not observed,0,cells/L,1,29.73,ppt,1,23.81,deg. C,1,,,9,,,9,2135664
+FL,FWRI Peninsula; SE tip of (Bayboro Harbor),,27.7598,-82.63127,3/18/2024,14:41,3.9,Karenia,brevis,not observed,0,cells/L,1,30.23,ppt,1,23.52,deg. C,1,,,9,,,9,2135665
+FL,Skyway Fishing Pier; South (Lower Tampa Bay),,27.5965,-82.6372,3/18/2024,12:42,0.5,Karenia,brevis,not observed,0,cells/L,1,32.83,ppt,1,24.38,deg. C,1,,,9,,,9,2135744
+FL,Palma Sola Bay Bridge,,27.4959,-82.6522,3/18/2024,14:00,0.5,Karenia,brevis,not observed,0,cells/L,1,33.31,ppt,1,25.56,deg. C,1,,,9,,,9,2135746
+FL,Longboat Pass Boat Ramp (Sarasota Bay),,27.4479,-82.6883,3/18/2024,16:20,0.5,Karenia,brevis,not observed,0,cells/L,1,34.93,ppt,1,24.78,deg. C,1,,,9,,,9,2135747
+FL,Wallace Cove (Boca Ciega Bay),,27.7117,-82.69014,3/18/2024,16:09,0.5,Karenia,brevis,not observed,0,cells/L,1,33.37,ppt,1,25.76,deg. C,1,,,9,,,9,2135727
+FL,Via Cipriani; dock S of (Old Tampa Bay),,27.94067,-82.7225,3/18/2024,12:28,0.5,Karenia,brevis,not observed,0,cells/L,1,26.93,ppt,1,24.12,deg. C,1,,,9,,,9,2135731
+FL,Mullet Key; Gulf Pier,,27.6133,-82.7391,3/18/2024,15:35,0.5,Karenia,brevis,not observed,0,cells/L,1,34.17,ppt,1,23.72222222,deg. C,5,,,9,,,9,2135678
+FL,Anna Maria Island Rod & Reel Pier (Lower Tampa Bay),,27.5385,-82.7402,3/18/2024,15:17,0.5,Karenia,brevis,not observed,0,cells/L,1,34.96,ppt,1,24.42,deg. C,1,,,9,,,9,2135748
+FL,Country Club Road North; SW of (Boca Ciega Bay),,27.7784,-82.7466,3/18/2024,11:32,0.5,Karenia,brevis,not observed,0,cells/L,1,32.96,ppt,1,24,deg. C,1,,,9,,,9,2135740
+FL,Speckled Trout Marina (St. Joseph Sound),,28.06917,-82.78056,3/18/2024,13:30,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2135788
+FL,Howard Park Causeway; S of (St. Joseph Sound),,28.15233,-82.80183,3/18/2024,13:00,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2135787
+FL,La Contessa Pier,,27.8121,-82.81915,3/18/2024,14:16,0.5,Karenia,brevis,not observed,0,cells/L,1,34.16,ppt,1,24.46,deg. C,1,,,9,,,9,2135676
+FL,Clearwater Beach Pier 60,,27.9777,-82.8323,3/18/2024,13:17,0.5,Karenia,brevis,not observed,0,cells/L,1,34.28,ppt,1,23.68,deg. C,1,,,9,,,9,2135675
+FL,South Venice Beach Ferry Dock; S of (Lemon Bay),,27.03884,-82.42788,3/19/2024,17:45,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2135826
+FL,Venice Fishing Pier,,27.0726,-82.4529,3/19/2024,18:25,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,22.38,deg. C,1,,,9,,,9,2135827
+FL,Eden Isle Drive Northeast; E of (Smacks Bayou),,27.80439,-82.61185,3/19/2024,19:55,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2135815
+FL,Granada Terrace Park (Coffeepot Bayou),,27.79405,-82.63093,3/19/2024,20:05,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2135816
+FL,Trout Bayou; 1.2 mi SW of (Escambia Bay),,30.49164,-87.10308,3/19/2024,17:33,0.2,Karenia,brevis,not observed,0,cells/L,1,17.2,ppt,1,16.9,deg. C,1,,,9,,,9,2135819
+FL,Garcon Point; 1.8 mi W of (Pensacola Bay),,30.43028,-87.12036,3/19/2024,17:11,0.2,Karenia,brevis,not observed,0,cells/L,1,14.6,ppt,1,18,deg. C,1,,,9,,,9,2135818
+FL,Butchpen Cove; 1.7 mi N of (Pensacola Bay),,30.40047,-87.15903,3/19/2024,16:31,0.2,Karenia,brevis,not observed,0,cells/L,1,17.6,ppt,1,17.4,deg. C,1,,,9,,,9,2135817
+FL,North Shore Park Beach (Middle Tampa Bay),,27.7843,-82.6237,3/20/2024,14:20,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2135830
+FL,Spa Beach (Middle Tampa Bay),,27.7746,-82.627,3/20/2024,12:06,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2135831
+FL,Lassing Park (Middle Tampa Bay),,27.752,-82.63,3/20/2024,12:24,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2135832
+FL,Maximo Park (Lower Tampa Bay),,27.7097,-82.6829,3/20/2024,13:30,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2135833
+FL,Treasure Island Beach,,27.77,-82.7755,3/20/2024,13:00,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2135834
+FL,Juno Beach Fishing Pier,,26.89372,-80.0542,3/21/2024,,0.5,Karenia,brevis,not observed,0,cells/L,1,,,9,,,9,,,9,,,9,2135899
+FL,Millender Street; S of (St. George Sound),,29.7301,-84.88478,3/21/2024,16:08,0.1,Karenia,brevis,not observed,0,cells/L,1,2.63,ppt,1,21.5,deg. C,1,,,9,,,9,2135898
+FL,FWRI Peninsula; SE tip of (Bayboro Harbor),,27.7598,-82.63127,3/25/2024,14:38,0.5,Karenia,brevis,not observed,0,cells/L,1,30.05,ppt,1,22.08,deg. C,1,,,9,,,9,2135908
+FL,FWRI Peninsula; SE tip of (Bayboro Harbor),,27.7598,-82.63127,3/25/2024,14:40,3.8,Karenia,brevis,not observed,0,cells/L,1,30.17,ppt,1,22.05,deg. C,1,,,9,,,9,2135909
