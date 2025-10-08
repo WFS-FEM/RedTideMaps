@@ -12,9 +12,36 @@ library(rnaturalearth)
 #create directories
 
 
-#Get HAB data-------------------------------------------------------------------
+#Get HAB data from FWC-------------------------------------------------------------------
+fn.get_fwc_data <- function(dir.data=dir.cellcnts){
+  #dir.data=dir.cellcnts
+  file.curr = list.files(dir.data, pattern="^FWC HAB.*\\.csv$", full.names=T)
+  files.fwc = list.files(dir.data, pattern="^Historic|^Recent", full.names=T)
+  hab.out = data.frame()
+  for(i in 1:length(files.fwc)){
+    #i=2
+    hab.i = read.csv(files.fwc[i])
+    if(i>1) hab.i = hab.i[,which(names(hab.i)%in%names(hab.out))]
+    hab.out = rbind(hab.out, hab.i)
+  }
+  hab.out$SAMPLE_DATE = as.Date(hab.out$SAMPLE_DATE,format="%Y/%m/%d")
+  suffx = paste(gsub("-","",range(hab.out$SAMPLE_DATE)),collapse="-")
+  file.fwc <<- paste0(dir.data,'/FWC HAB data ',suffx,'.csv')
+  write.csv(hab.out, file.fwc, row.names=F)
+  file.habRdat <<- gsub(".csv",".Rdata", file.fwc)
+  save(hab.out, file = file.habRdat)
+  if(file.fwc != file.curr){
+    unlink(file.curr)
+    unlink(gsub(".csv",".Rdata",file.curr))
+  }
+  #file.habRdat = gsub(".csv",".Rdata", file.fwc)
+  return(file.habRdat)
+}
+
+#Get HAB data from habsos-------------------------------------------------------------------
 #find most recent data product
-fn.get_hab_data <- function(url.habsos=url.habsos, dir.data=dir.data){
+fn.get_habsos_data <- function(url.habsos="https://www.ncei.noaa.gov/data/oceans/archive/arc0069/0120767/", dir.data=dir.cellcnts){
+
 directory_url <- url.habsos
 
 # Read the HTML content of the directory
@@ -76,20 +103,39 @@ return(file.habsos)
 #@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 #Filter HAB data----
 #filter, code brought over from script 03
-fn.filter_hab_data <- function(file.habsos=file.habsos, file.depth=file.depth, file.excl=file.excl){
+fn.filter_hab_data <- function(file.hab=file.habRdat, file.depth=file.depth, file.excl=file.excl){
 #namefile <- gsub(".csv","_filtered.RData",file.habsos)
-file.habRdat <<- paste0(dir.data,"/",gsub(".csv","_filtered.RData",file.habsos))
+#file.hab = file.habRdat
+file.curr = list.files(dirname(file.hab), pattern="\\.Rdata$", full.names=T)[1]
+file.habRdat.filtered <<- gsub(".Rdata","_filtered.Rdata",file.hab)
 
 ##read habsos file----
 depth <- raster(file.depth)
-df <- read.csv(paste0(dir.data,"/",file.habsos))
-df$SAMPLE_DATE <- as.Date(df$SAMPLE_DATE) #convert SAMPLE_DATE to Date format
-df$year <- as.numeric(format(df$SAMPLE_DATE, "%Y"))
-df$month <- as.numeric(format(df$SAMPLE_DATE, "%m"))
-df <- df[, c("LATITUDE", "LONGITUDE", "year", "CELLCOUNT", "month")]
-colnames(df) <- c("lat", "lon", "year", "cells", "month")
-obs_sf <- st_as_sf(df, coords = c("lon", "lat"), crs = st_crs(depth))
+load(file.hab)
+df <- hab.out
+names(df) <- tolower(names(df))
 
+if(startsWith(tolower(basename(file.hab)),"habsos")){
+  df$sample_date <- as.Date(df$sample_date) #convert SAMPLE_DATE to Date format
+  df$year <- as.numeric(format(df$sample_date, "%Y"))
+  df$month <- as.numeric(format(df$sample_date, "%m"))
+  df <- df[, tolower(c("LATITUDE", "LONGITUDE", "year", "CELLCOUNT", "month"))]
+  colnames(df) <- c("lat", "lon", "year", "cells", "month")
+  df <- df[complete.cases(df[,1:2]),]
+  obs_sf <- st_as_sf(df, coords = c("lon", "lat"), crs = st_crs(depth))
+}
+
+if(startsWith(tolower(basename(file.hab)),"fwc")){
+  df$sample_date <- as.Date(df$sample_date) #convert SAMPLE_DATE to Date format
+  df$year <- as.numeric(format(df$sample_date, "%Y"))
+  df$month <- as.numeric(format(df$sample_date, "%m"))
+  df <- df[, tolower(c("latitude", "longitude", "year", "month","count_"))]
+  colnames(df) <- c("lat", "lon", "year", "month", "cells")
+  df <- df[complete.cases(df[,1:2]),]
+  obs_sf <- st_as_sf(df, coords = c("lon", "lat"), crs = st_crs(depth))
+}
+#windows(record=T)
+#plot(obs_sf)
 ##create polygons---- 
 excl_depth <- raster(file.excl)
 us <- ne_countries(country = "united states of america", scale = 10, returnclass = "sf")
@@ -164,15 +210,16 @@ filtered_points_outside <- st_crop(filtered_points_outside, bbox_raster)
 #extract coordinates and add them as columns
 filtered_points_df <<- cbind(filtered_points_outside, st_coordinates(filtered_points_outside))
 #rename
-names(filtered_points_df)<<-c('year','cells','month','lon','lat','geometry')
+names(filtered_points_df)<<-c('year','month','cells','lon','lat','geometry')
 
+#plot(filtered_points_df)
 ##save filtered observations----
 #namefile <- sub("\\.csv$", "", basename(lf[length(lf)]))
-save(filtered_points_df, file = file.habRdat)
+save(filtered_points_df, file = file.habRdat.filtered)
 
-print(paste0(basename(file.habRdat), " saved to ",dir.data));flush.console()
+print(paste0(basename(file.habRdat), " saved to ",dir.cellcnts));flush.console()
 #outlist = list(filtered_points_df, inside_polygons,us_clipped_sf_polygons)
-#return(filtered_points_df)
+return(filtered_points_df)
 }
 
 #@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
@@ -181,7 +228,8 @@ print(paste0(basename(file.habRdat), " saved to ",dir.data));flush.console()
 fn.plot_hab_data <- function(file.habRdat=file.habRdat){
 #if(!dir.exists(dir.plots)) dir.create(dir.plots)
 load(file.habRdat)
-habdata=filtered_points_df
+habdata<-filtered_points_df
+
 p<-
   ggplot() +
   geom_sf(data = st_as_sf(us_clipped_sf_polygons), fill = 'lightgrey', color = 'black', alpha = 0.5) +
@@ -193,7 +241,7 @@ p<-
   scale_y_continuous(breaks=c(30,28,26))+
   scale_x_continuous(breaks=c(-86,-84,-82))+
   facet_wrap((~year),ncol=8)
-png(paste0(dir.data,"/sample locations by year.png"),width=12, height=10, units='in', res=300)
+png(paste0(dir.cellcnts,"/sample locations by year.png"),width=12, height=10, units='in', res=300)
 print(p)
 dev.off()
 
@@ -224,7 +272,7 @@ plot_data <- merge(full_dates, monthly_counts, by = "date", all.x = TRUE)
 plot_data$n[is.na(plot_data$n)] <- 0
 
 #plot
-png(paste0(dir.data,"/N samples over time.png"),width=7, height=7, units='in', res=300)
+png(paste0(dir.cellcnts,"/N samples over time.png"),width=7, height=7, units='in', res=300)
 print(
 ggplot(plot_data, aes(x = date, y = n)) +
   geom_line() +

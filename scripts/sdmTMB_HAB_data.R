@@ -143,13 +143,13 @@ df_time<-data.frame('year'=yr,
                     'month'=month,
                     'timestep'=1:length(yr))
 
+
 #create folder to store fit objects
 dir.om <<- paste0(dir.sdmout,"/OM month")
 if(!dir.exists(dir.om)) dir.create(dir.om)
 setwd(dir.om)
 
-#styr=2018
-#enyr=2018
+#styr=2018; enyr=2018
 # Loop fitting sdmTMB and VAST models #####
 for (iyear in styr:enyr) {
   
@@ -182,6 +182,8 @@ for (iyear in styr:enyr) {
       # Assuming mdf is your sf object
       mdf_df <- st_drop_geometry(mdf)
       mdf_df_pos<- subset(mdf_df,cells!=0)
+      names(mdf_df)[which(names(mdf_df)%in%c('X','Y'))] <- c('lon','lat')
+      names(mdf_df_pos)[which(names(mdf_df_pos)%in%c('X','Y'))] <- c('lon','lat')
       
       #create folder
       mdir<-paste0(dir.om,"/",iyear,sprintf("%02d", imonth))

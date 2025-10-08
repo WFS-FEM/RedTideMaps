@@ -7,6 +7,7 @@ fn.hab_idw_monthly <- function(file.habRdat=file.habRdat,idw.wt=2, styr=1985){
   class(filtered_points_df)
   hab.dat = as(filtered_points_df,'Spatial')
   hab.dat = hab.dat[hab.dat$year>=styr,]
+  names(filtered_points_df)
   
   crs(hab.dat) = "+proj=robin"
   proj4string(hab.dat) = CRS("+proj=longlat +datum=WGS84")

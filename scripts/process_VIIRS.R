@@ -14,15 +14,16 @@
 # }
 
 library('raster')
-file.habRdat <<- list.files(dir.data, pattern="filtered.RData$")
-file.viirs <<- paste0(dirname(dir.viirs),'/VIIRS_freq_raster_stack')
+#file.habRdat <<- list.files(dir.cellcnts, pattern="filtered.RData$")
 
 #setwd(dir.viirs)
 fn.viirs_tifs2stack <- function(dir.viirs=dir.viirs){
 #set wd and load files
 #setwd(mydir)
-lf<-list.files(dir.viirs,pattern = 'tif',full.names = TRUE)
+lf<-list.files(dir.viirs,pattern = 'tif',full.names = TRUE, recursive=T)
 #load(file = './ST drivers/red tides/data/processed/pred_obs_RT.RData') #pred_obs
+yrmos = as.numeric(gsub("_","",substr(basename(lf),1,7)))
+file.viirs.sfx = paste0(min(yrmos),"-",max(yrmos))
 
 viirs.stack = stack()
 #loop
@@ -56,6 +57,7 @@ for (f in lf) {
   viirs.stack = addLayer(viirs.stack,r1)
 }
 
+file.viirs <<- paste0(dir.viirs,'/VIIRS_',file.viirs.sfx)
 viirs.stack <<- viirs.stack
 writeRaster(viirs.stack,filename=file.viirs, overwrite=T)
 }
@@ -127,7 +129,7 @@ fn.clip_2_viirs <- function(file.pred=f.pred,
   viirs<-stack(file.viirs)
   pred <- stack(file.pred)
 pred.clipped = stack()
-
+depth = raster(file.depth)
 do.viirs_clip = which(names(pred) %in% names(viirs))
 
 for(i in do.viirs_clip){
@@ -149,6 +151,8 @@ for(i in do.viirs_clip){
   
   #convert all 0 values to NA
   r2 <- r1
+  #r2[is.na(r2)] = 0
+  #r2[is.na(depth)] = NA
   r2[r2 == 0] <- NA
   
   #convert raster to data frame for ggplot
@@ -193,7 +197,10 @@ for(i in do.viirs_clip){
   #plot(r.sdmTMB2_clipped)
   
   names(ipred.clipped) = paste0("X",y,m)
-  pred.clipped = addLayer(pred.clipped,raster(ipred.clipped))
+  ipred.clipped = raster(ipred.clipped)
+  ipred.clipped[is.na(ipred.clipped)] = 0
+  ipred.clipped[is.na(depth)] = NA
+  pred.clipped = addLayer(pred.clipped,ipred.clipped)
 }
 #file.clipped = paste0(dir.sdmout,"/",gsub("[0-9-]","",basename(file.pred)),gsub("X","",names(pred.clipped)[1]),"-",gsub("X","",names(pred.clipped)[nlayers(pred.clipped)]),"_clipped_viirs")
 # Extract the original filename
