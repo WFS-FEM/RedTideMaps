@@ -1,1 +1,37 @@
 .DS_Store
+.Rhistory
+.RData
+.Rapp.history
+.Rproj.user/
+
+# R session
+*.Rproj
+*~
+
+# Run outputs (per-resolution trees)
+out/
+5min/
+6min/
+10min/
+15min/
+
+# Raw FWC HAB downloads (live next to the run, not in repo)
+cell_counts/
+cell count data/
+
+# Large data products / rasters / fits
+*.Rdata
+*.RData
+*.grd
+*.gri
+*.tif
+!template rasters/*.tif
+*.asc
+!template rasters/*.asc
+
+# VIIRS / MODIS local caches
+VIIRS/
+MODIS/
+
+# Logs
+*.log

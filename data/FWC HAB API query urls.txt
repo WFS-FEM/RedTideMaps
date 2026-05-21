@@ -1,0 +1,6 @@
+https://gis.myfwc.com/mapping/rest/services/Open_Data/Recent_Harmful_Algal_Bloom__HAB__Events_2024_present/MapServer/7/query?where=1%3D1&outFields=*&outSR=4326&f=json
+https://gis.myfwc.com/mapping/rest/services/Open_Data/Historic_Harmful_Algal_Bloom_Events_2015___2023/MapServer/12/query?where=1%3D1&outFields=*&outSR=4326&f=json
+https://gis.myfwc.com/mapping/rest/services/Open_Data/Historic_Harmful_Algal_Bloom_Events_2007___2014/MapServer/6/query?where=1%3D1&outFields=*&outSR=4326&f=json
+https://gis.myfwc.com/mapping/rest/services/Open_Data/Historic_Harmful_Algal_Bloom_Events_2000___2006/MapServer/5/query?where=1%3D1&outFields=*&outSR=4326&f=json
+https://gis.myfwc.com/mapping/rest/services/Open_Data/Historic_Harmful_Algal_Bloom_Events_1990___1999/MapServer/4/query?where=1%3D1&outFields=*&outSR=4326&f=json
+https://gis.myfwc.com/mapping/rest/services/Open_Data/Historic_Harmful_Algal_Bloom_Events_1980___1989/MapServer/3/query?where=1%3D1&outFields=*&outSR=4326&f=json
