@@ -27,14 +27,18 @@ cfg <- list(
   styr = 1985,
   enyr = as.integer(format(Sys.Date(), "%Y")),
 
-  # Working dir where cell_counts/, VIIRS/, MODIS/, and outputs live.
-  proj_dir = getwd(),
-
-  # Repo root where scripts/ and template rasters/ live.
+  # Repo root. Change if you cloned the repo to a different path.
+  # All other paths default to subfolders of this one — the workflow is
+  # standalone within the repo.
   repo_dir = "C:/Users/dchagaris/Github/WFS-FEM/RedTideMaps",
 
-  # Depth + excl ASCII templates. Defaults to the WFS EwE Ecospace folder.
-  bathy_dir = "C:/Users/dchagaris/OneDrive - University of Florida/WFS Fisheries Ecosystem Modeling/WFS EwE/Ecospace/maps/bathymetry",
+  # Working dir for inputs (cell_counts/, VIIRS/, MODIS/) and outputs.
+  # Defaults to repo_dir so a fresh clone runs end-to-end without any
+  # external paths. Override only if you keep data outside the repo.
+  proj_dir = NULL,
+
+  # Depth + excl ASCII templates. Defaults to the repo's template rasters/.
+  bathy_dir = NULL,
 
   # Optional: external Ecospace ST drivers root (used only by export_to_ecospace).
   ecospace_root = "C:/Users/dchagaris/OneDrive - University of Florida/WFS Fisheries Ecosystem Modeling/WFS EwE/Ecospace/ST drivers",
@@ -47,6 +51,10 @@ cfg <- list(
   fwc_force_full   = FALSE,   # set TRUE to rebuild the FWC merged CSV from scratch
   export_ecospace  = FALSE    # set TRUE to copy ASCII drop to ecospace_root
 )
+# Resolve repo-relative defaults
+if (is.null(cfg$proj_dir))  cfg$proj_dir  <- cfg$repo_dir
+if (is.null(cfg$bathy_dir)) cfg$bathy_dir <- file.path(cfg$repo_dir, "template rasters")
+
 # FWC URL list (one ArcGIS REST endpoint per line)
 cfg$fwc_urls <- file.path(cfg$repo_dir, "data", "FWC HAB API query urls.txt")
 
@@ -111,25 +119,29 @@ fn.plot_sdmTMB(file_log  = pred_paths$file_log,
 # 5) Clipping ------------------------------------------------------------
 rt_log(paths, "Step 5: clipping cascade (hulls / MODIS / VIIRS)")
 
-# 5a) Buffered concave hulls (always)
+# 5a) Buffered concave hulls (always, scoped to fit year range)
 file_hullpolys <- fn.buffered_hulls(file_filtered = hab$file,
                                     file_depth    = paths$file_depth,
-                                    dir_out       = paths$sdm_out)
-fn.clip_2_hulls(file_pred  = pred_paths$file_log,
-                file_polys = file_hullpolys,
-                file_depth = paths$file_depth,
-                dir_out    = paths$clipped_out)
+                                    dir_out       = paths$sdm_out,
+                                    styr          = cfg$styr,
+                                    enyr          = cfg$enyr)
+clip_hull <- fn.clip_2_hulls(file_pred  = pred_paths$file_log,
+                             file_polys = file_hullpolys,
+                             file_depth = paths$file_depth,
+                             dir_out    = paths$clipped_out)
 
 # 5b) VIIRS clipping (2012-present)
+clip_viirs <- NULL
 if (cfg$use_viirs) {
   viirs <- fn.viirs_tifs2stack(dir_viirs = paths$viirs)
-  fn.clip_2_viirs(file_pred  = pred_paths$file_log,
-                  file_viirs = viirs$file,
-                  file_depth = paths$file_depth,
-                  dir_out    = paths$clipped_out)
+  clip_viirs <- fn.clip_2_viirs(file_pred  = pred_paths$file_log,
+                                file_viirs = viirs$file,
+                                file_depth = paths$file_depth,
+                                dir_out    = paths$clipped_out)
 }
 
 # 5c) MODIS nFLH clipping (2003-2012)
+clip_modis <- NULL
 if (cfg$use_modis) {
   if (cfg$update_modis) {
     fn.pull_MODIS_flh_erddap(file_depth     = paths$file_depth,
@@ -144,10 +156,10 @@ if (cfg$use_modis) {
   file_flhpolys <- list.files(paths$modis, pattern = "^FLH polys",
                               full.names = TRUE)
   if (length(file_flhpolys) > 0) {
-    fn.clip_2_modis(file_pred     = pred_paths$file_log,
-                    file_flhpolys = file_flhpolys[1],
-                    file_depth    = paths$file_depth,
-                    dir_out       = paths$clipped_out)
+    clip_modis <- fn.clip_2_modis(file_pred     = pred_paths$file_log,
+                                  file_flhpolys = file_flhpolys[1],
+                                  file_depth    = paths$file_depth,
+                                  dir_out       = paths$clipped_out)
   } else {
     rt_log(paths, "No FLH polys found; skipping MODIS clipping.")
   }
@@ -155,7 +167,9 @@ if (cfg$use_modis) {
 
 # 6 + 7) Combine and write ASCII -----------------------------------------
 rt_log(paths, "Step 6: combine clipped stacks + write ASCII for Ecospace")
-combined_path <- make_redtide_ascii(dir_pred     = paths$clipped_out,
+combined_path <- make_redtide_ascii(file_hull    = clip_hull$file,
+                                    file_viirs   = if (!is.null(clip_viirs)) clip_viirs$file else NULL,
+                                    file_modis   = if (!is.null(clip_modis)) clip_modis$file else NULL,
                                     dir_ascii    = paths$ecospace,
                                     dir_combined = paths$combined,
                                     file_depth   = paths$file_depth,

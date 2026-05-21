@@ -207,8 +207,9 @@ fn.clip_2_modis <- function(file_pred, file_flhpolys, file_depth, dir_out) {
     paste0(gsub("\\.grd$", "", gsub("[0-9-]", "", basename(file_pred))),
            names(pred_clipped)[1], "-",
            names(pred_clipped)[nlayers(pred_clipped)], "_clipped_modis"))
-  writeRaster(pred_clipped, file.path(dir_out, file_clipped), overwrite = TRUE)
-  pred_clipped
+  out_path <- file.path(dir_out, file_clipped)
+  writeRaster(pred_clipped, out_path, overwrite = TRUE)
+  list(file = out_path, stack = pred_clipped)
 }
 
 # Build red-tide polygons from MODIS nFLH --------------------------------

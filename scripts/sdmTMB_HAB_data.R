@@ -76,6 +76,18 @@ fn.fit_monthly_sdmTMB <- function(habdata,
   dir.create(file.path(dir_sdmout, "plots"), recursive = TRUE, showWarnings = FALSE)
   if (!dir.exists(dir_om)) dir.create(dir_om, recursive = TRUE)
 
+  # Capture all per-fit warnings with (year, month, model) context.
+  warns_log <- list()
+  catch_warns <- function(expr, iyear, imonth, model_lbl) {
+    withCallingHandlers(expr, warning = function(w) {
+      warns_log[[length(warns_log) + 1L]] <<-
+        data.frame(year = iyear, month = imonth, model = model_lbl,
+                   msg = conditionMessage(w),
+                   stringsAsFactors = FALSE)
+      invokeRestart("muffleWarning")
+    })
+  }
+
   # Fit loop -----
   for (iyear in styr:enyr) {
     ydf <- subset(habdata, year == iyear)
@@ -101,14 +113,18 @@ fn.fit_monthly_sdmTMB <- function(habdata,
       attempt_counter <- 0
       repeat {
         fit_sdmTMBnb <- tryCatch(
-          sdmTMB(formula = cells ~ 1, data = mdf_df,
-                 mesh = sdmTMB::make_mesh(mdf_df, xy_cols = c("lon","lat"), cutoff = 0.1),
-                 family = nbinom2(), spatial = "on", spatiotemporal = "off"),
+          catch_warns(
+            sdmTMB(formula = cells ~ 1, data = mdf_df,
+                   mesh = sdmTMB::make_mesh(mdf_df, xy_cols = c("lon","lat"), cutoff = 0.1),
+                   family = nbinom2(), spatial = "on", spatiotemporal = "off"),
+            iyear, imonth, "nb"),
           error = function(e) { message("Error in fit TMB nb"); NULL })
         fit_sdmTMBlog <- tryCatch(
-          sdmTMB(formula = cells ~ 1, data = mdf_df_pos,
-                 mesh = sdmTMB::make_mesh(mdf_df_pos, xy_cols = c("lon","lat"), cutoff = 0.1),
-                 family = lognormal(), spatial = "on", spatiotemporal = "off"),
+          catch_warns(
+            sdmTMB(formula = cells ~ 1, data = mdf_df_pos,
+                   mesh = sdmTMB::make_mesh(mdf_df_pos, xy_cols = c("lon","lat"), cutoff = 0.1),
+                   family = lognormal(), spatial = "on", spatiotemporal = "off"),
+            iyear, imonth, "log"),
           error = function(e) { message("Error in fit TMB log"); NULL })
 
         if (!is.null(fit_sdmTMBnb) | !is.null(fit_sdmTMBlog)) break
@@ -123,6 +139,17 @@ fn.fit_monthly_sdmTMB <- function(habdata,
       save(fit_sdmTMBlog, file = file.path(mdir, "fit_sdmTMBlog.RData"))
       rm(fit_sdmTMBnb, fit_sdmTMBlog); gc()
     }
+  }
+
+  # Persist captured warnings.
+  if (length(warns_log) > 0) {
+    warns_df <- do.call(rbind, warns_log)
+    warns_csv <- file.path(dir_sdmout, "fit_warnings.csv")
+    write.csv(warns_df, warns_csv, row.names = FALSE)
+    message("Captured ", nrow(warns_df), " fit warning(s) -> ", warns_csv)
+    print(table(model = warns_df$model, msg = substr(warns_df$msg, 1, 60)))
+  } else {
+    message("No fit warnings captured.")
   }
 
   # Prediction + evaluation loop -----
@@ -338,8 +365,10 @@ fn.plot_sdmTMB <- function(file_log, file_nb, dir_plots) {
 
   colv <- c("white","purple","blue","darkblue","cyan","green","darkgreen","yellow","orange","red","darkred")
   funpal <- colorRampPalette(colv, bias = 2)
-  brks <- c(0, 1e4 - 1, seq(1e4, 4e6, 10000), 1e8)
-  color <- funpal(length(brks) - 1)
+  # Upper break Inf so any cell value above 4M still renders darkred
+  # rather than falling outside the break range and rendering white/NA.
+  brks <- c(0, 1e4 - 1, seq(1e4, 4e6, 10000), Inf)
+  color <- c(funpal(length(brks) - 2), "darkred")
 
   for (info in list(list(file = file_log, lbl = "log"),
                     list(file = file_nb,  lbl = "nb"))) {

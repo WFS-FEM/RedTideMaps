@@ -319,6 +319,13 @@ fn.filter_hab_data <- function(file_hab, file_depth, file_excl, dir_out) {
 
 #' Plot annual sampling locations and the monthly sample count time series.
 #'
+#' Observations are binned by cell count and rendered with discrete styles:
+#'   <1000 (background)     : empty circle, black stroke
+#'   1000-10,000 (very low) : white fill
+#'   10,000-100,000 (low)   : yellow fill
+#'   100,000-1M (medium)    : orange fill
+#'   >1M (high)             : red fill
+#'
 #' @param points sf data frame of filtered observations (output of fn.filter_hab_data).
 #' @param land_polygons sf POLYGONs of clipped U.S. coastline (same source).
 #' @param dir_out Directory to write the two PNGs into.
@@ -327,18 +334,44 @@ fn.filter_hab_data <- function(file_hab, file_depth, file_excl, dir_out) {
 fn.plot_hab_data <- function(points, land_polygons, dir_out, min_year = 1985) {
   habdata <- points
 
+  # Discrete cell-count bins. Order matters for the legend.
+  bin_labels <- c("<1,000", "1,000-10,000", "10,000-100,000",
+                  "100,000-1M", ">1M")
+  bin_fills  <- c("<1,000"          = NA,
+                  "1,000-10,000"    = "white",
+                  "10,000-100,000"  = "yellow",
+                  "100,000-1M"      = "orange",
+                  ">1M"             = "red")
+  bin_shapes <- c("<1,000"          = 1,   # open circle
+                  "1,000-10,000"    = 21,
+                  "10,000-100,000"  = 21,
+                  "100,000-1M"      = 21,
+                  ">1M"             = 21)
+  habdata$cell_bin <- cut(
+    habdata$cells,
+    breaks = c(-Inf, 1000, 10000, 100000, 1e6, Inf),
+    labels = bin_labels,
+    right  = FALSE)
+
   p1 <- ggplot() +
     geom_sf(data = st_as_sf(land_polygons),
             fill = "lightgrey", color = "black", alpha = 0.5) +
     geom_sf(data = subset(habdata, year >= min_year),
-            aes(geometry = geometry), color = "blue", size = 0.5, alpha = 0.5) +
+            aes(geometry = geometry, fill = cell_bin, shape = cell_bin),
+            color = "black", stroke = 0.2, size = 1.2, alpha = 0.85) +
+    scale_fill_manual(values = bin_fills, na.value = NA,
+                      drop = FALSE, name = "cells / L") +
+    scale_shape_manual(values = bin_shapes,
+                       drop = FALSE, name = "cells / L") +
     labs(x = "longitude", y = "latitude") +
     theme_minimal() +
     scale_y_continuous(breaks = c(30, 28, 26)) +
     scale_x_continuous(breaks = c(-86, -84, -82)) +
-    facet_wrap(~year, ncol = 8)
+    facet_wrap(~year, ncol = 8) +
+    guides(fill  = guide_legend(override.aes = list(size = 3)),
+           shape = guide_legend(override.aes = list(size = 3)))
   f1 <- file.path(dir_out, "sample locations by year.png")
-  png(f1, width = 12, height = 10, units = "in", res = 300); print(p1); dev.off()
+  png(f1, width = 14, height = 10, units = "in", res = 300); print(p1); dev.off()
 
   sampling_effort <- as.data.frame(habdata)
   full_dates <- data.frame(

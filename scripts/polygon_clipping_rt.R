@@ -18,13 +18,18 @@
 #' @param file_filtered Path to filtered HAB Rdata (filtered_points_df).
 #' @param file_depth Path to depth ASCII (only used to assert template loadable).
 #' @param dir_out Directory to write the hull-polys Rdata into.
+#' @param styr,enyr Optional year range. If NULL, all years in the
+#'   filtered data are processed.
 #' @return Path to the written Rdata file.
-fn.buffered_hulls <- function(file_filtered, file_depth, dir_out) {
+fn.buffered_hulls <- function(file_filtered, file_depth, dir_out,
+                              styr = NULL, enyr = NULL) {
   load(file_filtered)  # provides filtered_points_df
   depth <- raster(file_depth)  # currently used only to validate the template
   invisible(depth)
 
   habyrs <- sort(unique(filtered_points_df$year))
+  if (!is.null(styr)) habyrs <- habyrs[habyrs >= styr]
+  if (!is.null(enyr)) habyrs <- habyrs[habyrs <= enyr]
   pts_utm <- st_transform(filtered_points_df, 32617)
   pol_list <- list()
 
@@ -131,7 +136,7 @@ fn.clip_2_hulls <- function(file_pred, file_polys, file_depth, dir_out) {
                              paste0(basename(file_pred), ".grd")))
   out_file <- gsub("\\.grd$", "", out_file)
   writeRaster(pred_clipped, out_file, overwrite = TRUE)
-  pred_clipped
+  list(file = out_file, stack = pred_clipped)
 }
 
 # Combine hull/MODIS/VIIRS-clipped stacks into the final Ecospace ASCII -
@@ -140,29 +145,32 @@ fn.clip_2_hulls <- function(file_pred, file_polys, file_depth, dir_out) {
 #' per-month ASCII files for Ecospace.
 #'
 #' Preference rule per month: VIIRS > MODIS > hull (i.e. observation-based
-#' satellite clipping is preferred where available).
+#' satellite clipping is preferred where available). Function takes the
+#' clipped-stack paths explicitly so it can't pick up stale files from
+#' prior runs.
 #'
-#' @param dir_pred Directory holding the *_clipped_hull/_clipped_viirs/
-#'   _clipped_modis.grd stacks.
-#' @param dir_ascii Directory to write monthly ASCII files into.
+#' @param file_hull  Path (without ext) of the hull-clipped stack. Required.
+#' @param file_viirs Path (without ext) of the VIIRS-clipped stack, or NULL.
+#' @param file_modis Path (without ext) of the MODIS-clipped stack, or NULL.
+#' @param dir_ascii  Directory to write monthly ASCII files into.
 #' @param dir_combined Directory to write the combined .grd stack into.
 #' @param file_depth Path to depth ASCII (ocean/land mask).
-#' @param var Variable prefix to combine (default "log").
-#' @return Path to the combined .grd stack (without extension).
-make_redtide_ascii <- function(dir_pred,
+#' @param var Variable prefix used in the ASCII filenames (default "log").
+#' @return Path (without ext) to the combined .grd stack.
+make_redtide_ascii <- function(file_hull,
+                               file_viirs   = NULL,
+                               file_modis   = NULL,
                                dir_ascii,
                                dir_combined,
                                file_depth,
                                var = "log") {
+  if (is.null(file_hull) || !any(file.exists(paste0(file_hull, c(".grd",".gri")))))
+    stop("file_hull is required and must point to an existing .grd stack.")
   depth <- raster(file_depth)
 
-  r_hull  <- list.files(dir_pred, pattern = paste0("^sdmTMB_", var, ".*hull\\.gri$"),  full.names = TRUE)
-  r_viirs <- list.files(dir_pred, pattern = paste0("^sdmTMB_", var, ".*viirs\\.gri$"), full.names = TRUE)
-  r_modis <- list.files(dir_pred, pattern = paste0("^sdmTMB_", var, ".*modis\\.gri$"), full.names = TRUE)
-
-  hull_stack  <- if (length(r_hull)  > 0) stack(gsub("\\.gri$", "", r_hull))  else stack()
-  viirs_stack <- if (length(r_viirs) > 0) stack(gsub("\\.gri$", "", r_viirs)) else stack()
-  modis_stack <- if (length(r_modis) > 0) stack(gsub("\\.gri$", "", r_modis)) else stack()
+  hull_stack  <- stack(file_hull)
+  viirs_stack <- if (!is.null(file_viirs)) stack(file_viirs) else stack()
+  modis_stack <- if (!is.null(file_modis)) stack(file_modis) else stack()
 
   clip_source <- data.frame(yrmo = sort(unique(c(names(hull_stack),
                                                  names(viirs_stack),
@@ -172,7 +180,8 @@ make_redtide_ascii <- function(dir_pred,
   clip_source$modis <- clip_source$yrmo %in% names(modis_stack)
   clip_source$use   <- ifelse(clip_source$viirs, "viirs",
                        ifelse(clip_source$modis, "modis", "pred"))
-  write.csv(clip_source, file.path(dir_pred, "clipping_source.csv"), row.names = FALSE)
+  write.csv(clip_source, file.path(dirname(file_hull), "clipping_source.csv"),
+            row.names = FALSE)
 
   full_stack <- stack()
   for (i in seq_len(nrow(clip_source))) {
@@ -191,7 +200,8 @@ make_redtide_ascii <- function(dir_pred,
 
   message("saving rasters and ASCII files")
   combined_path <- file.path(dir_combined,
-                             gsub("hull", "combined", basename(gsub("\\.gri$", "", r_hull))))
+                             gsub("_clipped_hull$", "_clipped_combined",
+                                  basename(file_hull)))
   writeRaster(full_stack, filename = combined_path, overwrite = TRUE)
   writeRaster(full_stack,
               filename = file.path(dir_ascii, paste0("sdmTMB_", var, "_")),
@@ -215,8 +225,9 @@ fn.plot_redtide_stack <- function(file_stack, dir_plots) {
 
   colv <- c("white","purple","blue","darkblue","cyan","green","darkgreen","yellow","orange","red","darkred")
   funpal <- colorRampPalette(colv, bias = 2)
-  brks <- c(0, 1e4 - 1, seq(1e4, 4e6, 10000), 1e8)
-  color <- funpal(length(brks) - 1)
+  # Upper break Inf so any cell value above 4M still renders darkred.
+  brks <- c(0, 1e4 - 1, seq(1e4, 4e6, 10000), Inf)
+  color <- c(funpal(length(brks) - 2), "darkred")
 
   file_pdf <- file.path(dir_plots, paste0(basename(file_stack), ".pdf"))
   pdf(file_pdf, onefile = TRUE)

@@ -145,5 +145,5 @@ fn.clip_2_viirs <- function(file_pred, file_viirs, file_depth, dir_out) {
                             paste0(prefix, start_date, "-", end_date,
                                    "_clipped_viirs"))
   writeRaster(pred_clipped, file_clipped, overwrite = TRUE)
-  pred_clipped
+  list(file = file_clipped, stack = pred_clipped)
 }

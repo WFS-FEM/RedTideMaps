@@ -8,30 +8,17 @@
 *.Rproj
 *~
 
-# Run outputs (per-resolution trees)
+# Generated outputs (per-resolution trees)
 out/
-5min/
-6min/
-10min/
-15min/
 
-# Raw FWC HAB downloads (live next to the run, not in repo)
+# FWC API cache — pulled on demand by fn.get_fwc_data
 cell_counts/
-cell count data/
 
-# Large data products / rasters / fits
-*.Rdata
-*.RData
-*.grd
-*.gri
-*.tif
-!template rasters/*.tif
-*.asc
-!template rasters/*.asc
-
-# VIIRS / MODIS local caches
-VIIRS/
-MODIS/
+# Optional MODIS FLH raw stacks (rebuilt with fn.pull_MODIS_flh_erddap;
+# the FLH polys Rdata IS tracked).
+MODIS/flh_*.gri
+MODIS/flh_*.grd
+MODIS/erddap_modis_datasets_*.csv
 
 # Logs
 *.log
