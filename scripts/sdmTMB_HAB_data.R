@@ -64,15 +64,16 @@ fn.fit_monthly_sdmTMB <- function(habdata,
                                   styr = 1985,
                                   enyr = max(habdata$year)) {
 
-  file_predsdm <- file.path(dir_sdmout, "pred_SDMs_RT.RData")
-  if (file.exists(file_predsdm) && interactive()) {
-    cat("Results already exist. Running clears the output folder.\n",
-        "Run anyway? Enter 'Y' to continue, anything else to abort:\n")
-    if (toupper(readline()) != "Y") stop("Aborted")
-  }
-  unlink(dir_sdmout, recursive = TRUE)
-  dir.create(dir_sdmout, recursive = TRUE)
-  dir.create(file.path(dir_sdmout, "plots"), recursive = TRUE)
+  # Clear our own outputs only — do NOT wipe dir_sdmout itself, since
+  # other steps (filter, hulls) write artifacts there too.
+  unlink(dir_om, recursive = TRUE)
+  unlink(file.path(dir_sdmout, "plots"), recursive = TRUE)
+  for (stale in c("pred_SDMs_RT.RData", "RT_fit_matrix.RData", "pred_obs_RT.RData"))
+    unlink(file.path(dir_sdmout, stale))
+  unlink(list.files(dir_sdmout, pattern = "^sdmTMB_(log|nb)_stack_.*\\.(grd|gri)$",
+                    full.names = TRUE))
+  dir.create(dir_sdmout, recursive = TRUE, showWarnings = FALSE)
+  dir.create(file.path(dir_sdmout, "plots"), recursive = TRUE, showWarnings = FALSE)
   if (!dir.exists(dir_om)) dir.create(dir_om, recursive = TRUE)
 
   # Fit loop -----
