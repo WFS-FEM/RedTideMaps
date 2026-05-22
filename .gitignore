@@ -8,8 +8,14 @@
 *.Rproj
 *~
 
-# Generated outputs (per-resolution trees)
-out/
+# Generated outputs — track the deliverables (ecospace_ascii/, plots/)
+# but not the heavy intermediates (sdm/, clipped/, combined/, run logs).
+out/**
+!out/*/
+!out/*/ecospace_ascii/
+!out/*/ecospace_ascii/**
+!out/*/plots/
+!out/*/plots/**
 
 # FWC API cache — pulled on demand by fn.get_fwc_data
 cell_counts/
