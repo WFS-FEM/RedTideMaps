@@ -8,7 +8,7 @@ Developed as part of the *Operationalizing the West Florida Shelf ecosystem mode
 
 ![Example](example_201809.png)
 
-*Example: predicted cells / L for September 2018, during the major 2017–2019 K. brevis bloom on the West Florida Shelf.*
+*Example: predicted cells / L for September 2018, during the major K. brevis bloom on the West Florida Shelf.*
 
 ---
 
