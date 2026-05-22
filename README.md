@@ -1,108 +1,197 @@
 # RedTideMaps
 
-This repository provides tools to download and process red tide concentration data from the Harmful Algal Bloom (HAB) Florida Fish & Wildlife Comission (FWC) monitoring program into monthly raster files to input red tide severity maps into EwE formats compatible with **Ecopath with Ecosim (EwE)** and **Ecospace**. It was developed as part of the *Operationalizing the West Florida Shelf ecosystem model and application to red tides, stock assessment, and catch advice for Gulf of Mexico reef fish* project (PI: David Chagaris).
+Monthly red-tide severity rasters for the West Florida Shelf, as input to the **WFS Ecospace** model.
 
-![RT](https://github.com/user-attachments/assets/abd5137e-101d-45ea-9eb6-0b714d7e6414)
+This repository produces monthly maps of *Karenia brevis* cell concentrations (cells / L) across a configurable spatial grid, by combining FWC in-situ cell counts, satellite-derived bloom polygons (VIIRS, MODIS nFLH), and species-distribution modeling with [sdmTMB](https://pbs-assess.github.io/sdmTMB/). Output is one ASCII raster per month, ready to be loaded as a spatial driver in **Ecopath with Ecosim / Ecospace**.
 
-## Template rasters
+Developed as part of the *Operationalizing the West Florida Shelf ecosystem model and application to red tides, stock assessment, and catch advice for Gulf of Mexico reef fish* project (PI: David Chagaris).
 
-This folder provides raster example of depth and excluded layer of the WFS EwE Ecospace model at multiple resolutions.
+![Example](example_201809.png)
 
-## Features
+*Example: predicted cells / L for September 2018, during the major 2017–2019 K. brevis bloom on the West Florida Shelf.*
 
-### 1. HAB Data Processing
-``get_HAB_data.R``
+---
 
-- Download HAB FWC data.
-- Spatially filter for the WFS region.
-- Plot observations.
-
-### 2. Spatial Extrapolation
-``sdmTMB_HAB_data.R``
-
-- Make input grid for prediction purposes
-- Fit GLMM monthly models using sdmTMB log and nb.
-- Output predicted, observed red tide concentration and fit data objects.
-- Produce monthly red tide concentration raster
-- Plot red tide concentration maps into a pdf file.
-
-### 3. Inverse Distance Weighting
-``IDW_HAB_data.R``
-
-- Predict with IDW and output raster.
-- Produce monthly red tide concentration raster
-- Plot IDW predictions.
-
-### 4. Simple Ordinary Kriging
-``ordkrig_HAB_data.R``
-
-- Predict with Simple Ordinary Kriging and output raster.
-- Backtransform.
-- Produce monthly red tide concentration raster
-- Plot kriging predictions.
-
-### 4. Anisotropic Kriging
-``anisokrig_HAB_data.R``
-
-- Predict with SAnisotropic Kriging and output raster.
-- Backtransform.
-- Produce monthly red tide concentration raster
-- Plot kriging predictions.
-
-### 5. Clip to VIIRS (Visible Infrared Imaging Radiometer Suite) - (2012-present)
-``process_VIIRS.R``
-
-- Get VIIRS and Observed data.
-- VIIRS data represent is raster probability data in which 1 indicates 100% percent of a red tide occurred in that cell in that month.
-- Clip Predicted data with VIIRS>0 data.
-- Plot red tide severity maps.
-
-### 6. Process and Clip to MODIS - (2003-2012)
-``process_MODIS.R``
-
-- Make MODIS polygons.
-- Clip rasters.
-- Make nFLH polygons.
-- Plot results.
-
-### 7. Polygon Convex and Clipping
-``scripts/polygon_clipping_rt.R``
-
-- Prepare FLH MODIS polygons
-- Prepare convex hull polygons with buffer (5km)
-- Clip HAB density monthly maps using three polygon methods:
-    - CONCAVE method. concave hull + buffer around monthly HAB observations
-    - FLH method (2003<). polygon from the fluorescence line height filtering
-    - VIIRS method (2012<). polygon from the Visible Infrared Imaging Radiometer Suite
- 
-### 8. Evaluation of clip method approaches
-(``scripts/accuracy_evaluation.R``)
-
-- Accuracy obs vs pred dens
-- Accuracy obs vs pred bin
-- Accuracy obs vs pred+clip dens
-- Accuracy obs vs pred+clip bin
-- Accuracy pred vs pred+clip
-   
-### 9. Run example
-(currently at ``scripts/make red tide maps - example.R``)
-
-## Repository Structure
+## Pipeline
 
 ```
-EnvironmentalDrivers2EwE/
-├── data/ # habsos data
-├── template rasters/ # ascii files templates
-├── scripts/ # Core R scripts with modular functions and example code
-└── README.md # This file
+                ArcGIS REST                                          Ecospace
+   FWC HAB  ─────────────►  cell_counts/                             ST drivers
+                              │                                          ▲
+                              ▼                                          │ (opt)
+                       spatial filter ──────► filtered HAB               │
+                              │                                          │
+                              ▼                                          │
+                       sdmTMB monthly fits ──► pred_array                │
+                              │                                          │
+                              ▼                                          │
+                      predict to grid ───────► sdmTMB_log_stack          │
+                              │                                          │
+                              ▼                                          │
+   VIIRS tifs  ─┐                                                        │
+   MODIS polys ─┼──► clip cascade (VIIRS > MODIS > buffered hulls)       │
+   buffered    ─┘            │                                           │
+   hulls                     ▼                                           │
+                       combined stack ──────► monthly ASCII ─────────────┘
 ```
 
-## Getting Started
+Each step is one function in `scripts/`:
 
-To use the tools in this repository, you will need R (>= 4.0). It requires to previously download [MODIS data](https://modis.gsfc.nasa.gov/tools/).
+| Step | Function | File |
+|---|---|---|
+| Pull FWC HAB samples | `fn.get_fwc_data` | `get_HAB_data.R` |
+| Spatially filter to the WFS grid | `fn.filter_hab_data` | `get_HAB_data.R` |
+| Build prediction grid | `fn.make_input_grid` | `sdmTMB_HAB_data.R` |
+| Fit monthly sdmTMB models | `fn.fit_monthly_sdmTMB` | `sdmTMB_HAB_data.R` |
+| Predict to grid | `fn.predict_monthly_sdmTMB` | `sdmTMB_HAB_data.R` |
+| Buffered concave hulls | `fn.buffered_hulls` | `polygon_clipping_rt.R` |
+| Clip predictions to hulls | `fn.clip_2_hulls` | `polygon_clipping_rt.R` |
+| Stack VIIRS tifs | `fn.viirs_tifs2stack` | `process_VIIRS.R` |
+| Clip predictions to VIIRS | `fn.clip_2_viirs` | `process_VIIRS.R` |
+| Clip predictions to MODIS nFLH | `fn.clip_2_modis` | `process_MODIS.R` |
+| Combine + write ASCII | `make_redtide_ascii` | `polygon_clipping_rt.R` |
+| Copy to Ecospace drivers (opt-in) | `export_to_ecospace` | `polygon_clipping_rt.R` |
 
-Example R script is included in  ``scripts/make red tide maps - example.R``.
+## Why the clipping cascade
+
+Predicted cell concentrations from sdmTMB can extend across the entire shelf even when no bloom is actually present. The clipping step restricts the prediction to the actual bloom footprint for that month:
+
+- **VIIRS (2012–present)** — NOAA monthly red-tide probability rasters (0.1°). Where any cell is > 0, the prediction in that month is masked to those cells. This is the highest-confidence source.
+- **MODIS nFLH (2003–2025)** — Normalized fluorescence-line-height rasters thresholded at ≥ 0.02 mW cm⁻² μm⁻¹ sr⁻¹ (per Hu et al. 2005, updated calibration via Chuanmin Hu, pers. comm.) are dissolved into polygons used as the clipping mask when VIIRS is unavailable.
+- **Buffered concave hulls (all years, fallback)** — For months with no satellite coverage, a 10 km buffered concave hull around positive in-situ observations defines the bloom footprint. k-means splits multi-cluster months into separate hulls.
+
+For each (year, month), the combined stack picks **VIIRS if available**, otherwise **MODIS**, otherwise **the buffered-hull-clipped prediction**. The decision per month is logged to `out/<res>min/clipped/clipping_source.csv`.
+
+## Quick start
+
+Requires **R ≥ 4.5** with the packages listed in [Reproducibility](#reproducibility).
+
+```bash
+git clone https://github.com/WFS-FEM/RedTideMaps.git
+cd RedTideMaps
+Rscript run_redtide_maps.R
+```
+
+The first run will:
+1. Pull the full FWC HAB record from the ArcGIS REST endpoints (~2 min, ~210k records).
+2. Filter to the WFS grid.
+3. Fit monthly sdmTMB models for every (year, month) with ≥ 5 positive observations (~1 hour for 1985–present at 15-min res).
+4. Predict to the depth template grid.
+5. Run the clipping cascade.
+6. Write 12 ASCII files per year to `out/<res>min/ecospace_ascii/`.
+
+## Monthly rerun
+
+```bash
+Rscript run_redtide_maps.R
+```
+
+That's it. Each rerun:
+
+- Pulls only the **new** FWC records since `max(SAMPLE_DATE)` in the local CSV.
+- Refits only the **new** (year, month) combinations that don't already have a fit on disk (incremental cache).
+- Re-runs predict, hull, VIIRS, MODIS clip, ASCII for the full year range.
+
+A typical monthly rerun is **seconds**, not hours.
+
+**To force a refit of a specific month** (e.g., after data corrections):
+
+```bash
+rm -rf out/15min/sdm/OM_month/202503
+Rscript run_redtide_maps.R
+```
+
+**To push the ASCII drop to the Ecospace ST drivers folder**, set `cfg$export_ecospace = TRUE` in `run_redtide_maps.R`.
+
+## Configuration
+
+All knobs live in the `cfg` list at the top of `run_redtide_maps.R`:
+
+| Key | Default | Purpose |
+|---|---|---|
+| `res` | `15L` | Output resolution in minutes. Supported: 5, 15 (templates shipped in `template rasters/`). |
+| `styr`, `enyr` | `1985`, current year | Year range to model. |
+| `repo_dir` | hardcoded path | Repo root. Change if you cloned elsewhere. |
+| `proj_dir` | `repo_dir` | Where inputs and outputs live. Override if data is outside the repo. |
+| `bathy_dir` | `<repo>/template rasters` | Where the depth + excl ASCII templates live. |
+| `ecospace_root` | OneDrive WFS EwE path | Target for `export_to_ecospace()`. |
+| `use_viirs` | `TRUE` | Include VIIRS clipping. |
+| `use_modis` | `TRUE` | Include MODIS nFLH clipping (requires shipped FLH polys). |
+| `update_modis` | `FALSE` | Pull/update raw MODIS FLH from ERDDAP before clipping. Needs network. |
+| `rebuild_nflh` | `FALSE` | Rebuild FLH polygons from raw stack. Set with `update_modis`. |
+| `fwc_force_full` | `FALSE` | Ignore the local FWC CSV cache and pull every endpoint again. |
+| `incremental_fit` | `TRUE` | Skip months that already have a fit on disk. Delete `OM_month/<yyyymm>/` to force a refit. |
+| `fit_nb` | `FALSE` | Also fit the NB2 spatial model in addition to lognormal. Only lognormal is used downstream, so leaving this `FALSE` roughly halves cold-run fit time. |
+| `export_ecospace` | `FALSE` | After the run, copy `ecospace_ascii/` into `<ecospace_root>/<res>min/red tide/sdmTMB/`. |
+
+## Inputs
+
+**Tracked in the repo** (run from a fresh clone works without any external paths):
+
+- `VIIRS/redtide_maps_0.1degree/*.tif` — NOAA monthly red-tide probability rasters (2012-present).
+- `MODIS/FLH polys *.Rdata` — pre-built nFLH-threshold polygons (2002-present).
+- `template rasters/depth *.asc`, `excl layer *.asc` — depth + exclusion templates for 4, 5, 6, 10, and 15-minute resolutions.
+- `data/FWC HAB API query urls.txt` — list of 6 FWC ArcGIS REST endpoints.
+
+**Pulled fresh from the FWC ArcGIS REST API at every run** (not committed):
+
+- `cell_counts/FWC HAB data <yyyymmdd>-<yyyymmdd>.{csv,Rdata}` — merged in-situ K. brevis cell counts from FWC.
+
+## Outputs
+
+```
+out/<res>min/
+  sdm/
+    *_filtered.Rdata        # spatially filtered HAB observations
+    OM_month/<yyyymm>/      # per-month sdmTMB fits (fit_sdmTMBlog.RData [+ fit_sdmTMBnb.RData])
+    pred_SDMs_RT.RData      # 4-D pred_array (cell × model × month × year)
+    RT_fit_matrix.RData     # convergence + RRMSE/MAE/AIC per (year, month, model)
+    pred_obs_RT.RData       # observation-vs-prediction pairs
+    fit_warnings.csv        # captured sdmTMB warnings with (year, month, model) context
+    sdmTMB_log_stack_*.grd  # monthly prediction stack (cells/L)
+    *_hullpolys.Rdata       # per-month buffered concave hulls
+  clipped/
+    *_clipped_hull.grd      # predictions masked to buffered hulls
+    *_clipped_viirs.grd     # predictions masked to VIIRS positive cells
+    *_clipped_modis.grd     # predictions masked to MODIS nFLH polygons
+    clipping_source.csv     # per-month decision: VIIRS / MODIS / hull
+  combined/
+    *_clipped_combined.grd  # final merged stack (VIIRS > MODIS > hull)
+  ecospace_ascii/
+    sdmTMB_log__<yyyymm>.asc  # one ASCII per month — the deliverable
+  plots/
+    sample locations by year.png
+    N samples over time.png
+    sdmTMB log maps.pdf
+    *_clipped_combined.pdf
+```
+
+The entire `out/` tree is gitignored. Each run regenerates the contents.
+
+## Reproducibility
+
+Tested with **R 4.5.2** on Windows 11.
+
+Required packages (CRAN unless noted): `sf`, `raster`, `terra`, `rnaturalearth`, `sdmTMB`, `lubridate`, `concaveman`, `cluster`, `ggplot2`, `viridis`, `scales`, `cowplot`, `ggh4x`, `maps`, `fields`, `rvest`, `httr`, `jsonlite`.
+
+Optional (only for `update_modis = TRUE`): `rerddap`, `curl`, `data.table`, `rasterVis`, `colorRamps`.
+
+Install with:
+
+```r
+install.packages(c(
+  "sf","raster","terra","rnaturalearth","sdmTMB","lubridate",
+  "concaveman","cluster","ggplot2","viridis","scales","cowplot",
+  "ggh4x","maps","fields","rvest","httr","jsonlite"))
+```
+
+`sdmTMB` is version-sensitive (depends on TMB); if you hit fit/predict issues, check the installed `sdmTMB` version matches the model object stored in `OM_month/`. A safe move is to delete the affected month's `OM_month/<yyyymm>/` folder and let the next run refit under the current version.
 
 ## Authors
-- [Daniel Vilas](https://github.com/danielvilasgonzalez)
-- [David Chagaris](https://github.com/dchagaris)
+
+- [David Chagaris](https://github.com/dchagaris) — PI, workflow design, monthly operation
+- [Daniel Vilas](https://github.com/danielvilasgonzalez) — original sdmTMB and clipping code
+
+## License
+
+(TODO — set repo license)
