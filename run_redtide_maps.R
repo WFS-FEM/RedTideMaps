@@ -21,7 +21,7 @@
 # Config -----------------------------------------------------------------
 cfg <- list(
   # Resolution (integer minutes). Supported here: 5, 15.
-  res = 15L,
+  res = 5L,
 
   # Year range to model
   styr = 1985,
@@ -51,7 +51,7 @@ cfg <- list(
   fwc_force_full   = FALSE,   # set TRUE to rebuild the FWC merged CSV from scratch
   incremental_fit  = TRUE,    # skip months already fit (delete OM_month/<yyyymm>/ to force refit)
   fit_nb           = FALSE,   # set TRUE to also fit the NB2 model (only the log model is used downstream)
-  export_ecospace  = FALSE    # set TRUE to copy ASCII drop to ecospace_root
+  export_ecospace  = TRUE    # set TRUE to copy ASCII drop to ecospace_root
 )
 # Resolve repo-relative defaults
 if (is.null(cfg$proj_dir))  cfg$proj_dir  <- cfg$repo_dir
@@ -184,8 +184,7 @@ fn.plot_redtide_stack(file_stack = combined_path, dir_plots = paths$plots_out)
 if (isTRUE(cfg$export_ecospace)) {
   rt_log(paths, "Step 8: export ASCII drop to external Ecospace ST drivers")
   export_to_ecospace(dir_ascii     = paths$ecospace,
-                     ecospace_root = cfg$ecospace_root,
+                     ecospace_root = file.path(cfg$ecospace_root),
                      res           = paths$res)
 }
-
 rt_log(paths, "Run complete.")
