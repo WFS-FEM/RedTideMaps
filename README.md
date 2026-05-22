@@ -194,4 +194,4 @@ install.packages(c(
 
 ## License
 
-(TODO — set repo license)
+MIT — see [LICENSE](LICENSE).
