@@ -20,5 +20,13 @@ MODIS/flh_*.gri
 MODIS/flh_*.grd
 MODIS/erddap_modis_datasets_*.csv
 
+# Derived VIIRS stack (rebuilt from the tracked .tif files by
+# fn.viirs_tifs2stack on every run).
+VIIRS/VIIRS_*.grd
+VIIRS/VIIRS_*.gri
+
+# Local Claude state
+.claude/
+
 # Logs
 *.log
