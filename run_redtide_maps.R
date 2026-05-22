@@ -49,6 +49,7 @@ cfg <- list(
   update_modis     = FALSE,   # set TRUE to pull/refresh ERDDAP nFLH first
   rebuild_nflh     = FALSE,   # set TRUE to rebuild FLH polygons from stack
   fwc_force_full   = FALSE,   # set TRUE to rebuild the FWC merged CSV from scratch
+  incremental_fit  = TRUE,    # skip months already fit (delete OM_month/<yyyymm>/ to force refit)
   export_ecospace  = FALSE    # set TRUE to copy ASCII drop to ecospace_root
 )
 # Resolve repo-relative defaults
@@ -100,12 +101,13 @@ input_grid <- fn.make_input_grid(file_depth = paths$file_depth,
 
 # Drop observations outside the prediction grid box (defensive).
 habdata <- hab$points
-fit_files <- fn.fit_monthly_sdmTMB(habdata    = habdata,
-                                   input_grid = input_grid,
-                                   dir_sdmout = paths$sdm_out,
-                                   dir_om     = file.path(paths$sdm_out, "OM_month"),
-                                   styr       = cfg$styr,
-                                   enyr       = cfg$enyr)
+fit_files <- fn.fit_monthly_sdmTMB(habdata     = habdata,
+                                   input_grid  = input_grid,
+                                   dir_sdmout  = paths$sdm_out,
+                                   dir_om      = file.path(paths$sdm_out, "OM_month"),
+                                   styr        = cfg$styr,
+                                   enyr        = cfg$enyr,
+                                   incremental = cfg$incremental_fit)
 
 # 4) Predict to grid -----------------------------------------------------
 rt_log(paths, "Step 4: predict monthly sdmTMB to grid")

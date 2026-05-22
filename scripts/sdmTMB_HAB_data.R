@@ -56,17 +56,22 @@ fn.make_input_grid <- function(file_depth, file_excl = NULL) {
 #' @param dir_sdmout Directory for stacks, fit_matrix, pred_array, plots.
 #' @param dir_om Directory for per-month fit files. Created if missing.
 #' @param styr,enyr Year range to model.
+#' @param incremental If TRUE (default), preserve already-fit (year, month)
+#'   subdirs and skip refitting them. Force a refit by deleting the
+#'   relevant OM_month/<yyyymm>/ folder before running. If FALSE, wipe
+#'   the entire OM_month/ tree and refit everything in scope.
 #' @return List of paths written: fits dir, fit_matrix, pred_array, pred_obs.
 fn.fit_monthly_sdmTMB <- function(habdata,
                                   input_grid,
                                   dir_sdmout,
                                   dir_om = file.path(dir_sdmout, "OM_month"),
                                   styr = 1985,
-                                  enyr = max(habdata$year)) {
+                                  enyr = max(habdata$year),
+                                  incremental = TRUE) {
 
-  # Clear our own outputs only — do NOT wipe dir_sdmout itself, since
-  # other steps (filter, hulls) write artifacts there too.
-  unlink(dir_om, recursive = TRUE)
+  # Clear arrays/stacks (always — they get rebuilt from the on-disk fits).
+  # In full-rebuild mode, also wipe OM_month/.
+  if (!incremental) unlink(dir_om, recursive = TRUE)
   unlink(file.path(dir_sdmout, "plots"), recursive = TRUE)
   for (stale in c("pred_SDMs_RT.RData", "RT_fit_matrix.RData", "pred_obs_RT.RData"))
     unlink(file.path(dir_sdmout, stale))
@@ -75,6 +80,15 @@ fn.fit_monthly_sdmTMB <- function(habdata,
   dir.create(dir_sdmout, recursive = TRUE, showWarnings = FALSE)
   dir.create(file.path(dir_sdmout, "plots"), recursive = TRUE, showWarnings = FALSE)
   if (!dir.exists(dir_om)) dir.create(dir_om, recursive = TRUE)
+
+  # Helper: does a (year, month) already have both fit files on disk?
+  .has_existing_fit <- function(mdir) {
+    f1 <- file.path(mdir, "fit_sdmTMBlog.RData")
+    f2 <- file.path(mdir, "fit_sdmTMBnb.RData")
+    file.exists(f1) && file.exists(f2) &&
+      file.info(f1)$size > 0 && file.info(f2)$size > 0
+  }
+  n_skipped <- 0L; n_fit <- 0L
 
   # Capture all per-fit warnings with (year, month, model) context.
   warns_log <- list()
@@ -99,13 +113,21 @@ fn.fit_monthly_sdmTMB <- function(habdata,
 
       if (!(imonth %in% as.numeric(mm))) next
 
+      mdir <- file.path(dir_om, sprintf("%d%02d", iyear, imonth))
+      if (incremental && .has_existing_fit(mdir)) {
+        n_skipped <- n_skipped + 1L
+        cat("  (incremental: reusing existing fits in ", basename(mdir), ")\n",
+            sep = "")
+        next
+      }
+      n_fit <- n_fit + 1L
+
       mdf <- subset(ydf, month == imonth)
       mdf_df <- st_drop_geometry(mdf)
       mdf_df_pos <- subset(mdf_df, cells != 0)
       names(mdf_df)[which(names(mdf_df) %in% c("X","Y"))]     <- c("lon","lat")
       names(mdf_df_pos)[which(names(mdf_df_pos) %in% c("X","Y"))] <- c("lon","lat")
 
-      mdir <- file.path(dir_om, sprintf("%d%02d", iyear, imonth))
       if (dir.exists(mdir)) unlink(mdir, recursive = TRUE)
       dir.create(mdir, recursive = TRUE)
 
@@ -140,6 +162,8 @@ fn.fit_monthly_sdmTMB <- function(habdata,
       rm(fit_sdmTMBnb, fit_sdmTMBlog); gc()
     }
   }
+  message(sprintf("Fit summary: %d month(s) newly fit, %d reused from cache.",
+                  n_fit, n_skipped))
 
   # Persist captured warnings.
   if (length(warns_log) > 0) {
