@@ -60,6 +60,11 @@ fn.make_input_grid <- function(file_depth, file_excl = NULL) {
 #'   subdirs and skip refitting them. Force a refit by deleting the
 #'   relevant OM_month/<yyyymm>/ folder before running. If FALSE, wipe
 #'   the entire OM_month/ tree and refit everything in scope.
+#' @param fit_nb If TRUE (default), fit both the lognormal-on-positives
+#'   and the NB2 spatial models per month. If FALSE, fit only the
+#'   lognormal model — the NB model is not used downstream of the log
+#'   stack, so disabling it ~halves fit time. Per-month cache check
+#'   adapts accordingly.
 #' @return List of paths written: fits dir, fit_matrix, pred_array, pred_obs.
 fn.fit_monthly_sdmTMB <- function(habdata,
                                   input_grid,
@@ -67,7 +72,8 @@ fn.fit_monthly_sdmTMB <- function(habdata,
                                   dir_om = file.path(dir_sdmout, "OM_month"),
                                   styr = 1985,
                                   enyr = max(habdata$year),
-                                  incremental = TRUE) {
+                                  incremental = TRUE,
+                                  fit_nb = TRUE) {
 
   # Clear arrays/stacks (always — they get rebuilt from the on-disk fits).
   # In full-rebuild mode, also wipe OM_month/.
@@ -81,12 +87,13 @@ fn.fit_monthly_sdmTMB <- function(habdata,
   dir.create(file.path(dir_sdmout, "plots"), recursive = TRUE, showWarnings = FALSE)
   if (!dir.exists(dir_om)) dir.create(dir_om, recursive = TRUE)
 
-  # Helper: does a (year, month) already have both fit files on disk?
+  # Helper: does a (year, month) already have the fit files this run needs?
   .has_existing_fit <- function(mdir) {
-    f1 <- file.path(mdir, "fit_sdmTMBlog.RData")
-    f2 <- file.path(mdir, "fit_sdmTMBnb.RData")
-    file.exists(f1) && file.exists(f2) &&
-      file.info(f1)$size > 0 && file.info(f2)$size > 0
+    f_log <- file.path(mdir, "fit_sdmTMBlog.RData")
+    f_nb  <- file.path(mdir, "fit_sdmTMBnb.RData")
+    log_ok <- file.exists(f_log) && file.info(f_log)$size > 0
+    if (!fit_nb) return(log_ok)
+    log_ok && file.exists(f_nb) && file.info(f_nb)$size > 0
   }
   n_skipped <- 0L; n_fit <- 0L
 
@@ -134,13 +141,17 @@ fn.fit_monthly_sdmTMB <- function(habdata,
       max_attempts <- 2
       attempt_counter <- 0
       repeat {
-        fit_sdmTMBnb <- tryCatch(
-          catch_warns(
-            sdmTMB(formula = cells ~ 1, data = mdf_df,
-                   mesh = sdmTMB::make_mesh(mdf_df, xy_cols = c("lon","lat"), cutoff = 0.1),
-                   family = nbinom2(), spatial = "on", spatiotemporal = "off"),
-            iyear, imonth, "nb"),
-          error = function(e) { message("Error in fit TMB nb"); NULL })
+        if (fit_nb) {
+          fit_sdmTMBnb <- tryCatch(
+            catch_warns(
+              sdmTMB(formula = cells ~ 1, data = mdf_df,
+                     mesh = sdmTMB::make_mesh(mdf_df, xy_cols = c("lon","lat"), cutoff = 0.1),
+                     family = nbinom2(), spatial = "on", spatiotemporal = "off"),
+              iyear, imonth, "nb"),
+            error = function(e) { message("Error in fit TMB nb"); NULL })
+        } else {
+          fit_sdmTMBnb <- NULL
+        }
         fit_sdmTMBlog <- tryCatch(
           catch_warns(
             sdmTMB(formula = cells ~ 1, data = mdf_df_pos,
@@ -149,7 +160,9 @@ fn.fit_monthly_sdmTMB <- function(habdata,
             iyear, imonth, "log"),
           error = function(e) { message("Error in fit TMB log"); NULL })
 
-        if (!is.null(fit_sdmTMBnb) | !is.null(fit_sdmTMBlog)) break
+        # Success criterion: log fit (the one used downstream). Also
+        # accept an NB-only success when fit_nb=TRUE and log failed.
+        if (!is.null(fit_sdmTMBlog) || (fit_nb && !is.null(fit_sdmTMBnb))) break
         attempt_counter <- attempt_counter + 1
         if (attempt_counter >= max_attempts) {
           message("Max attempts reached, moving on.")
@@ -157,7 +170,7 @@ fn.fit_monthly_sdmTMB <- function(habdata,
         }
       }
 
-      save(fit_sdmTMBnb,  file = file.path(mdir, "fit_sdmTMBnb.RData"))
+      if (fit_nb) save(fit_sdmTMBnb, file = file.path(mdir, "fit_sdmTMBnb.RData"))
       save(fit_sdmTMBlog, file = file.path(mdir, "fit_sdmTMBlog.RData"))
       rm(fit_sdmTMBnb, fit_sdmTMBlog); gc()
     }
@@ -369,12 +382,21 @@ fn.predict_monthly_sdmTMB <- function(file_sdmpred, file_depth, dir_sdmout) {
 
   rng_log <- paste0(gsub("X","", names(sdm_log)[1]), "-",
                     gsub("X","", names(sdm_log)[nlayers(sdm_log)]))
-  rng_nb  <- paste0(gsub("X","", names(sdm_nb)[1]), "-",
-                    gsub("X","", names(sdm_nb)[nlayers(sdm_nb)]))
   file_log <- file.path(dir_sdmout, paste0("sdmTMB_log_stack_", rng_log))
-  file_nb  <- file.path(dir_sdmout, paste0("sdmTMB_nb_stack_",  rng_nb))
   writeRaster(sdm_log, file_log, overwrite = TRUE)
-  writeRaster(sdm_nb,  file_nb,  overwrite = TRUE)
+
+  # Only write the NB stack if it actually has predictions (skips the
+  # all-zero artifact when fit_nb = FALSE).
+  nb_max <- suppressWarnings(max(values(sdm_nb), na.rm = TRUE))
+  if (is.finite(nb_max) && nb_max > 0) {
+    rng_nb  <- paste0(gsub("X","", names(sdm_nb)[1]), "-",
+                      gsub("X","", names(sdm_nb)[nlayers(sdm_nb)]))
+    file_nb <- file.path(dir_sdmout, paste0("sdmTMB_nb_stack_", rng_nb))
+    writeRaster(sdm_nb, file_nb, overwrite = TRUE)
+  } else {
+    message("NB predictions are empty; skipping NB stack write.")
+    file_nb <- NULL
+  }
 
   list(file_log = file_log, file_nb = file_nb)
 }

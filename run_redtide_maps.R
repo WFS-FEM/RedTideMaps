@@ -50,6 +50,7 @@ cfg <- list(
   rebuild_nflh     = FALSE,   # set TRUE to rebuild FLH polygons from stack
   fwc_force_full   = FALSE,   # set TRUE to rebuild the FWC merged CSV from scratch
   incremental_fit  = TRUE,    # skip months already fit (delete OM_month/<yyyymm>/ to force refit)
+  fit_nb           = FALSE,   # set TRUE to also fit the NB2 model (only the log model is used downstream)
   export_ecospace  = FALSE    # set TRUE to copy ASCII drop to ecospace_root
 )
 # Resolve repo-relative defaults
@@ -107,7 +108,8 @@ fit_files <- fn.fit_monthly_sdmTMB(habdata     = habdata,
                                    dir_om      = file.path(paths$sdm_out, "OM_month"),
                                    styr        = cfg$styr,
                                    enyr        = cfg$enyr,
-                                   incremental = cfg$incremental_fit)
+                                   incremental = cfg$incremental_fit,
+                                   fit_nb      = cfg$fit_nb)
 
 # 4) Predict to grid -----------------------------------------------------
 rt_log(paths, "Step 4: predict monthly sdmTMB to grid")
