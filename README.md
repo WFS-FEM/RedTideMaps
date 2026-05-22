@@ -1,6 +1,6 @@
 # RedTideMaps
 
-Monthly red-tide severity rasters for the West Florida Shelf, as input to the **WFS Ecospace** model.
+Monthly red-tide severity rasters for the West Florida Shelf, as input to the **WFS Ecospace** model ([Vilas et al. 2023](https://www.nature.com/articles/s41598-023-29327-z)).
 
 This repository produces monthly maps of *Karenia brevis* cell concentrations (cells / L) across a configurable spatial grid, by combining FWC in-situ cell counts, satellite-derived bloom polygons (VIIRS, MODIS nFLH), and species-distribution modeling with [sdmTMB](https://pbs-assess.github.io/sdmTMB/). Output is one ASCII raster per month, ready to be loaded as a spatial driver in **Ecopath with Ecosim / Ecospace**.
 
@@ -56,8 +56,8 @@ Each step is one function in `scripts/`:
 
 Predicted cell concentrations from sdmTMB can extend across the entire shelf even when no bloom is actually present. The clipping step restricts the prediction to the actual bloom footprint for that month:
 
-- **VIIRS (2012–present)** — NOAA monthly red-tide probability rasters (0.1°). Where any cell is > 0, the prediction in that month is masked to those cells. This is the highest-confidence source.
-- **MODIS nFLH (2003–2025)** — Normalized fluorescence-line-height rasters thresholded at ≥ 0.02 mW cm⁻² μm⁻¹ sr⁻¹ (per Hu et al. 2005, updated calibration via Chuanmin Hu, pers. comm.) are dissolved into polygons used as the clipping mask when VIIRS is unavailable.
+- **VIIRS (2012–present)** — NOAA monthly red-tide probability rasters (0.1°). Where any cell is > 0, the prediction in that month is masked to those cells. This is the highest-confidence source.  These maps are developed by the [University of South Florida Optical Oceanography Laboratory](https://optics.marine.usf.edu/). See [Yao et al. (2023)](https://doi.org/10.1016/j.rse.2023.113833) and [Hu et al. (2015)](https://doi.org/10.3390/s150202873) for details.
+- **MODIS nFLH (2003–2025)** — Normalized fluorescence-line-height rasters thresholded at ≥ 0.02 mW cm⁻² μm⁻¹ sr⁻¹ (per [Hu et al. 2005](https://doi.org/10.1016/j.rse.2005.05.013), updated calibration via Chuanmin Hu, pers. comm.) are dissolved into polygons used as the clipping mask when VIIRS is unavailable.
 - **Buffered concave hulls (all years, fallback)** — For months with no satellite coverage, a 10 km buffered concave hull around positive in-situ observations defines the bloom footprint. k-means splits multi-cluster months into separate hulls.
 
 For each (year, month), the combined stack picks **VIIRS if available**, otherwise **MODIS**, otherwise **the buffered-hull-clipped prediction**. The decision per month is logged to `out/<res>min/clipped/clipping_source.csv`.
