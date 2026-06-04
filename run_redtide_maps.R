@@ -89,7 +89,6 @@ hab_files <- fn.get_fwc_data(dir_data   = paths$cellcnts,
 rt_log(paths, "Step 2: spatial filter to WFS grid")
 hab <- fn.filter_hab_data(file_hab   = hab_files$rdata,
                           file_depth = paths$file_depth,
-                          file_excl  = paths$file_excl,
                           dir_out    = paths$sdm_out)
 fn.plot_hab_data(points        = hab$points,
                  land_polygons = hab$land_polygons,

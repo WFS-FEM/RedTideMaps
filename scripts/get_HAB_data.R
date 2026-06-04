@@ -219,20 +219,17 @@ fn.get_habsos_data <- function(url_habsos = "https://www.ncei.noaa.gov/data/ocea
 
 #' Spatially filter HAB observations to the WFS Ecospace grid.
 #'
-#' Builds polygons for the U.S. landmass, an Atlantic exclusion box, and
-#' the depth-excluded cells, then drops any observation falling inside
-#' the union.
+#' Drops observations inside an Atlantic-side exclusion box and crops the
+#' remainder to the depth raster lat/long extent.
 #'
 #' @param file_hab   Path to merged FWC or HABSOS .Rdata.
 #' @param file_depth Path to the depth template ASCII for the target res.
-#' @param file_excl  Path to the exclusion template ASCII for the target res.
 #' @param dir_out    Directory to write the *_filtered.Rdata into.
 #' @return A list with:
 #'   - file: path to the filtered .Rdata,
 #'   - points: filtered_points_df (sf with lon/lat/year/month/cells),
-#'   - inside_polygons: per-point logical matrix from st_within,
 #'   - land_polygons: U.S. coastline polygons clipped to depth extent.
-fn.filter_hab_data <- function(file_hab, file_depth, file_excl, dir_out) {
+fn.filter_hab_data <- function(file_hab, file_depth, dir_out) {
   file_out <- file.path(dir_out,
                         gsub("\\.Rdata$", "_filtered.Rdata", basename(file_hab)))
 
@@ -259,8 +256,7 @@ fn.filter_hab_data <- function(file_hab, file_depth, file_excl, dir_out) {
   df <- df[complete.cases(df[, 1:2]), ]
   obs_sf <- st_as_sf(df, coords = c("lon", "lat"), crs = st_crs(depth))
 
-  # Build polygons we want to exclude (land + Atlantic side + deep cells)
-  excl_raster <- raster(file_excl)
+  # Land polygons for the basemap only (no longer used to exclude points).
   us <- ne_countries(country = "united states of america",
                      scale = "medium", returnclass = "sf")
   us <- us["geometry"]
@@ -268,9 +264,10 @@ fn.filter_hab_data <- function(file_hab, file_depth, file_excl, dir_out) {
   us_cropped <- st_cast(st_crop(us, us_bbox), "POLYGON")
 
   depth_extent <- st_as_sf(st_as_sfc(st_bbox(depth)))
-  excl_sf <- st_as_sf(rasterToPolygons(excl_raster, dissolve = TRUE))
-
   us_clipped_sf <- st_intersection(us_cropped, depth_extent)
+  us_clipped_sf <- st_transform(us_clipped_sf, st_crs(depth))
+  us_clipped_sf <- st_make_valid(us_clipped_sf)
+  us_clipped_sf_polygons <- st_cast(us_clipped_sf, "POLYGON")
 
   # Atlantic-side exclusion box (NE of FL peninsula).
   atl_coords <- matrix(c(-82, 28.5,
@@ -281,23 +278,13 @@ fn.filter_hab_data <- function(file_hab, file_depth, file_excl, dir_out) {
                        ncol = 2, byrow = TRUE)
   atl_sf <- st_sf(geometry = st_sfc(st_polygon(list(atl_coords))),
                   crs = st_crs(depth))
+  atl_sf <- st_transform(atl_sf, st_crs(depth))
 
-  us_clipped_sf <- st_transform(us_clipped_sf, st_crs(depth))
-  excl_sf       <- st_transform(excl_sf,       st_crs(depth))
-  atl_sf        <- st_transform(atl_sf,        st_crs(depth))
+  # Drop observations falling inside the Atlantic-side exclusion box.
+  inside_atl <- st_within(obs_sf, atl_sf, sparse = FALSE)
+  filtered <- obs_sf[!apply(inside_atl, 1, any), ]
 
-  us_clipped_sf <- st_make_valid(us_clipped_sf)
-  us_clipped_sf_polygons <- st_cast(us_clipped_sf, "POLYGON")
-
-  all_polys <- st_union(us_clipped_sf, atl_sf)
-  all_polys <- st_union(all_polys, excl_sf)
-  all_polys <- st_cast(st_combine(all_polys), "POLYGON")
-
-  # Drop observations falling inside any exclusion polygon
-  inside_polygons <- st_within(obs_sf, all_polys, sparse = FALSE)
-  filtered <- obs_sf[!apply(inside_polygons, 1, any), ]
-
-  # Crop to depth raster bbox
+  # Crop to the depth raster lat/long extent.
   bbox_raster <- st_bbox(st_as_sfc(st_bbox(depth)))
   filtered <- st_crop(filtered, bbox_raster)
 
@@ -310,7 +297,6 @@ fn.filter_hab_data <- function(file_hab, file_depth, file_excl, dir_out) {
   list(
     file            = file_out,
     points          = filtered_points_df,
-    inside_polygons = inside_polygons,
     land_polygons   = us_clipped_sf_polygons
   )
 }
