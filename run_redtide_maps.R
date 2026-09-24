@@ -30,7 +30,7 @@ cfg <- list(
   # Repo root. Change if you cloned the repo to a different path.
   # All other paths default to subfolders of this one — the workflow is
   # standalone within the repo.
-  repo_dir = "C:/Users/dchagaris/Github/WFS-FEM/RedTideMaps",
+  repo_dir = "./",
 
   # Working dir for inputs (cell_counts/, VIIRS/, MODIS/) and outputs.
   # Defaults to repo_dir so a fresh clone runs end-to-end without any
@@ -41,7 +41,7 @@ cfg <- list(
   bathy_dir = NULL,
 
   # Optional: external Ecospace ST drivers root (used only by export_to_ecospace).
-  ecospace_root = "C:/Users/dchagaris/OneDrive - University of Florida/WFS Fisheries Ecosystem Modeling/WFS EwE/Ecospace/ST drivers",
+#  ecospace_root = "C:/Users/dchagaris/OneDrive - University of Florida/WFS Fisheries Ecosystem Modeling/WFS EwE/Ecospace/ST drivers",
 
   # Toggles
   use_viirs        = TRUE,
