@@ -5,8 +5,11 @@
 .Rproj.user/
 
 # R session
-*.Rproj
 *~
+
+# Local path overrides. Every machine-specific path lives here, never in
+# tracked code; config.local.example.R shows what goes in it.
+config.local.R
 
 # Generated outputs — track the deliverables (ecospace_ascii/, plots/)
 # but not the heavy intermediates (sdm/, clipped/, combined/, run logs).
