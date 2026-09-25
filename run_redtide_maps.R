@@ -11,12 +11,28 @@
 #'   7. Write per-month ASCII for Ecospace under out/<res>min/ecospace_ascii/.
 #'   8. Optionally export ASCII files to the external Ecospace ST drivers.
 #'
-#' Monthly rerun checklist:
-#'   - Download the latest "Recent HAB" CSV from
-#'     https://geodata.myfwc.com/datasets/myfwc::recent-harmful-algal-bloom-hab-events/explore
-#'     and place it next to the Historic CSV in `cfg$proj_dir/cell_counts/`.
-#'   - Set `cfg$res` and `cfg$enyr` below.
-#'   - Source this file.
+#' How to run:
+#'   - From the repo root: `Rscript run_redtide_maps.R`, or open
+#'     RedTideMaps.Rproj and source this file. Rscript also works from any
+#'     directory when given the full path to this file.
+#'   - Machine-specific settings (e.g. the Ecospace export folder) go in a
+#'     gitignored config.local.R; copy config.local.example.R to start one.
+
+# Repo root --------------------------------------------------------------
+# Everything is resolved from the repo root, so find it rather than assume
+# the working directory: the working directory if it holds the .Rproj,
+# otherwise the folder this script was launched from by Rscript.
+.rt_repo_root <- function() {
+  if (file.exists("RedTideMaps.Rproj"))
+    return(normalizePath(getwd(), winslash = "/"))
+  f <- sub("^--file=", "", grep("^--file=", commandArgs(FALSE), value = TRUE))
+  if (length(f) == 1) {
+    d <- dirname(normalizePath(f, winslash = "/", mustWork = FALSE))
+    if (file.exists(file.path(d, "RedTideMaps.Rproj"))) return(d)
+  }
+  stop("Can't find the repo root. Open RedTideMaps.Rproj, or setwd() to ",
+       "the repo folder. Currently: ", getwd(), call. = FALSE)
+}
 
 # Config -----------------------------------------------------------------
 cfg <- list(
@@ -27,10 +43,9 @@ cfg <- list(
   styr = 1985,
   enyr = as.integer(format(Sys.Date(), "%Y")),
 
-  # Repo root. Change if you cloned the repo to a different path.
-  # All other paths default to subfolders of this one — the workflow is
-  # standalone within the repo.
-  repo_dir = "./",
+  # Repo root, detected above. All other paths default to subfolders of
+  # this one — the workflow is standalone within the repo.
+  repo_dir = .rt_repo_root(),
 
   # Working dir for inputs (cell_counts/, VIIRS/, MODIS/) and outputs.
   # Defaults to repo_dir so a fresh clone runs end-to-end without any
@@ -40,8 +55,9 @@ cfg <- list(
   # Depth + excl ASCII templates. Defaults to the repo's template rasters/.
   bathy_dir = NULL,
 
-  # Optional: external Ecospace ST drivers root (used only by export_to_ecospace).
-#  ecospace_root = "C:/Users/dchagaris/OneDrive - University of Florida/WFS Fisheries Ecosystem Modeling/WFS EwE/Ecospace/ST drivers",
+  # Optional: external Ecospace "ST drivers" root, used only when
+  # export_ecospace is TRUE. Machine-specific, so set it in config.local.R.
+  ecospace_root = NULL,
 
   # Toggles
   use_viirs        = TRUE,
@@ -51,8 +67,28 @@ cfg <- list(
   fwc_force_full   = FALSE,   # set TRUE to rebuild the FWC merged CSV from scratch
   incremental_fit  = TRUE,    # skip months already fit (delete OM_month/<yyyymm>/ to force refit)
   fit_nb           = FALSE,   # set TRUE to also fit the NB2 model (only the log model is used downstream)
-  export_ecospace  = TRUE    # set TRUE to copy ASCII drop to ecospace_root
+  export_ecospace  = FALSE   # set TRUE (in config.local.R) to copy the ASCII drop to ecospace_root
 )
+
+# Local overrides (gitignored); see config.local.example.R
+if (file.exists(file.path(cfg$repo_dir, "config.local.R"))) {
+  source(file.path(cfg$repo_dir, "config.local.R"))
+  message("Applied local overrides from config.local.R")
+}
+
+# Check the export destination now rather than after a 20-minute run. It
+# must already exist: creating it would hide a mistyped root.
+if (isTRUE(cfg$export_ecospace)) {
+  if (!is.character(cfg$ecospace_root) || length(cfg$ecospace_root) != 1 ||
+      !nzchar(cfg$ecospace_root))
+    stop("export_ecospace is TRUE but ecospace_root is not set. ",
+         "Set cfg$ecospace_root in config.local.R.", call. = FALSE)
+  .dest <- file.path(cfg$ecospace_root, paste0(cfg$res, "min"), "red tide", "sdmTMB")
+  if (!dir.exists(.dest))
+    stop("Ecospace export folder not found: ", .dest,
+         "\nCheck cfg$ecospace_root in config.local.R.", call. = FALSE)
+}
+
 # Resolve repo-relative defaults
 if (is.null(cfg$proj_dir))  cfg$proj_dir  <- cfg$repo_dir
 if (is.null(cfg$bathy_dir)) cfg$bathy_dir <- file.path(cfg$repo_dir, "template rasters")
@@ -183,7 +219,7 @@ fn.plot_redtide_stack(file_stack = combined_path, dir_plots = paths$plots_out)
 if (isTRUE(cfg$export_ecospace)) {
   rt_log(paths, "Step 8: export ASCII drop to external Ecospace ST drivers")
   export_to_ecospace(dir_ascii     = paths$ecospace,
-                     ecospace_root = file.path(cfg$ecospace_root),
+                     ecospace_root = cfg$ecospace_root,
                      res           = paths$res)
 }
 rt_log(paths, "Run complete.")
