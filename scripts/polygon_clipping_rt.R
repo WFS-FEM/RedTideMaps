@@ -259,21 +259,30 @@ fn.plot_redtide_stack <- function(file_stack, dir_plots) {
 #'
 #' Default behavior of the workflow writes to out/<res>min/ecospace_ascii/
 #' inside the repo (or proj_dir). This function copies that drop to the
-#' configured external location when the user asks. The destination is
-#' typically:
+#' configured external location when the user asks. The destination is:
 #'   <ecospace_root>/<res>min/red tide/sdmTMB/
+#'
+#' The destination must already exist. It is never created here, so a
+#' mistyped root fails instead of silently writing somewhere new. Any file
+#' that fails to copy stops the run.
 #'
 #' @param dir_ascii Source directory (produced by make_redtide_ascii).
 #' @param ecospace_root Target Ecospace "ST drivers" root.
 #' @param res Resolution in minutes.
 #' @return Invisibly returns the destination directory.
 export_to_ecospace <- function(dir_ascii, ecospace_root, res) {
-  if (is.null(ecospace_root) || ecospace_root == "")
+  if (!is.character(ecospace_root) || length(ecospace_root) != 1 ||
+      !nzchar(ecospace_root))
     stop("ecospace_root must be set to use export_to_ecospace().")
   dest <- file.path(ecospace_root, paste0(res, "min"), "red tide", "sdmTMB")
-  if (!dir.exists(dest)) dir.create(dest, recursive = TRUE)
-  files <- list.files(dir_ascii, full.names = TRUE)
+  if (!dir.exists(dest))
+    stop("Ecospace export folder not found: ", dest,
+         "\nCheck ecospace_root; the folder is not created automatically.")
+  files <- list.files(dir_ascii, pattern = "\\.asc$", full.names = TRUE)
   ok <- file.copy(files, dest, overwrite = TRUE)
+  if (!all(ok))
+    stop("Failed to copy ", sum(!ok), "/", length(ok), " file(s) to ", dest,
+         ": ", paste(basename(files[!ok]), collapse = ", "))
   message("Copied ", sum(ok), "/", length(ok), " file(s) to ", dest)
   invisible(dest)
 }
