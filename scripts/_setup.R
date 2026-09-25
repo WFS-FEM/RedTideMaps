@@ -5,6 +5,31 @@
 #' rt_paths() which returns the canonical output tree for a given
 #' resolution.
 
+# Package check -----------------------------------------------------------
+
+#' Stop early, with one install line, if any required package is missing.
+#'
+#' Runs before the library() calls below so a missing package fails in the
+#' first second of a run rather than partway through it.
+#'
+#' @param pkgs Character vector of package names.
+#' @return Invisibly TRUE if all are installed.
+rt_check_packages <- function(pkgs) {
+  missing <- pkgs[!vapply(pkgs, requireNamespace, logical(1), quietly = TRUE)]
+  if (length(missing) > 0)
+    stop("Missing R packages: ", paste(missing, collapse = ", "),
+         "\nInstall with:\n  install.packages(c(",
+         paste0('"', missing, '"', collapse = ", "), "))", call. = FALSE)
+  invisible(TRUE)
+}
+
+# rnaturalearthdata is not attached, but rnaturalearth::ne_countries(scale =
+# "medium") in fn.filter_hab_data() needs it installed.
+rt_check_packages(c("sf", "raster", "terra", "rnaturalearth", "rnaturalearthdata",
+                    "sdmTMB", "lubridate", "concaveman", "cluster",
+                    "ggplot2", "viridis", "scales", "cowplot", "ggh4x",
+                    "maps", "fields", "rvest", "httr", "jsonlite"))
+
 # Library loading ---------------------------------------------------------
 # Grouped by purpose. Kept in one place so individual function files
 # don't load packages as a side effect of being sourced.
