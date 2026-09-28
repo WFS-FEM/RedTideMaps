@@ -221,8 +221,9 @@ install.packages(c(
 
 ## Authors
 
-- [David Chagaris](https://github.com/dchagaris) — PI, workflow design, monthly operation
+- [David Chagaris](https://github.com/dchagaris) — PI, workflow design
 - [Daniel Vilas](https://github.com/danielvilasgonzalez) — original sdmTMB and clipping code
+- [Holden Harris](https://github.com/holden-harris) — operationalization
 
 ## License
 
