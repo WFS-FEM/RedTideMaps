@@ -58,7 +58,7 @@ Predicted cell concentrations from sdmTMB can extend across the entire shelf eve
 
 - **VIIRS (2012–present)** — NOAA monthly red-tide probability rasters (0.1°). Where any cell is > 0, the prediction in that month is masked to those cells. This is the highest-confidence source.  These maps are developed by the [University of South Florida Optical Oceanography Laboratory](https://optics.marine.usf.edu/). See [Yao et al. (2023)](https://doi.org/10.1016/j.rse.2023.113833) and [Hu et al. (2015)](https://doi.org/10.3390/s150202873) for details.
 - **MODIS nFLH (2003–2025)** — Normalized fluorescence-line-height rasters thresholded at ≥ 0.02 mW cm⁻² μm⁻¹ sr⁻¹ (per [Hu et al. 2005](https://doi.org/10.1016/j.rse.2005.05.013), updated calibration via Chuanmin Hu, pers. comm.) are dissolved into polygons used as the clipping mask when VIIRS is unavailable.
-- **Buffered concave hulls (all years, fallback)** — For months with no satellite coverage, a 10 km buffered concave hull around positive in-situ observations defines the bloom footprint. k-means splits multi-cluster months into separate hulls.
+- **Buffered concave hulls (all years, fallback)** — For months with no satellite coverage, positive in-situ observations define the bloom footprint. Positives are grouped by single-linkage clustering: two samples share a footprint when a chain of positives connects them with every link shorter than `hull_link_km` (default 75 km). Each cluster with at least `hull_min_pts` (4) distinct locations gets a concave hull; smaller clusters get the points themselves; every footprint is buffered by `hull_buffer_km` (10 km). Every month with at least one positive gets a footprint. The rule is deterministic. Each run writes `out/<res>min/sdm/hull_diagnostics.csv` (one row per month: positives, clusters, footprint area and span) and the run log flags months whose largest footprint spans more than `hull_warn_span_km` (300 km), counting only months the hull path actually serves (no VIIRS or MODIS coverage); a flag is a prompt to look at the panel, not a failure.
 
 For each (year, month), the combined stack picks **VIIRS if available**, otherwise **MODIS**, otherwise **the buffered-hull-clipped prediction**. The decision per month is logged to `out/<res>min/clipped/clipping_source.csv`.
 
@@ -98,7 +98,7 @@ There is nothing to download by hand: the FWC records come from the ArcGIS REST 
    Rscript run_redtide_maps.R
    ```
 
-2. Check that the run log, `out/<res>min/run_<yyyymmdd>.log`, ends with `Run complete.`
+2. Check that the run log, `out/<res>min/run_<yyyymmdd>.log`, ends with `Run complete.` Also read its `Hulls:` line, which lists the hull-served months (no satellite coverage) whose footprint spans more than `hull_warn_span_km`: if any are flagged, look at their panels in `out/<res>min/plots/*_clipped_combined.pdf` and at `out/<res>min/sdm/hull_diagnostics.csv` to confirm the footprint is a real coast-wide bloom rather than an artifact.
 3. Commit the updated deliverables, `out/<res>min/ecospace_ascii/` and `out/<res>min/plots/`.
 
 If `export_ecospace` is on in `config.local.R`, step 1 also copies the ASCII files to the Ecospace ST drivers folder.
@@ -155,6 +155,11 @@ All knobs live in the `cfg` list at the top of `run_redtide_maps.R`. To change o
 | `incremental_fit` | `TRUE` | Skip months that already have a fit on disk. Delete `OM_month/<yyyymm>/` to force a refit. |
 | `fit_nb` | `FALSE` | Also fit the NB2 spatial model in addition to lognormal. Only lognormal is used downstream, so leaving this `FALSE` roughly halves cold-run fit time. |
 | `export_ecospace` | `FALSE` | After the run, copy `ecospace_ascii/` into `<ecospace_root>/<res>min/red tide/sdmTMB/`. |
+| `hull_link_km` | `75` | Buffered-hull fallback: single-linkage cut distance in km. Positives farther apart than this, with no chain of closer positives between them, get separate footprints. 50 km is the "only where sampled" sensitivity case. |
+| `hull_buffer_km` | `10` | Buffer in km around each hull footprint. |
+| `hull_min_pts` | `4L` | Distinct locations a cluster needs for a concave hull; smaller clusters get buffered points. |
+| `hull_concavity` | `2` | `concaveman` concavity for every hull (lower = tighter). |
+| `hull_warn_span_km` | `300` | Months whose largest footprint spans more than this are flagged in `sdm/hull_diagnostics.csv` and the run log. |
 
 ## Inputs
 
@@ -181,7 +186,8 @@ out/<res>min/
     pred_obs_RT.RData       # observation-vs-prediction pairs
     fit_warnings.csv        # captured sdmTMB warnings with (year, month, model) context
     sdmTMB_log_stack_*.grd  # monthly prediction stack (cells/L)
-    *_hullpolys.Rdata       # per-month buffered concave hulls
+    *_hullpolys.Rdata       # per-month buffered hull footprints
+    hull_diagnostics.csv    # per-month hull QA: positives, clusters, footprint area and span, flagged
   clipped/
     *_clipped_hull.grd      # predictions masked to buffered hulls
     *_clipped_viirs.grd     # predictions masked to VIIRS positive cells

@@ -23,3 +23,17 @@
 # Keep inputs (cell_counts/, VIIRS/, MODIS/) and outputs (out/) outside the
 # repo. Default: the repo root.
 # cfg$proj_dir <- "D:/RedTideMaps-data"
+
+
+# Buffered-hull fallback (months with no VIIRS or MODIS coverage). Positive
+# samples are grouped by single linkage: two samples share a footprint when
+# a chain of positives connects them with every link shorter than
+# hull_link_km. 75 km (default) joins sampled patches across 50-75 km gaps
+# of unsampled coast; 50 km keeps footprints only where samples are and is
+# the sensitivity case reported in issue #3. Months whose largest footprint
+# spans more than hull_warn_span_km are flagged in sdm/hull_diagnostics.csv.
+# cfg$hull_link_km      <- 50
+# cfg$hull_buffer_km    <- 10
+# cfg$hull_min_pts      <- 4L
+# cfg$hull_concavity    <- 2
+# cfg$hull_warn_span_km <- 300
