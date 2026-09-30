@@ -39,3 +39,6 @@ VIIRS/VIIRS_*.gri
 
 # Logs
 *.log
+
+# QA scratch copies (e.g. the pre-fix polygon_clipping_rt.R from main)
+scripts/qa/_*

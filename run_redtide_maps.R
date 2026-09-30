@@ -59,6 +59,13 @@ cfg <- list(
   # export_ecospace is TRUE. Machine-specific, so set it in config.local.R.
   ecospace_root = NULL,
 
+  # Buffered-hull fallback (fn.buffered_hulls; see README "Why the clipping cascade")
+  hull_link_km      = 75,     # single-linkage cut (km): positives farther apart than this get separate footprints
+  hull_buffer_km    = 10,     # buffer (km) around each footprint
+  hull_min_pts      = 4L,     # distinct locations needed for a concave hull; smaller clusters get buffered points
+  hull_concavity    = 2,      # concaveman concavity for every hull (lower = tighter)
+  hull_warn_span_km = 300,    # flag months whose largest footprint spans more than this (km) in hull_diagnostics.csv
+
   # Toggles
   use_viirs        = TRUE,
   use_modis        = TRUE,    # requires existing FLH polygons
@@ -163,7 +170,12 @@ file_hullpolys <- fn.buffered_hulls(file_filtered = hab$file,
                                     file_depth    = paths$file_depth,
                                     dir_out       = paths$sdm_out,
                                     styr          = cfg$styr,
-                                    enyr          = cfg$enyr)
+                                    enyr          = cfg$enyr,
+                                    link_km       = cfg$hull_link_km,
+                                    buffer_km     = cfg$hull_buffer_km,
+                                    min_hull_pts  = cfg$hull_min_pts,
+                                    concavity     = cfg$hull_concavity,
+                                    warn_span_km  = cfg$hull_warn_span_km)
 clip_hull <- fn.clip_2_hulls(file_pred  = pred_paths$file_log,
                              file_polys = file_hullpolys,
                              file_depth = paths$file_depth,
@@ -214,6 +226,24 @@ combined_path <- make_redtide_ascii(file_hull    = clip_hull$file,
                                     file_depth   = paths$file_depth,
                                     var          = "log")
 fn.plot_redtide_stack(file_stack = combined_path, dir_plots = paths$plots_out)
+
+# Flagged hulls (largest footprint > hull_warn_span_km), reported only for
+# the months the hull path actually serves (use == "pred" in
+# clipping_source.csv; VIIRS and MODIS months never use the hull). A flag is
+# a prompt for a human look at the panel, not a failure: a real coast-wide
+# bloom can exceed the threshold.
+hull_diag <- read.csv(file.path(paths$sdm_out, "hull_diagnostics.csv"),
+                      colClasses = c(yrmo = "character"))
+clip_src  <- read.csv(file.path(paths$clipped_out, "clipping_source.csv"),
+                      stringsAsFactors = FALSE)
+hull_months  <- gsub("^X", "", clip_src$yrmo[clip_src$use == "pred"])
+hull_flagged <- hull_diag$yrmo[hull_diag$flagged & hull_diag$yrmo %in% hull_months]
+rt_log(paths, if (length(hull_flagged) == 0)
+  sprintf("Hulls: no flagged hulls (max footprint span <= %g km) in the %d months served by the hull path.",
+          cfg$hull_warn_span_km, length(hull_months)) else
+  sprintf("Hulls: %d of %d hull-served month(s) have a footprint spanning > %g km: %s (inspect in plots/*_clipped_combined.pdf; details in sdm/hull_diagnostics.csv)",
+          length(hull_flagged), length(hull_months), cfg$hull_warn_span_km,
+          paste(hull_flagged, collapse = ", ")))
 
 # 8) Optional external export -------------------------------------------
 if (isTRUE(cfg$export_ecospace)) {

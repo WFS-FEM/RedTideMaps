@@ -1,8 +1,10 @@
 #' Polygon-based clipping of sdmTMB predictions.
 #'
 #' Three steps in the clipping cascade:
-#'   - fn.buffered_hulls(): per-month buffered concave hulls around
-#'     positive observations. Used for all months (fallback).
+#'   - fn.buffered_hulls(): per-month buffered footprints (concave hull or
+#'     buffered points per single-linkage cluster) around positive
+#'     observations. Used for all months (fallback). Also writes
+#'     hull_diagnostics.csv.
 #'   - fn.clip_2_hulls(): mask the predicted stack with those hulls.
 #'   - make_redtide_ascii(): merge hull/MODIS/VIIRS-clipped stacks into a
 #'     single combined stack (VIIRS > MODIS > hulls by preference)
@@ -10,19 +12,55 @@
 #'
 #' fn.plot_redtide_stack() renders the combined stack to a PDF.
 
-# Per-month buffered concave hulls around positive HAB observations -----
+# Per-month buffered footprints around positive HAB observations ---------
 
-#' Build per-month concave-hull polygons (with 10 km buffer) around
-#' positive HAB observations. k-means splits multi-cluster months.
+#' Build per-month bloom-footprint polygons around positive HAB observations.
+#'
+#' For each (year, month) with at least one positive sample (`cells != 0`),
+#' positives are grouped by single-linkage hierarchical clustering
+#' (`stats::hclust` / `stats::cutree`) cut at `link_km`: two samples share
+#' a footprint when a chain of positive samples connects them with every
+#' link shorter than `link_km`. Each cluster then gets one footprint:
+#'   - clusters with at least `min_hull_pts` distinct locations get a
+#'     concave hull (`concaveman`, concavity `concavity`);
+#'   - smaller clusters, and clusters whose hull is degenerate (collinear
+#'     points), get the points themselves;
+#' and every footprint is buffered by `buffer_km`. The rule is deterministic,
+#' so the same input always gives the same polygons. This replaced a k-means
+#' split that lumped distant outliers into one long hull (issue #3).
+#'
+#' As a side effect the function writes `hull_diagnostics.csv` into
+#' `dir_out`, one row per (year, month) with samples: `yrmo, n_pos,
+#' n_locations, n_clusters, cluster_sizes, n_polys, total_area_km2,
+#' max_area_km2, max_span_km, flagged`. `max_span_km` is the largest
+#' bounding-box diagonal of any footprint (UTM zone 17N, before
+#' reprojection) and `flagged = max_span_km > warn_span_km`. A flag is a
+#' prompt for a human look, not a failure: a real coast-wide bloom can
+#' legitimately exceed the threshold.
 #'
 #' @param file_filtered Path to filtered HAB Rdata (filtered_points_df).
 #' @param file_depth Path to depth ASCII (only used to assert template loadable).
-#' @param dir_out Directory to write the hull-polys Rdata into.
+#' @param dir_out Directory to write the hull-polys Rdata and the
+#'   diagnostics CSV into.
 #' @param styr,enyr Optional year range. If NULL, all years in the
 #'   filtered data are processed.
-#' @return Path to the written Rdata file.
+#' @param link_km Single-linkage cut distance in km (default 75). Positive
+#'   samples farther apart than this, with no chain of closer positives
+#'   between them, get separate footprints.
+#' @param buffer_km Buffer around each footprint in km (default 10).
+#' @param min_hull_pts Distinct locations needed for a concave hull
+#'   (default 4); smaller clusters get buffered points.
+#' @param concavity concaveman concavity for every hull (default 2).
+#' @param warn_span_km Footprint span (km) above which a month is flagged
+#'   in the diagnostics (default 300).
+#' @return Path to the written hull-polys Rdata file. The file holds
+#'   `pol_list`: one sf (EPSG:4326, MULTIPOLYGON) per month, named
+#'   `"%d%02d"`, as consumed by fn.clip_2_hulls().
 fn.buffered_hulls <- function(file_filtered, file_depth, dir_out,
-                              styr = NULL, enyr = NULL) {
+                              styr = NULL, enyr = NULL,
+                              link_km = 75, buffer_km = 10,
+                              min_hull_pts = 4, concavity = 2,
+                              warn_span_km = 300) {
   load(file_filtered)  # provides filtered_points_df
   depth <- raster(file_depth)  # currently used only to validate the template
   invisible(depth)
@@ -32,58 +70,86 @@ fn.buffered_hulls <- function(file_filtered, file_depth, dir_out,
   if (!is.null(enyr)) habyrs <- habyrs[habyrs <= enyr]
   pts_utm <- st_transform(filtered_points_df, 32617)
   pol_list <- list()
+  diag_rows <- list()
 
   for (y in habyrs) {
     for (m in sort(unique(filtered_points_df$month[filtered_points_df$year == y]))) {
+      yrmo <- sprintf("%d%02d", y, m)
       cat(sprintf("####### %s %02d #######\n", y, m))
       pts_ym <- subset(pts_utm, year == y & month == m & cells != 0)
+      n_pos  <- nrow(pts_ym)
+
+      if (n_pos == 0) {
+        diag_rows[[yrmo]] <- data.frame(
+          yrmo = yrmo, n_pos = 0L, n_locations = 0L, n_clusters = 0L,
+          cluster_sizes = "", n_polys = 0L, total_area_km2 = 0,
+          max_area_km2 = 0, max_span_km = 0, flagged = FALSE,
+          stringsAsFactors = FALSE)
+        next
+      }
+
+      # Single-linkage clusters cut at link_km. hclust() needs >= 2 points.
+      # Exact duplicate coordinates are fine (distance 0), so no jitter.
       coords <- st_coordinates(pts_ym)
-      if (nrow(coords) < 4) next
+      grp <- if (n_pos == 1) 1L else
+        cutree(hclust(dist(coords), method = "single"), h = link_km * 1000)
+      pts_ym$group <- factor(grp)
 
-      # Jitter duplicated coordinates so concave hull doesn't degenerate
-      dups <- duplicated(coords) | duplicated(coords, fromLast = TRUE)
-      if (sum(dups) > 1) {
-        coords_jit <- coords
-        coords_jit[dups, ] <- coords[dups, ] *
-          matrix(1 + runif(sum(dups) * 2, -1, 1) / 1e6, ncol = 2)
-        new_geom <- st_sfc(lapply(seq_len(nrow(coords_jit)),
-                                  function(i) st_point(coords_jit[i, ])),
-                           crs = 32617)
-        pts_ym2 <- pts_ym
-        st_geometry(pts_ym2) <- new_geom
-      } else {
-        pts_ym2 <- pts_ym
-      }
-      if (nrow(pts_ym2) < 4) next
+      # Work in sfc throughout: concaveman() on an sf object returns a
+      # geometry column named "polygons", which would not bind with
+      # st_sf(geometry = ...).
+      footprints <- lapply(split(pts_ym, pts_ym$group), function(gp) {
+        g   <- st_geometry(gp)
+        g_u <- st_cast(st_union(g), "POINT")           # distinct locations only
+        core <- NULL
+        if (length(g_u) >= min_hull_pts)
+          core <- tryCatch(concaveman(g_u, concavity = concavity),
+                           error = function(e) NULL)
+        # Too few distinct locations, or a degenerate (collinear) hull:
+        # buffer the points themselves.
+        if (is.null(core) || !all(st_is_valid(core)) ||
+            sum(as.numeric(st_area(core))) == 0)
+          core <- st_union(g_u)
+        st_buffer(core, buffer_km * 1000)
+      })
 
-      # Pick number of clusters from k-means within-SS elbow
-      coords <- st_coordinates(pts_ym2)
-      wss <- numeric()
-      for (k in 1:min(10, nrow(coords) / 4)) {
-        wss[k] <- kmeans(coords, centers = k)$tot.withinss
-      }
-      ncenters <- which.max(abs(diff(wss))) + 1
+      # Diagnostics in UTM (metres) before reprojection.
+      areas_km2 <- vapply(footprints,
+                          function(f) sum(as.numeric(st_area(f))) / 1e6, numeric(1))
+      spans_km  <- vapply(footprints, function(f) {
+        b <- st_bbox(f)
+        as.numeric(sqrt((b["xmax"] - b["xmin"])^2 + (b["ymax"] - b["ymin"])^2)) / 1000
+      }, numeric(1))
+      n_polys <- sum(vapply(footprints,
+                            function(f) length(st_cast(f, "POLYGON")), integer(1)))
+      sizes   <- sort(as.integer(table(pts_ym$group)), decreasing = TRUE)
+      n_loc   <- length(st_cast(st_union(st_geometry(pts_ym)), "POINT"))
 
-      if (length(ncenters) != 0) {
-        km <- kmeans(coords, centers = ncenters)
-        pts_ym2$group <- as.factor(km$cluster)
-        if (min(table(pts_ym2$group)) >= 4) {
-          polys <- lapply(split(pts_ym2, pts_ym2$group), function(gp) {
-            hull <- concaveman(gp)
-            st_transform(st_buffer(hull, 10000), 4326)
-          })
-          hab_pol <- do.call(rbind, polys)
-        } else {
-          hull <- concaveman(pts_ym2, concavity = 1)
-          hab_pol <- st_transform(st_buffer(hull, 10000), 4326)
-        }
-      } else {
-        hull <- concaveman(pts_ym2, concavity = 1)
-        hab_pol <- st_transform(st_buffer(hull, 10000), 4326)
-      }
-      pol_list[[sprintf("%d%02d", y, m)]] <- hab_pol
+      diag_rows[[yrmo]] <- data.frame(
+        yrmo           = yrmo,
+        n_pos          = n_pos,
+        n_locations    = n_loc,
+        n_clusters     = length(footprints),
+        cluster_sizes  = paste(sizes, collapse = ";"),
+        n_polys        = n_polys,
+        total_area_km2 = round(sum(areas_km2), 1),
+        max_area_km2   = round(max(areas_km2), 1),
+        max_span_km    = round(max(spans_km), 1),
+        flagged        = max(spans_km) > warn_span_km,
+        stringsAsFactors = FALSE)
+
+      # One sf per month; the sfc objects already carry EPSG:32617. One
+      # geometry type for the whole column so raster::rasterize() (via
+      # sf::as_Spatial) never sees a mixed POLYGON/MULTIPOLYGON column.
+      hab_pol <- st_sf(group    = names(footprints),
+                       geometry = do.call(c, unname(footprints)))
+      hab_pol <- st_cast(st_transform(hab_pol, 4326), "MULTIPOLYGON")
+      pol_list[[yrmo]] <- hab_pol
     }
   }
+
+  diag <- do.call(rbind, unname(diag_rows))
+  write.csv(diag, file.path(dir_out, "hull_diagnostics.csv"), row.names = FALSE)
 
   file_hullpolys <- file.path(
     dir_out, gsub("_filtered", "_hullpolys", basename(file_filtered)))
