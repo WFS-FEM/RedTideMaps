@@ -770,6 +770,15 @@ if (monthly_pdf) {
                    round(file.size(file_mpdf) / 1e6, 1), " MB)") }
   }
 }
+# Example rows of the monthly PDF for the issue (tracked figure).
+example_rows <- c("201201", "201202", "201203", "201204")
+png(file.path(dir_docs, "fig5_monthly_rows_example.png"), width = page_w,
+    height = 2.35 * length(example_rows) + 0.6, units = "in", res = 150)
+par(mfrow = c(length(example_rows), 5), mar = c(0.4, 0.5, 1.5, 2.1), oma = c(0.3, 0, 1.2, 0))
+for (ym in example_rows) draw_row(ym)
+mtext("Example rows of clip_months_issue6.pdf, 2012-01 to 2012-04 (red frame = used in the final map)",
+      outer = TRUE, cex = 0.9, font = 2, line = 0.2)
+dev.off()
 # Two year-pages as PNG for a visual check (gitignored folder).
 for (y in c("2017", "2018")) {
   ch <- key[substr(key, 1, 4) == y]

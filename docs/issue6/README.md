@@ -18,6 +18,7 @@ Rscript scripts/qa/check_clipping_issue6.R        # ~30 s; RT_QA_PDF=0 skips the
 | `docs/issue6/fig4_headline_months.png` | the ten headline months: unclipped, final, hull alternative, MODIS alternative |
 | `docs/issue6/clip_check_issue6.pdf` | one page per fitted month (329 pages, 7.7 MB): unclipped + samples + footprint, VIIRS-clipped, MODIS-clipped, hull-clipped |
 | `docs/issue6/clip_months_issue6.pdf` | one row per month for all 504 months, 12 rows (one calendar year) per page: FWC counts, unclipped, VIIRS-clipped, MODIS-clipped, hull-clipped, each panel with its legend and a count box; the clipped panel the final map uses is framed in red (§1.3) |
+| `docs/issue6/fig5_monthly_rows_example.png` | four rows of the monthly PDF (2012-01 to 2012-04) as a PNG, for the issue |
 | `docs/issue6/clip_class_counts_issue6.csv` | the count-box numbers, one month per row: for the samples and for each map (unclipped, VIIRS, MODIS, hull, final) the positives and the five FWC classes (§1.3) |
 
 ## 1. What was compared
