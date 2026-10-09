@@ -16,7 +16,8 @@ Rscript scripts/qa/check_clipping_issue6.R        # ~30 s; RT_QA_PDF=0 skips the
 | `docs/issue6/fig2_insitu_vs_viirs.png` | monthly in-situ positives vs VIIRS positive cells, 2012-2024 |
 | `docs/issue6/fig3_bloom_area_unclipped_vs_final.png` | bloom area before and after clipping, by clip source |
 | `docs/issue6/fig4_headline_months.png` | the ten headline months: unclipped, final, hull alternative, MODIS alternative |
-| `out/5min/plots/clip_check_issue6.pdf` | one page per fitted month (329 pages, 7.7 MB): unclipped + samples + footprint, VIIRS-clipped, MODIS-clipped, hull-clipped |
+| `docs/issue6/clip_check_issue6.pdf` | one page per fitted month (329 pages, 7.7 MB): unclipped + samples + footprint, VIIRS-clipped, MODIS-clipped, hull-clipped |
+| `docs/issue6/clip_months_issue6.pdf` | one row per month for all 504 months, 12 rows (one calendar year) per page: FWC counts, unclipped, VIIRS-clipped, MODIS-clipped, hull-clipped, each panel with its legend and a count box; the clipped panel the final map uses is framed in red (§1.3) |
 
 ## 1. What was compared
 
@@ -48,7 +49,11 @@ Flags (thresholds are parameters at the top of the script):
 
 A retention flag (final / unclipped bloom area) was tried first and dropped: the unclipped surface exceeds 10,000 cells/L over more than 90% of the 291,361 km2 of water cells in 181 of the 329 fitted months (median unclipped bloom area 281,089 km2), because the intercept-only lognormal is fit to positive samples only. The unclipped map is therefore not a usable fallback on its own; the clip does all the localisation, and the sample-based hull footprint is the natural reference for "how much did the satellite footprint cut away".
 
-### 1.3 Checks the script enforces
+### 1.3 The monthly PDF (`clip_months_issue6.pdf`)
+
+One row per month from 1985-01 to 2026-12, twelve rows per page so each page is one calendar year (42 pages). Columns: **A** the raw FWC samples of the month (viridis-filled circles binned at 1,000 / 10,000 / 100,000 / 1,000,000 cells/L, with the class legend); **B** the unclipped sdmTMB surface; **C** the VIIRS-clipped map with the positive VIIRS cells outlined; **D** the MODIS-clipped map with the nFLH polygons outlined; **E** the hull-clipped map with the footprints outlined. The clipped panel the final map uses (VIIRS if a tif exists, else MODIS, else hulls) has a red frame. Every panel carries a box with three counts: in column A the samples that are positive, at or above 10,000 and at or above 100,000 cells/L; in columns B to E the grid cells of that map above 0, at or above 10,000 and at or above 100,000 cells/L. Raster panels have their own cells/L colour bar. Months with no samples, no fit, no VIIRS tif or no MODIS polygon keep their row with a note in the empty panel, so the sequence is unbroken; the page number of a month is its year minus 1984.
+
+### 1.4 Checks the script enforces
 
 Before anything is plotted the script asserts that the final map equals the chosen clipped layer cell for cell in all 504 months (NA to 0, land to NA, exactly as `make_redtide_ascii()` does), that `clipping_source.csv` matches the stacks (155 VIIRS, 123 MODIS, 226 hull), that 89 of the 155 VIIRS layers have no positive cell, that the fit status read from the layers agrees with `RT_fit_matrix.RData` for every month (329 fitted, 5 failed, 170 not attempted), that every month with a positive sample has a hull footprint, and that the matrix-to-image orientation is right. All pass on the 6 October run.
 

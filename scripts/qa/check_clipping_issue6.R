@@ -22,7 +22,10 @@
 #'   docs/issue6/fig2_insitu_vs_viirs.png       in-situ positives vs VIIRS cells
 #'   docs/issue6/fig3_bloom_area_unclipped_vs_final.png
 #'   docs/issue6/fig4_headline_months.png       unclipped / final / hull / MODIS
-#'   out/5min/plots/clip_check_issue6.pdf       one page per fitted month
+#'   docs/issue6/clip_check_issue6.pdf          one page per fitted month (4 panels)
+#'   docs/issue6/clip_months_issue6.pdf         one row per month, 12 rows (a year) per
+#'       page: FWC counts | unclipped | VIIRS | MODIS | hulls, each with its legend
+#'       and a count box; the panel the final map uses is framed in red
 #'   console: the summary and the stopifnot() results
 #'
 #' Deterministic: no RNG, no timestamps in any output.
@@ -52,7 +55,9 @@ expected <- list(n_months = 504L,
                  use = c(viirs = 155L, modis = 123L, pred = 226L),
                  viirs_layers = 155L, viirs_zero = 89L)
 viirs_era  <- c("201201", "202412")   # months with a VIIRS tif expected
-render_pdf <- !identical(Sys.getenv("RT_QA_PDF"), "0")
+render_pdf  <- !identical(Sys.getenv("RT_QA_PDF"), "0")           # per-month PDF (clip_check_issue6.pdf)
+monthly_pdf <- !identical(Sys.getenv("RT_QA_MONTHLY_PDF"), "0")   # one-row-per-month PDF (clip_months_issue6.pdf)
+rows_per_page <- 12L   # rows (months) per page of the monthly PDF; 12 = one calendar year per page
 quick      <- nzchar(Sys.getenv("RT_QA_QUICK"))
 
 # Paths --------------------------------------------------------------------
@@ -437,18 +442,42 @@ outline_of <- function(ym, src) switch(src, viirs = viirs_outline(ym), modis = m
                                        pred = , hull = hull_outline(ym))
 outline_col <- c(viirs = "deepskyblue4", modis = "darkorange3", hull = "black", pred = "black")
 
+# A small cells/L colour bar in the right margin of the current panel, with
+# the same bin-to-colour mapping as the map (one rect per ten of the 400 bins).
+colorbar_legend <- function(cex = 0.5) {
+  op <- par(xpd = NA); on.exit(par(op))
+  n <- 40; x1 <- xlim[2] + 0.12; x2 <- xlim[2] + 0.42
+  yy <- seq(ylim[1], ylim[2], length.out = n + 1)
+  rect(x1, yy[-(n + 1)], x2, yy[-1], col = color[1 + 10 * seq_len(n) - 4], border = NA)
+  rect(x1, ylim[1], x2, ylim[2], border = "gray30", lwd = 0.5)
+  at <- c(1e4, 1e6, 2e6, 3e6, 4e6)
+  ya <- ylim[1] + (at - 1e4) / (4e6 - 1e4) * diff(ylim)
+  segments(x2, ya, x2 + 0.08, ya, lwd = 0.5)
+  text(x2 + 0.12, ya, c("10k", "1M", "2M", "3M", "4M"), adj = 0, cex = cex)
+  text((x1 + x2) / 2, ylim[2] + 0.12, "cells/L", adj = c(0.5, 0), cex = cex)
+}
+# The three counts of a map: cells > 0, >= thr_bloom, >= thr_high (NA cells ignored).
+grid_counts <- function(v) {
+  v <- v[!is.na(v)]
+  c(pos = sum(v > 0), ge4 = sum(v >= thr_bloom), ge5 = sum(v >= thr_high))
+}
+info_lines <- function(cnt) c(paste(fmt_n(cnt[[1]]), "positives"),
+                              paste(fmt_n(cnt[[2]]), ">= 1e4"),
+                              paste(fmt_n(cnt[[3]]), ">= 1e5"))
+
 draw_panel <- function(v, main, pts = NULL, all_pts = FALSE, zeros = TRUE, outline = NULL, ocol = "black",
-                       used = FALSE, placeholder = NULL, axes = TRUE) {
+                       used = FALSE, placeholder = NULL, axes = TRUE, cex_main = 0.85,
+                       info = NULL, cex_info = 0.6, cbar = FALSE, cex_pts = 0.7) {
   plot(NA, xlim = xlim, ylim = ylim, xlab = "", ylab = "", asp = 1 / cos(27.5 * pi / 180),
-       main = main, cex.main = 0.85, xaxs = "i", yaxs = "i", axes = FALSE)
-  rect(xlim[1], ylim[1], xlim[2], ylim[2], col = "darkgray", border = NA)
-  if (is.null(placeholder)) {
+       main = main, cex.main = cex_main, xaxs = "i", yaxs = "i", axes = FALSE)
+  rect(xlim[1], ylim[1], xlim[2], ylim[2], col = if (is.null(v) && is.null(placeholder)) "white" else "darkgray", border = NA)
+  if (!is.null(v) && is.null(placeholder)) {
     # useRaster = TRUE embeds the 66 x 78 grid as a bitmap (no interpolation),
     # as raster::plot() does in the pipeline PDFs; vector rects made the
     # 329-page PDF 34 MB.
     image(xs, ys, to_z(v), breaks = brks_img, col = color, add = TRUE, useRaster = TRUE)
-  } else {
-    text(mean(xlim), mean(ylim), placeholder, cex = 0.9)
+  } else if (!is.null(placeholder)) {
+    text(mean(xlim), mean(ylim), placeholder, cex = 0.9 * cex_main / 0.85)
   }
   plot(sf::st_geometry(fl), add = TRUE, col = "wheat", border = "gray40")
   if (!is.null(outline)) plot(sf::st_geometry(outline), add = TRUE, border = ocol, col = NA, lwd = 1.4)
@@ -458,17 +487,20 @@ draw_panel <- function(v, main, pts = NULL, all_pts = FALSE, zeros = TRUE, outli
       if (zeros) points(z0$lon, z0$lat, pch = ".", cex = 1.8, col = "gray45")
       pp <- pts[pts$cells > 0, ]
       bins <- cut(pp$cells, sbrks, labels = FALSE, include.lowest = TRUE)
-      points(pp$lon, pp$lat, pch = 21, bg = spal[bins], col = "black", cex = 0.7, lwd = 0.5)
+      points(pp$lon, pp$lat, pch = 21, bg = spal[bins], col = "black", cex = cex_pts, lwd = 0.5)
     } else {
       pp <- pts[pts$cells >= thr_bloom, ]
       points(pp$lon, pp$lat, pch = 1, cex = 0.6, col = "black", lwd = 0.7)
     }
   }
+  if (!is.null(info)) legend("left", legend = info, bty = "o", bg = "white", box.col = "gray60",
+                             cex = cex_info, inset = 0.01, x.intersp = 0.3, y.intersp = 0.9)
+  if (cbar) colorbar_legend()
   if (axes) { axis(1, cex.axis = 0.7, padj = -1); axis(2, cex.axis = 0.7, las = 1, hadj = 0.8) }
   box(col = if (used) "red" else "black", lwd = if (used) 3 else 1)
 }
-sample_legend <- function() legend("bottomleft", legend = slabs, pt.bg = spal, pch = 21, cex = 0.6,
-                                   title = "samples, cells/L", bg = "white", box.col = "gray60")
+sample_legend <- function(cex = 0.6) legend("bottomleft", legend = slabs, pt.bg = spal, pch = 21, cex = cex,
+                                            title = "samples, cells/L", bg = "white", box.col = "gray60")
 cells_legend <- function() {
   op <- par(no.readonly = TRUE); on.exit(par(op))
   par(mfrow = c(1, 1), mar = c(0, 0, 0, 0), oma = c(0, 0, 0, 1), new = TRUE)
@@ -615,8 +647,8 @@ message("Figures written to ", dir_docs)
 # Per-month PDF -----------------------------------------------------------------
 if (render_pdf) {
   pages <- if (quick) hl else fitted_months
-  file_pdf <- file.path(dir_plots, "clip_check_issue6.pdf")
-  file_tmp <- file.path(dir_plots, "clip_check_issue6_tmp.pdf")
+  file_pdf <- file.path(dir_docs, "clip_check_issue6.pdf")
+  file_tmp <- file.path(dir_docs, "clip_check_issue6_tmp.pdf")
   opened <- tryCatch({ pdf(file_tmp, width = 16, height = 5, onefile = TRUE); TRUE },
                      error = function(e) { warning("Cannot open ", file_tmp, ": ", conditionMessage(e), call. = FALSE); FALSE })
   if (opened) {
@@ -634,4 +666,82 @@ for (ym in c("201702", "201810")) {
   draw_page(ym); dev.off()
 }
 message("Sample pages in ", dir_clipped)
+
+# One-row-per-month PDF ----------------------------------------------------------
+# Columns: FWC samples | unclipped | VIIRS-clipped | MODIS-clipped | hull-clipped.
+# Every panel carries a count box (positives, >= 1e4, >= 1e5: samples in column
+# A, grid cells elsewhere) and a legend; the clipped panel the final map uses is
+# framed in red. Months without samples or without a fit keep their row.
+draw_row <- function(ym) {
+  r <- tab[tab$yrmo == ym, ]
+  p <- by_m[[ym]]
+  lab <- paste0(substr(ym, 1, 4), "-", substr(ym, 5, 6))
+  cm <- 0.75
+  # A: raw FWC counts
+  if (is.null(p)) {
+    draw_panel(NULL, paste("FWC counts", lab), placeholder = "no samples", axes = FALSE, cex_main = cm)
+  } else {
+    draw_panel(NULL, paste("FWC counts", lab), pts = p, all_pts = TRUE, axes = FALSE, cex_main = cm,
+               cex_pts = 0.5, info = info_lines(c(r$n_pos, r$n_pos_1e4, r$n_pos_1e5)))
+    sample_legend(cex = 0.48)
+  }
+  # B: unclipped
+  if (r$fit_status == "fitted") {
+    draw_panel(U[, ym], "sdmTMB unclipped", axes = FALSE, cex_main = cm, cbar = TRUE,
+               info = info_lines(grid_counts(U[, ym])))
+  } else {
+    draw_panel(NULL, "sdmTMB unclipped", axes = FALSE, cex_main = cm,
+               placeholder = if (r$fit_status == "failed") "fit failed" else sprintf("no fit (%d positives)", r$n_pos))
+  }
+  # C: VIIRS
+  if (ym %in% colnames(Vc)) {
+    draw_panel(Vc[, ym], "VIIRS clipped", axes = FALSE, cex_main = cm, cbar = TRUE, used = r$use == "viirs",
+               outline = viirs_outline(ym), ocol = outline_col[["viirs"]], info = info_lines(grid_counts(Vc[, ym])))
+  } else {
+    draw_panel(NULL, "VIIRS clipped", axes = FALSE, cex_main = cm,
+               placeholder = if (r$viirs_status == "missing") "VIIRS tif missing" else "no VIIRS layer")
+  }
+  # D: MODIS
+  if (ym %in% colnames(Mc)) {
+    draw_panel(Mc[, ym], "MODIS clipped", axes = FALSE, cex_main = cm, cbar = TRUE, used = r$use == "modis",
+               outline = modis_outline(ym), ocol = outline_col[["modis"]], info = info_lines(grid_counts(Mc[, ym])))
+  } else {
+    draw_panel(NULL, "MODIS clipped", axes = FALSE, cex_main = cm, placeholder = "no MODIS polygon")
+  }
+  # E: hulls (a layer exists for every month; all zero when there is no footprint or no fit)
+  draw_panel(H[, ym], "Hulls", axes = FALSE, cex_main = cm, cbar = TRUE, used = r$use == "pred",
+             outline = hull_outline(ym), ocol = outline_col[["hull"]], info = info_lines(grid_counts(H[, ym])))
+}
+page_chunks <- split(key, ceiling(seq_along(key) / rows_per_page))
+page_title <- function(ch) if (length(ch) == 12 && substr(ch[1], 5, 6) == "01") substr(ch[1], 1, 4) else
+  paste(paste0(substr(ch[1], 1, 4), "-", substr(ch[1], 5, 6)), "to", paste0(substr(ch[length(ch)], 1, 4), "-", substr(ch[length(ch)], 5, 6)))
+draw_month_page <- function(ch) {
+  par(mfrow = c(rows_per_page, 5), mar = c(0.4, 0.5, 1.5, 2.1), oma = c(0.3, 0, 2.0, 0))
+  for (ym in ch) draw_row(ym)
+  mtext(sprintf("%s   |   FWC counts  |  sdmTMB unclipped  |  VIIRS clipped  |  MODIS clipped  |  hulls   (red frame = used in the final map)", page_title(ch)),
+        outer = TRUE, cex = 1, font = 2, line = 0.5)
+}
+page_w <- 11; page_h <- 2.35 * rows_per_page + 0.9
+if (monthly_pdf) {
+  chunks <- if (quick) page_chunks[vapply(page_chunks, function(ch) any(ch %in% hl), logical(1))] else page_chunks
+  file_mpdf <- file.path(dir_docs, "clip_months_issue6.pdf")
+  file_mtmp <- file.path(dir_docs, "clip_months_issue6_tmp.pdf")
+  opened <- tryCatch({ pdf(file_mtmp, width = page_w, height = page_h, onefile = TRUE); TRUE },
+                     error = function(e) { warning("Cannot open ", file_mtmp, ": ", conditionMessage(e), call. = FALSE); FALSE })
+  if (opened) {
+    tryCatch(for (ch in chunks) draw_month_page(ch), finally = dev.off())
+    if (file.exists(file_mpdf) && !file.remove(file_mpdf))
+      warning("Could not replace ", file_mpdf, " (open in a viewer?); the new file is ", file_mtmp, call. = FALSE)
+    else { file.rename(file_mtmp, file_mpdf)
+           message("Monthly PDF written: ", file_mpdf, " (", length(chunks), " pages, ",
+                   round(file.size(file_mpdf) / 1e6, 1), " MB)") }
+  }
+}
+# Two year-pages as PNG for a visual check (gitignored folder).
+for (y in c("2017", "2018")) {
+  ch <- key[substr(key, 1, 4) == y]
+  if (length(ch) == 0) next
+  png(file.path(dir_clipped, paste0("clip_months_", y, ".png")), width = page_w, height = page_h, units = "in", res = 90)
+  draw_month_page(ch); dev.off()
+}
 cat("\nDone.\n")
