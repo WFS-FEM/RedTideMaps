@@ -258,7 +258,7 @@ The preference VIIRS > MODIS > hull is a fixed rule, not an estimate. The final 
 | Fit 1996-08 (16 positives) four times: seed 6, seed 6, no seed, seed 123 | all four parameter vectors `identical()` |
 | Fit 2018-09 (525 positives) the same four ways | all four `identical()` |
 | Refit vs the fit cached on 30 Sept (same machine, same packages) | `identical()`; max abs difference 0 |
-| Two full runs on the same inputs | pending (planned second baseline run, §9.1) |
+| Two full runs on the same cached fits (30 Sept and run2 on 6 Oct, 14 duplicate records added) | all 504 ASCII files byte-identical (§9.1) |
 
 **What does vary between runs.** The FWC pull: an incremental run appends whatever the state has added since the last sample date, so the filtered data, the months with six or more positives, the fits for those months (new months only, under incremental mode) and every downstream output for the affected months can change. The baseline on 6 Oct advanced the cache from 2026-09-17 to 2026-09-22. Package versions also matter: the README warns that sdmTMB fits are TMB-version sensitive; the run log records no versions (Doc C R9).
 
@@ -292,17 +292,19 @@ out/5min/
 
 ### 8.1 Timing table
 
-Pending the 6 Oct baseline (§9.1). From the 30 Sept 2026 log (reviewer's machine, warm cache, 0 months refit, nothing else running as far as the log shows):
+Measured on 6 Oct 2026 (run2, §9.1): reviewer's machine (20 logical processors, 15 GB RAM), `Rscript` from the command line, nothing else running, warm cache (0 of 334 months refit), incremental FWC pull of 14 records. Times are differences between consecutive stage lines in the run log; the 30 Sept log gave 8 min 12 s for the same stages.
 
 | Stage | Wall time | What dominates | Cache or skip candidate |
 |---|---|---|---|
-| 1 ingest (incremental) | 10 s | one API page | no |
-| 2 filter + plots | 22 s | `sf` operations, two PNGs | no |
-| 3 fits (0 refit) | 1 min 22 s | loading 334 fits and predicting in-sample | prediction array cache keyed on fit folders |
-| 4 predict + PDF | 1 min 31 s | 504 `rasterize()` calls and a 504-page PDF | same cache; skip the PDF when nothing changed |
-| 5 footprints + clipping | 3 min 6 s | VIIRS stack rebuild, three 504-layer masks | VIIRS stack cache keyed on the tif list |
-| 6-7 combine + ASCII + PDF | 1 min 41 s | 504 ASCII writes and a 504-page PDF | no |
-| Total | 8 min 12 s | | |
+| 1 ingest (incremental) | 8 s | one API page | no |
+| 2 filter + plots | 23 s | `sf` operations, two PNGs | no |
+| 3 fits (0 refit) | 1 min 17 s | loading 334 fits and predicting in-sample | prediction array cache keyed on fit folders |
+| 4 predict + PDF | 1 min 14 s | 504 `rasterize()` calls and a 504-page PDF | same cache; skip the PDF when nothing changed |
+| 5 footprints + clipping | 2 min 42 s | VIIRS stack rebuild, three 504-layer masks | VIIRS stack cache keyed on the tif list |
+| 6-7 combine + ASCII + PDF | 1 min 31 s | 504 ASCII writes and a 504-page PDF | no |
+| Total (first to last stage line) | 7 min 15 s | wall time including R start-up: 7.3 min | |
+
+The same stages took about 35 minutes earlier the same day when an sdmTMB sweep and a runaway process shared the machine and memory ran out (§9.1, first run); a monthly operator run should have the machine to itself. Cold-run figures (first FWC pull, 334 fits) remain the README's unmeasured "about 20 minutes" (Doc C D2).
 
 ### 8.2 Existing caches and toggles
 
@@ -350,7 +352,31 @@ Run on 6 Oct 2026 on the reviewer's machine (Windows 11, R 4.5.1, sdmTMB 1.1.0, 
 | `out/15min/` (508 files) | 508 | 0 | not regenerated at `res = 5` |
 | `cell_counts/` | 0 | 2 | replaced by the `-20260922` pair (R2: the previous pair was deleted by the code; the audit copy holds it) |
 
-The three changed plots were left in the working tree for the reviewer to discard or keep. A clean repeat of the run, with nothing else on the machine, is the next step if measured timings and a full ASCII comparison are wanted; the user decides (the harness asked that it not be restarted unprompted).
+The three changed plots were left in the working tree for the reviewer to discard or keep.
+
+**Run2 (clean repeat, same day).** Started 16:50:59 with nothing else running, same code, same config, through `run_logged.R` (`RedTideMaps-audit/20261006/run2/run_20261006-165059.log`).
+
+**Result: all stages ran to completion. Exit code 0. Wall time 439.7 s (7.3 min), of which 7 min 15 s between the first and last stage lines.**
+
+| Stage | Ran | Log evidence |
+|---|---|---|
+| 1 ingest | yes | 16:51:04-16:51:12 (8 s); "Last SAMPLE_DATE in local data: 2026-09-22"; "+ 14 records on/after 2026-09-22"; "Wrote FWC HAB data 19800102-20260922.csv (216198 records, 1980-01-02 to 2026-09-22)" (the 14 were duplicates of cached rows: same count as before) |
+| 2 filter + plots | yes | 16:51:12-16:51:35 (23 s) |
+| 3 fits | yes | 16:51:35-16:52:52 (1 min 17 s); "Fit summary: 0 month(s) newly fit, 334 reused from cache."; "No fit warnings captured." (and `fit_warnings.csv` from 25 Sept still present: R4) |
+| 4 predict | yes | 16:52:52-16:54:06 (1 min 14 s) |
+| 5 footprints + clipping | yes | 16:54:06-16:56:48 (2 min 42 s) |
+| 6-7 combine + ASCII | yes | 16:56:48-16:58:19 (1 min 31 s); "Hulls: 10 of 226 hull-served month(s) have a footprint spanning > 300 km: 199009, 199604, 199606, 199711, 199909, 200009, 200010, 200110, 200112, 200201"; "Run complete." |
+
+**Comparison with the committed outputs** (`snapshot_md5.R compare` of `out/5min`, 863 fingerprinted files, before the first run against after run2; no line-ending-only differences):
+
+| Output group | Identical | Changed | Cause |
+|---|---|---|---|
+| `ecospace_ascii/` (504 files) | 504 | 0 | deterministic pipeline, no new fit, no new positive-bearing month; the 14 new records were duplicates |
+| `plots/` (5 files) | 1 (`hull_check_issue3.pdf`, not written by the pipeline) | 4 | two sample PNGs: the 17-22 Sept 2026 samples now drawn; two PDFs: embedded creation timestamp (same size) (R10) |
+| `sdm/` (348 files) | 348 | 0, 2 added | the `-20260922` `_filtered` and `_hullpolys` Rdata beside the `-20260917` pair (R5) |
+| `clipped/clipping_source.csv` | 1 | 0 | |
+
+So the committed 5-min deliverables are reproduced exactly by a fresh run of the same commit on new FWC data that contained nothing new for any modelled month. The copy of run2's outputs is the working tree itself (unchanged except the plots); the fingerprints are `md5_5min_before.csv` and `md5_5min_after_run2.csv` in the audit folder.
 
 ### 9.2 Same-inputs repeat
 

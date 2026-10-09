@@ -8,8 +8,8 @@ Mode: review-only (full audit scope, with second-audit carry-overs from docs/iss
 Org profile: wfs-fem
 Reviewer: Holden Harris, with Claude Code        Original author: Holden Harris (own past code; Vilas and Chagaris credited, not asked)
 Line numbers refer to commit: a875d64
-Last completed step: §5 step 8 (fix design, plan, decisions, needs-examination); statuses set at Pause 5
-Next step: §5 step 5 (clean baseline rerun in progress, run2) then step 9 (static Phase 8 checks, Doc B §0, Doc A §6-7, §11)
+Last completed step: §5 step 9 (all review-only steps done; closing summary in §11)
+Next step: none in this mode; a later audit session starts at step A1
 Last updated: 2026-10-06
 ```
 
@@ -70,7 +70,7 @@ Smoke (6 Oct 2026): anchor OK (`RedTideMaps.Rproj` tracked, checked at `run_redt
 | R7 | `out/15min/` (504 ASCII + 4 plots); `git log -1 -- out/15min` = `6cfdf00`, 22 May 2026 | The 15-min deliverables are tracked but were last regenerated before the hull fix (PR #4) and before the FWC data through September 2026; nothing in the README says which resolution is current. Out of scope for regeneration (decision 1); recorded so the staleness is known | mechanical (document) | medium | wontfix (decision 5) |
 | R8 | `run_redtide_maps.R:44` (`enyr = as.integer(format(Sys.Date(), "%Y"))`) | The deliverable set depends on the run date: every month of the current year is written, so a run in January 2027 adds 12 files and the months after the last sample are zero maps (2026-10 to 2026-12 on the 30 Sept run). Mechanical here (document; pin `enyr` in the README); what a zero future month means is M6 | mechanical | low | fix: step A6 |
 | R9 | `scripts/_setup.R:150-155`; `README.md:211` | No environment record travels with a run: the log has no R or package versions, there is no lock file, and the README's "Tested with R 4.5.1" is the only statement. sdmTMB fits are TMB-version sensitive (README `:224`). One `sessionInfo()` summary line per run log fixes it | mechanical | low | fix: step A3 |
-| R10 | Baseline run, 6 Oct 2026 (Doc B §9.1) | The run was stopped by the session harness in stage 6 (machine out of memory) before the ASCII write. What it did produce is byte-identical to the 30 Sept intermediates (`RT_fit_matrix.RData`, `hull_diagnostics.csv`, `clipping_source.csv`) although the FWC pull added records for 17-22 Sept 2026, so the committed deliverables would have been reproduced; the only tracked changes are the two sample plots (new samples drawn) and a PDF timestamp. Found by the baseline: `sdmTMB log maps.pdf` and the combined PDF change bytes on every run through their embedded creation date, so they can never be byte-stable deliverables | mechanical (plots) | low | fix: step A6 |
+| R10 | Baseline runs, 6 Oct 2026 (Doc B §9.1) | First run stopped by the session harness in stage 6 (machine out of memory); clean rerun the same day: exit 0, 7.3 min, all 504 ASCII deliverables byte-identical to the committed ones although the FWC pull had added records for 17-22 Sept 2026 (none new for a modelled month). Found by the baseline: the two tracked PDFs (`sdmTMB log maps.pdf`, `*_clipped_combined.pdf`) change bytes on every run through their embedded creation date, and the two sample PNGs change whenever a sample is added, so `plots/` can never be a byte-stable deliverable and `git status` is dirty after every rerun; say so in the README, or stop tracking the PDFs | mechanical (plots) | low | fix: step A6 |
 
 ### 2.3 Bugs and fragility (B)
 
@@ -88,6 +88,7 @@ Smoke (6 Oct 2026): anchor OK (`RedTideMaps.Rproj` tracked, checked at `run_redt
 | B10 | `run_redtide_maps.R:227`; `scripts/polygon_clipping_rt.R:299` | The combined-stack PDF is rendered after the ASCII files are written, and `pdf()` fails if the previous PDF is open in a viewer (it happened during the issue #3 work). The run then dies with the deliverables already on disk but before the `Hulls:` line and `Run complete.`, so the README's operator check (`:106-107`) reports a failed run. Wrap the plot in `try()` with a logged warning, or render it last and say so | mechanical | low | fix: step A5 |
 | B11 | `scripts/_setup.R:129-130,153` | The log name is `run_<date>.log`, so two runs on one day append to one file (today's log holds the baseline under the 30 Sept-style stage lines); `rt_log()` swallows write failures silently (`try(..., silent = TRUE)`) | mechanical | low | fix: step A3 |
 | B12 | `scripts/sdmTMB_HAB_data.R:135-136` | `names(mdf_df)[which(names(mdf_df) %in% c("X","Y"))] <- c("lon","lat")`: the columns `X`, `Y` never exist (the filtered frame already has `lon`, `lat` from `:292`), so both lines are no-ops left from the HABSOS-era schema | mechanical | low | fix: step A4 |
+| B13 | `scripts/sdmTMB_HAB_data.R:228-240` | Found by the baseline rerun (6 Oct): cached fits are restored with `load(i); fit <- get(modname)` and passed straight to `predict()`, and sdmTMB warns "Detected a potential issue reloading a saved sdmTMB model. Please run `fit <- sdmTMB:::reload_model(fit)`" (run2 log line 1380). Predictions were still identical to the 30 Sept run, so it is harmless today, but the warning is sdmTMB's guard against predicting from a model object built by another TMB/sdmTMB build (the installed sdmTMB was built under R 4.5.3, this R is 4.5.1). Call `reload_model()` after `load()`; the stage 5 log also ends with "There were 50 or more warnings" that nothing captures | mechanical | low | fix: step A4 |
 
 ### 2.4 Documentation (D)
 
@@ -124,7 +125,7 @@ Smoke (6 Oct 2026): anchor OK (`RedTideMaps.Rproj` tracked, checked at `run_redt
 
 | ID | Where (file:line) | Problem | Kind | Severity | Status |
 |---|---|---|---|---|---|
-| T1 | `out/5min/run_20260930.log`; baseline 6 Oct (Doc B §8, §9.1) | Measured warm-cache timings: 30 Sept run 8 min 12 s (steps: 10 s, 22 s, 1 min 22 s, 1 min 31 s, 3 min 6 s, 1 min 41 s). 6 Oct baseline: about 35 min to the point it was stopped in stage 6, on a machine that was out of memory with a sanity sweep and a stray process beside it; not evidence (Doc B §9.1). README "about 9 minutes" is consistent; "about 20 minutes" cold is claimed, not measured (D2) | mechanical | low | fix: step A6 |
+| T1 | `out/5min/run_20260930.log`; baseline 6 Oct (Doc B §8, §9.1) | Measured warm-cache timings: 30 Sept run 8 min 12 s (steps: 10 s, 22 s, 1 min 22 s, 1 min 31 s, 3 min 6 s, 1 min 41 s). 6 Oct clean rerun (run2, machine quiet): 7.3 min wall, stages 8 s / 23 s / 1 min 17 s / 1 min 14 s / 2 min 42 s / 1 min 31 s (Doc B §8.1); the first attempt the same day took about 35 min to stage 6 on a machine out of memory with a sanity sweep beside it and was stopped, so it is not evidence. README "about 9 minutes" is consistent; "about 20 minutes" cold is claimed, not measured (D2) | mechanical | low | fix: step A6 |
 | T2 | `scripts/process_VIIRS.R:22-46`; `scripts/sdmTMB_HAB_data.R:343-401`; `scripts/polygon_clipping_rt.R:172-207` | Every run rebuilds the VIIRS stack from 155 tifs, re-predicts all 504 months and re-clips three ways even when no fit changed; stages 4 to 6 are about 6 of the 8 minutes on a warm cache. A prediction cache keyed on the fit folders' modification times and a VIIRS stack cache keyed on the tif list would skip most of it. Only if byte-identical (prove with `snapshot_md5.R`) | mechanical | low | wontfix (decision 6) |
 | T3 | `scripts/get_HAB_data.R:63-69` | The full pull builds the record table with `do.call(rbind, lapply(feats, function(f) as.data.frame(...)))`, one data frame per record for about 216,000 records (quadratic in the worst case); the README's "~3 min" for the pull is mostly this, not the network. `data.table::rbindlist()` or a column-wise build would cut it; only matters with `fwc_force_full` | mechanical | low | wontfix (decision 6) |
 
@@ -154,7 +155,7 @@ Facts established on 6 Oct 2026 on the reviewer's machine (R 4.5.1; package tabl
 - **Hull footprints (no finding)**: `hull_diagnostics.csv` (30 Sept): 421 months with positives, smallest `max_area_km2` 314 (one 10 km disc) against a 5-min cell of about 76 km² at 27.75°N, so a footprint always covers at least one cell centre; 71 months flagged overall, 10 among the 226 hull-served months (run log).
 - **Static sweep** (`RedTideMaps-audit/sweep/`): 16 files, 0 parse failures; pattern hits in live files: 1 `download` (B9), 1 `set_seed` (S1), 1 `<<-` (`sdmTMB_HAB_data.R:104`, inside a warning handler, fine), all `writeRaster()` calls carry `overwrite = TRUE`, no `setwd()`, no `windows()`, no machine path (the only hit is the gitignored `config.local.R:5`).
 - **Tracked size**: `git ls-files | du -b`: data 30.7 MB, out 23.7 MB, MODIS 2.9 MB, VIIRS 2.2 MB, everything else under 1 MB; pack 23.9 MB.
-- **Baseline run** (6 Oct, `RedTideMaps-audit/20261006/run/`): stopped in stage 6 by the harness (low memory); `cmp` of `clipping_source.csv`, `hull_diagnostics.csv` and `RT_fit_matrix.RData` against the 30 Sept copies: identical; `git status`: three plot files modified, no ASCII file touched; `OM_month/` still 334 folders; cache now `19800102-20260922`. Doc B §9.1 holds the table.
+- **Baseline runs** (6 Oct): first run stopped in stage 6 by the harness (low memory); clean rerun `run2` exit 0, 439.7 s, 14 duplicate records pulled, 0 refits, `snapshot_md5.R compare`: 504 ASCII identical, 4 plots changed, 2 Rdata added; first run: `cmp` of `clipping_source.csv`, `hull_diagnostics.csv` and `RT_fit_matrix.RData` against the 30 Sept copies: identical; `git status`: three plot files modified, no ASCII file touched; `OM_month/` still 334 folders; cache now `19800102-20260922`. Doc B §9.1 holds the table.
 
 ## 4. Recommended changes (fix design)
 
@@ -233,18 +234,18 @@ Review-only mode: no code changes are made. The plan written in Phase 6 is the p
 - [x] 2. Phase 2 orientation drafts: Doc A §1-5, Doc B §1-2, this document.
 - [x] 3. Pause 2 confirmed by the reviewer (6 Oct 2026).
 - [x] 4. Phase 4 smoke checks (anchor, parse, packages, inputs); baseline run launched with logging and fingerprints.
-- [ ] 5. Baseline results into Doc B §8-9.1; R10 and T1 filled; sanity counts into M4.
+- [x] 5. Baseline results into Doc B §8-9.1 (run2: exit 0, 7.3 min, 504 ASCII identical); R10 and T1 filled; sanity counts into M4.
 - [x] 6. Phase 5 registers reviewed; Doc A §5-7 and Doc B §3-7 completed.
 - [x] 7. Pause 5: one status per finding row (6 Oct 2026; batch accepted).
 - [x] 8. Phase 6 fix design (§4), plan for a later session (§5 continued), decisions (§7), needs-examination (§8).
-- [ ] 9. Phase 8 (static part): convention checks recorded in Doc B §9.3; Doc B §0 and Doc A §6-7 finalised.
+- [x] 9. Phase 8 (static part): convention checks recorded in Doc B §9.3; Doc B §0 and Doc A §6-7 finalised; §11 written.
 
 Plan for a later session in `audit` mode (one issue, one branch `N-review-fixes`, one draft PR; commit types in brackets; pause before each `outputs` commit):
 
 - [ ] A1. Open the issue from this log; branch; move `docs/review/draft-repo-audit-log.md` to `issueN-review-fixes-log.md`; commit the three documents. (docs)
 - [ ] A2. Fresh baseline on that day's data with `run_logged.R` and `snapshot_md5.R`; record in Doc B §9.1. (record)
 - [ ] A3. Setup and portability: input manifest and check, version line in the log, `sp` declared, package list trimmed, `.Rproj` settings, cascade summary line. Outputs byte-identical. (code; P1, P2, P3, P4, R1, R9, B11)
-- [ ] A4. Fragility, identical outputs: B1, B2, B3, B4, B5, B7, B8, B12, R4, R5, S1. Prove with `snapshot_md5.R compare`. (code)
+- [ ] A4. Fragility, identical outputs: B1, B2, B3, B4, B5, B7, B8, B12, B13, R4, R5, S1. Prove with `snapshot_md5.R compare`. (code)
 - [ ] A5. Operator visibility: `month_status.csv` and the "Months:" log line; `fwc_offline` and the cache history folder; plots in `try()`. (code; B6, B10, R2)
 - [ ] A6. README, `scripts/README.md`, roxygen, `CLAUDE.md`, config example. (docs; D1-D8, R8)
 - [ ] A7. Housekeeping moves to `archive/` and `hoard/`, every file listed in the commit. (housekeeping; E1-E4)
@@ -299,12 +300,12 @@ None in review-only mode.
 
 ## 11. Closing summary
 
-Review-only audit closed on 6 Oct 2026. No code, output or GitHub state was changed; the three documents in `docs/review/` are untracked on the reviewer's clone. Pre-ready check: no row `open`; every row has a status; the placeholders that remain are the pending run-matrix cells in Doc B §9.3 that only an `audit` session can fill.
+Review-only audit closed on 6 Oct 2026 with 50 findings. No code, output or GitHub state was changed; the three documents in `docs/review/` are untracked on the reviewer's clone. Pre-ready check: no row `open`; every row has a status; the placeholders that remain are the pending run-matrix cells in Doc B §9.3 that only an `audit` session can fill.
 
 | ID | Outcome |
 |---|---|
 | P1, P2, P3, P4, R1, R9, B11 | fix at step A3 (setup and portability) |
-| R4, R5, B1, B2, B3, B4, B5, B7, B8, B12 | fix at step A4 (identical outputs) |
+| R4, R5, B1, B2, B3, B4, B5, B7, B8, B12, B13 | fix at step A4 (identical outputs) |
 | S1 | fix at step A4 under decision 3 |
 | R2, B6, B10 | fix at step A5 (operator visibility) |
 | R8, R10, D1-D8, T1 | fix at step A6 (documentation) |
