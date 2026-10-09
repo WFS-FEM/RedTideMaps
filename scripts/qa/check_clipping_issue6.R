@@ -474,7 +474,7 @@ info_lines <- function(cnt) paste(fmt_n(cnt), class_labels)
 
 draw_panel <- function(v, main, pts = NULL, all_pts = FALSE, zeros = TRUE, outline = NULL, ocol = "black",
                        used = FALSE, placeholder = NULL, axes = TRUE, cex_main = 0.85,
-                       info = NULL, cex_info = 0.6, cbar = FALSE, cex_pts = 0.7) {
+                       info = NULL, cex_info = 0.6, cbar = FALSE, cex_pts = 0.7, olwd = 1.4) {
   plot(NA, xlim = xlim, ylim = ylim, xlab = "", ylab = "", asp = 1 / cos(27.5 * pi / 180),
        main = main, cex.main = cex_main, xaxs = "i", yaxs = "i", axes = FALSE)
   rect(xlim[1], ylim[1], xlim[2], ylim[2], col = if (is.null(v) && is.null(placeholder)) "white" else "darkgray", border = NA)
@@ -487,7 +487,7 @@ draw_panel <- function(v, main, pts = NULL, all_pts = FALSE, zeros = TRUE, outli
     text(mean(xlim), mean(ylim), placeholder, cex = 0.9 * cex_main / 0.85)
   }
   plot(sf::st_geometry(fl), add = TRUE, col = "wheat", border = "gray40")
-  if (!is.null(outline)) plot(sf::st_geometry(outline), add = TRUE, border = ocol, col = NA, lwd = 1.4)
+  if (!is.null(outline)) plot(sf::st_geometry(outline), add = TRUE, border = ocol, col = NA, lwd = olwd)
   if (!is.null(pts) && nrow(pts) > 0) {
     if (all_pts) {
       z0 <- pts[pts$cells == 0, ]
@@ -729,7 +729,7 @@ draw_row <- function(ym) {
   # C: VIIRS
   if (ym %in% colnames(Vc)) {
     draw_panel(Vc[, ym], "VIIRS clipped", axes = FALSE, cex_main = cm, cbar = TRUE, used = r$use == "viirs",
-               outline = viirs_outline(ym), ocol = outline_col[["viirs"]], info = info_lines(class_counts(Vc[, ym])))
+               outline = viirs_outline(ym), ocol = "gray50", olwd = 0.5, info = info_lines(class_counts(Vc[, ym])))
   } else {
     draw_panel(NULL, "VIIRS clipped", axes = FALSE, cex_main = cm,
                placeholder = if (r$viirs_status == "missing") "VIIRS tif missing" else "no VIIRS layer")
@@ -737,13 +737,13 @@ draw_row <- function(ym) {
   # D: MODIS
   if (ym %in% colnames(Mc)) {
     draw_panel(Mc[, ym], "MODIS clipped", axes = FALSE, cex_main = cm, cbar = TRUE, used = r$use == "modis",
-               outline = modis_outline(ym), ocol = outline_col[["modis"]], info = info_lines(class_counts(Mc[, ym])))
+               outline = modis_outline(ym), ocol = "gray50", olwd = 0.5, info = info_lines(class_counts(Mc[, ym])))
   } else {
     draw_panel(NULL, "MODIS clipped", axes = FALSE, cex_main = cm, placeholder = "no MODIS polygon")
   }
   # E: hulls (a layer exists for every month; all zero when there is no footprint or no fit)
   draw_panel(H[, ym], "Hulls", axes = FALSE, cex_main = cm, cbar = TRUE, used = r$use == "pred",
-             outline = hull_outline(ym), ocol = outline_col[["hull"]], info = info_lines(class_counts(H[, ym])))
+             outline = hull_outline(ym), ocol = "gray50", olwd = 0.5, info = info_lines(class_counts(H[, ym])))
 }
 page_chunks <- split(key, ceiling(seq_along(key) / rows_per_page))
 page_title <- function(ch) if (length(ch) == 12 && substr(ch[1], 5, 6) == "01") substr(ch[1], 1, 4) else
