@@ -26,6 +26,7 @@
 #'   docs/issue6/clip_months_issue6.pdf         one row per month, 12 rows (a year) per
 #'       page: FWC counts | unclipped | VIIRS | MODIS | hulls, each with its legend
 #'       and a count box; the panel the final map uses is framed in red
+#'   docs/issue6/clip_class_counts_issue6.csv   the count-box numbers, one month per row
 #'   console: the summary and the stopifnot() results
 #'
 #' Deterministic: no RNG, no timestamps in any output.
@@ -456,14 +457,20 @@ colorbar_legend <- function(cex = 0.5) {
   text(x2 + 0.12, ya, c("10k", "1M", "2M", "3M", "4M"), adj = 0, cex = cex)
   text((x1 + x2) / 2, ylim[2] + 0.12, "cells/L", adj = c(0.5, 0), cex = cex)
 }
-# The three counts of a map: cells > 0, >= thr_bloom, >= thr_high (NA cells ignored).
-grid_counts <- function(v) {
-  v <- v[!is.na(v)]
-  c(pos = sum(v > 0), ge4 = sum(v >= thr_bloom), ge5 = sum(v >= thr_high))
+# Counts by FWC abundance class, for sample counts or map cells alike (NA
+# ignored): positives (> 0) and the five classes of the sample legend, with
+# FWC's right-closed bounds: <= 1,000 background, 1,000-10,000 very low,
+# 10,000-100,000 low, 100,000-1,000,000 medium, > 1,000,000 high. The five
+# classes partition the positives.
+class_names  <- c("n_pos", "n_le1e3", "n_1e3_1e4", "n_1e4_1e5", "n_1e5_1e6", "n_gt1e6")
+class_labels <- c("positives", "<= 1,000", "1,000 - 10,000", "10,000 - 100,000",
+                  "100,000 - 1,000,000", "> 1,000,000")
+class_counts <- function(v) {
+  v <- v[!is.na(v) & v > 0]
+  k <- cut(v, sbrks, labels = FALSE, include.lowest = TRUE)
+  setNames(c(length(v), tabulate(k, nbins = 5)), class_names)
 }
-info_lines <- function(cnt) c(paste(fmt_n(cnt[[1]]), "positives"),
-                              paste(fmt_n(cnt[[2]]), ">= 1e4"),
-                              paste(fmt_n(cnt[[3]]), ">= 1e5"))
+info_lines <- function(cnt) paste(fmt_n(cnt), class_labels)
 
 draw_panel <- function(v, main, pts = NULL, all_pts = FALSE, zeros = TRUE, outline = NULL, ocol = "black",
                        used = FALSE, placeholder = NULL, axes = TRUE, cex_main = 0.85,
@@ -667,11 +674,37 @@ for (ym in c("201702", "201810")) {
 }
 message("Sample pages in ", dir_clipped)
 
+# Class counts per month and map (the numbers in the count boxes), as a CSV ------
+# Columns <map>_<class>: map = fwc (samples), unclip, viirs, modis, hull, final;
+# class = n_pos (> 0), n_le1e3, n_1e3_1e4, n_1e4_1e5, n_1e5_1e6, n_gt1e6. NA when
+# the month has no samples / no fit / no VIIRS layer / no MODIS polygon.
+cls <- do.call(rbind, lapply(key, function(ym) {
+  r <- tab[tab$yrmo == ym, ]
+  p <- by_m[[ym]]
+  one <- function(v, has) if (has) class_counts(v) else setNames(rep(NA_integer_, 6), class_names)
+  out <- c(one(if (is.null(p)) NULL else p$cells, !is.null(p)),
+           one(U[, ym], r$fit_status != "none"),
+           one(if (ym %in% colnames(Vc)) Vc[, ym] else NULL, ym %in% colnames(Vc)),
+           one(if (ym %in% colnames(Mc)) Mc[, ym] else NULL, ym %in% colnames(Mc)),
+           one(H[, ym], TRUE),
+           one(Fm[, ym], TRUE))
+  names(out) <- paste(rep(c("fwc", "unclip", "viirs", "modis", "hull", "final"), each = 6), class_names, sep = "_")
+  data.frame(yrmo = ym, use = r$use, as.list(out), stringsAsFactors = FALSE)
+}))
+stopifnot(nrow(cls) == length(key),
+          all(cls$fwc_n_pos[!is.na(cls$fwc_n_pos)] == tab$n_pos[!is.na(cls$fwc_n_pos)]),
+          all(tab$n_samples[is.na(cls$fwc_n_pos)] == 0),
+          all(rowSums(cls[, paste0("fwc_", class_names[-1])], na.rm = TRUE) == ifelse(is.na(cls$fwc_n_pos), 0, cls$fwc_n_pos)),
+          all(rowSums(cls[, paste0("final_", class_names[-1])]) == cls$final_n_pos))
+file_cls <- file.path(dir_docs, "clip_class_counts_issue6.csv")
+write.csv(cls, file_cls, row.names = FALSE)
+message("Class counts written: ", file_cls, " (", nrow(cls), " rows)")
+
 # One-row-per-month PDF ----------------------------------------------------------
 # Columns: FWC samples | unclipped | VIIRS-clipped | MODIS-clipped | hull-clipped.
-# Every panel carries a count box (positives, >= 1e4, >= 1e5: samples in column
-# A, grid cells elsewhere) and a legend; the clipped panel the final map uses is
-# framed in red. Months without samples or without a fit keep their row.
+# Every panel carries a count box (positives and the five FWC classes: samples in
+# column A, grid cells elsewhere) and a legend; the clipped panel the final map
+# uses is framed in red. Months without samples or without a fit keep their row.
 draw_row <- function(ym) {
   r <- tab[tab$yrmo == ym, ]
   p <- by_m[[ym]]
@@ -682,13 +715,13 @@ draw_row <- function(ym) {
     draw_panel(NULL, paste("FWC counts", lab), placeholder = "no samples", axes = FALSE, cex_main = cm)
   } else {
     draw_panel(NULL, paste("FWC counts", lab), pts = p, all_pts = TRUE, axes = FALSE, cex_main = cm,
-               cex_pts = 0.5, info = info_lines(c(r$n_pos, r$n_pos_1e4, r$n_pos_1e5)))
+               cex_pts = 0.5, info = info_lines(class_counts(p$cells)))
     sample_legend(cex = 0.48)
   }
   # B: unclipped
   if (r$fit_status == "fitted") {
     draw_panel(U[, ym], "sdmTMB unclipped", axes = FALSE, cex_main = cm, cbar = TRUE,
-               info = info_lines(grid_counts(U[, ym])))
+               info = info_lines(class_counts(U[, ym])))
   } else {
     draw_panel(NULL, "sdmTMB unclipped", axes = FALSE, cex_main = cm,
                placeholder = if (r$fit_status == "failed") "fit failed" else sprintf("no fit (%d positives)", r$n_pos))
@@ -696,7 +729,7 @@ draw_row <- function(ym) {
   # C: VIIRS
   if (ym %in% colnames(Vc)) {
     draw_panel(Vc[, ym], "VIIRS clipped", axes = FALSE, cex_main = cm, cbar = TRUE, used = r$use == "viirs",
-               outline = viirs_outline(ym), ocol = outline_col[["viirs"]], info = info_lines(grid_counts(Vc[, ym])))
+               outline = viirs_outline(ym), ocol = outline_col[["viirs"]], info = info_lines(class_counts(Vc[, ym])))
   } else {
     draw_panel(NULL, "VIIRS clipped", axes = FALSE, cex_main = cm,
                placeholder = if (r$viirs_status == "missing") "VIIRS tif missing" else "no VIIRS layer")
@@ -704,13 +737,13 @@ draw_row <- function(ym) {
   # D: MODIS
   if (ym %in% colnames(Mc)) {
     draw_panel(Mc[, ym], "MODIS clipped", axes = FALSE, cex_main = cm, cbar = TRUE, used = r$use == "modis",
-               outline = modis_outline(ym), ocol = outline_col[["modis"]], info = info_lines(grid_counts(Mc[, ym])))
+               outline = modis_outline(ym), ocol = outline_col[["modis"]], info = info_lines(class_counts(Mc[, ym])))
   } else {
     draw_panel(NULL, "MODIS clipped", axes = FALSE, cex_main = cm, placeholder = "no MODIS polygon")
   }
   # E: hulls (a layer exists for every month; all zero when there is no footprint or no fit)
   draw_panel(H[, ym], "Hulls", axes = FALSE, cex_main = cm, cbar = TRUE, used = r$use == "pred",
-             outline = hull_outline(ym), ocol = outline_col[["hull"]], info = info_lines(grid_counts(H[, ym])))
+             outline = hull_outline(ym), ocol = outline_col[["hull"]], info = info_lines(class_counts(H[, ym])))
 }
 page_chunks <- split(key, ceiling(seq_along(key) / rows_per_page))
 page_title <- function(ch) if (length(ch) == 12 && substr(ch[1], 5, 6) == "01") substr(ch[1], 1, 4) else
