@@ -50,8 +50,9 @@ thr_high  <- 1e5   # cells/L: FWC "medium"; lower inflection of the Ecospace mor
 min_samples_flag     <- 5L     # samples >= thr_bloom needed before the low_vs_hull / samples_outside flags can fire
 hull_ratio_flag      <- 0.25   # flag when the final map keeps less than this share of the hull-clipped bloom area
 samples_outside_frac <- 0.50   # flag when fewer than this share of samples >= thr_bloom sit in a non-zero final cell
-headline <- c("201604", "201701", "201702", "201703", "201704",
-              "201803", "201804", "201805", "202106", "202305")
+# Headline months (fig 4, quick mode): defined from the table below as the fitted
+# months written as zero by an all-zero VIIRS layer whose surface reaches
+# thr_bloom somewhere (`zeroed_material`); see `hl` after the flags.
 expected <- list(n_months = 504L,
                  use = c(viirs = 155L, modis = 123L, pred = 226L),
                  viirs_layers = 155L, viirs_zero = 89L)
@@ -236,6 +237,7 @@ tab$zeroed_material <- tab$flag_zeroed_fit & !is.na(tab$area_1e4_unclip_km2) & t
 for (v in grep("_km2$|retained|hull_ratio|frac_|_max$", names(tab), value = TRUE)) tab[[v]] <- round(tab[[v]], 3)
 
 fitted_months <- tab$yrmo[tab$fit_status == "fitted"]
+hl <- tab$yrmo[tab$zeroed_material]   # headline months: zeroed by VIIRS although the surface reaches thr_bloom
 tab$pdf_page <- NA_integer_
 tab$pdf_page[match(fitted_months, tab$yrmo)] <- seq_along(fitted_months)
 
@@ -628,27 +630,7 @@ g3b <- ggplot(ft[!is.na(ft$retained_1e4), ], aes(source, retained_1e4, colour = 
 g3 <- cowplot::plot_grid(g3a, g3b, ncol = 2, rel_widths = c(1.6, 1))
 ggsave(file.path(dir_docs, "fig3_bloom_area_unclipped_vs_final.png"), g3, width = 12, height = 5, dpi = 300, bg = "white")
 
-# Fig 4: headline months, unclipped / final / hull alternative / MODIS alternative.
-hl <- headline[headline %in% tab$yrmo]
-png(file.path(dir_docs, "fig4_headline_months.png"), width = 11, height = 2.6 * length(hl), units = "in", res = 110)
-par(mfrow = c(length(hl), 4), mar = c(1.2, 1.6, 2.4, 0.4), oma = c(0, 0, 2.5, 0))
-for (ym in hl) {
-  r <- tab[tab$yrmo == ym, ]; p <- by_m[[ym]]
-  lab <- paste0(substr(ym, 1, 4), "-", substr(ym, 5, 6))
-  draw_panel(U[, ym], sprintf("%s unclipped (%s positives, %s >= 1e5)", lab, fmt_n(r$n_pos), fmt_n(r$n_pos_1e5)),
-             pts = p, all_pts = TRUE, axes = FALSE)
-  draw_panel(Fm[, ym], sprintf("%s final map (%s): %s km2", lab, ifelse(r$use == "pred", "hull", r$use),
-                               fmt_n(round(r$area_1e4_final_km2))), pts = p, axes = FALSE, used = TRUE)
-  draw_panel(H[, ym], sprintf("%s hull-clipped alternative: %s km2", lab, fmt_n(round(r$area_1e4_hull_km2))),
-             pts = p, outline = hull_outline(ym), axes = FALSE)
-  if (ym %in% colnames(Mc))
-    draw_panel(Mc[, ym], sprintf("%s MODIS-clipped alternative: %s km2", lab, fmt_n(round(r$area_1e4_modis_km2))),
-               pts = p, outline = modis_outline(ym), ocol = outline_col[["modis"]], axes = FALSE)
-  else draw_panel(NULL, sprintf("%s MODIS-clipped alternative", lab), placeholder = "no MODIS polygon", axes = FALSE)
-}
-mtext("Issue #5 headline months: fitted surface, the all-zero final map, and the two clipping alternatives already on disk (open circles: samples >= 10,000 cells/L)",
-      outer = TRUE, cex = 0.95, font = 2)
-dev.off()
+# Fig 4 (headline months) is drawn in the monthly-PDF section below, with draw_row().
 message("Figures written to ", dir_docs)
 
 # Per-month PDF -----------------------------------------------------------------
@@ -778,6 +760,16 @@ par(mfrow = c(length(example_rows), 5), mar = c(0.4, 0.5, 1.5, 2.1), oma = c(0.3
 for (ym in example_rows) draw_row(ym)
 mtext("Example rows of clip_months_issue6.pdf, 2012-01 to 2012-04 (red frame = used in the final map)",
       outer = TRUE, cex = 0.9, font = 2, line = 0.2)
+dev.off()
+# Fig 4: the headline months in the monthly-PDF row format (tracked figure).
+png(file.path(dir_docs, "fig4_headline_months.png"), width = page_w,
+    height = 2.35 * length(hl) + 0.6, units = "in", res = 120)
+par(mfrow = c(length(hl), 5), mar = c(0.4, 0.5, 1.5, 2.1), oma = c(0.3, 0, 2.2, 0))
+for (ym in hl) draw_row(ym)
+mtext(sprintf("Headline months (%d): fitted sdmTMB surface reaching %s cells/L, written as an all-zero map by an all-zero VIIRS layer",
+              length(hl), format(thr_bloom, big.mark = ",")), outer = TRUE, cex = 0.9, font = 2, line = 1.1)
+mtext("FWC counts  |  sdmTMB unclipped  |  VIIRS clipped  |  MODIS clipped  |  hulls   (red frame = used in the final map)",
+      outer = TRUE, cex = 0.8, line = 0.1)
 dev.off()
 # Two year-pages as PNG for a visual check (gitignored folder).
 for (y in c("2017", "2018")) {

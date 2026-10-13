@@ -15,7 +15,7 @@ Rscript scripts/qa/check_clipping_issue6.R        # ~30 s; RT_QA_PDF=0 skips the
 | `docs/issue6/fig1_viirs_calendar.png` | VIIRS layer status by year and month, with in-situ positives |
 | `docs/issue6/fig2_insitu_vs_viirs.png` | monthly in-situ positives vs VIIRS positive cells, 2012-2024 |
 | `docs/issue6/fig3_bloom_area_unclipped_vs_final.png` | bloom area before and after clipping, by clip source |
-| `docs/issue6/fig4_headline_months.png` | the ten headline months: unclipped, final, hull alternative, MODIS alternative |
+| `docs/issue6/fig4_headline_months.png` | the 16 headline months (fitted surface reaching 10,000 cells/L, written as zero by an all-zero VIIRS layer) in the monthly-PDF row format: FWC counts, unclipped, VIIRS, MODIS, hulls |
 | `docs/issue6/clip_check_issue6.pdf` | one page per fitted month (329 pages, 7.7 MB): unclipped + samples + footprint, VIIRS-clipped, MODIS-clipped, hull-clipped |
 | `docs/issue6/clip_months_issue6.pdf` | one row per month for all 504 months, 12 rows (one calendar year) per page: FWC counts, unclipped, VIIRS-clipped, MODIS-clipped, hull-clipped, each panel with its legend and a count box; the clipped panel the final map uses is framed in red (§1.3) |
 | `docs/issue6/fig5_monthly_rows_example.png` | four rows of the monthly PDF (2012-01 to 2012-04) as a PNG, for the issue |
@@ -102,7 +102,7 @@ The 16 material months, with what the two alternatives already on disk would kee
 | 202011 | 37 | 8 | 0 | 60,500 | 687 | 458 | 534 | 286 |
 | 202106 | 376 | 230 | 111 | 7,964,888 | 285,799 | 7,361 | 9,106 | 293 |
 
-Totals over the 16: 474 samples at or above 100,000 cells/L; the hull clip would keep 59,637 km2 of bloom area, the MODIS clip 82,266 km2 (15 of the 16 have a MODIS polygon; 2017-04 does not). `fig4_headline_months.png` shows ten of them.
+Totals over the 16: 474 samples at or above 100,000 cells/L; the hull clip would keep 59,637 km2 of bloom area, the MODIS clip 82,266 km2 (15 of the 16 have a MODIS polygon; 2017-04 does not). `fig4_headline_months.png` shows all 16 in the row format of the monthly PDF (FWC counts, unclipped, VIIRS, MODIS, hulls).
 
 ### 2.3 Months the satellite footprint cuts into
 
