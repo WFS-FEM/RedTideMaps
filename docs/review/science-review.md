@@ -106,7 +106,15 @@ The product is 504 monthly maps for 1985 to 2026 on the 5-min grid, committed in
 
 **QC the code performs.** The hull diagnostics flag months whose largest footprint spans more than 300 km; on the 30 Sept run 10 of the 226 hull-served months were flagged (1990-09, 1996-04, 1996-06, 1997-11, 1999-09, 2000-09, 2000-10, 2001-10, 2001-12, 2002-01) and the run log names them. Fit warnings are captured to a file. Nothing else is checked.
 
-**Verification against the committed outputs.** Pending the 6 Oct baseline (Doc B §9.1). Expected drift: the incremental FWC pull advanced the data from 2026-09-17 to 2026-09-22, so the September 2026 fit and map may differ; every other month should be byte-identical because the pipeline is deterministic (Doc B §6).
+**Verification against the committed outputs.** A fresh run of the same commit on 6 Oct 2026 (exit code 0, 7.3 min on a warm cache) reproduced all 504 committed ASCII maps byte for byte, although the FWC pull had added records dated 17-22 Sept 2026 (none for a month with a model). Only the plot files changed: the sample-coverage figures now show the new samples and the two PDFs carry a new creation timestamp [Doc B §9.1]. The pipeline is deterministic: monthly fits are identical with or without the file-scope seed and identical to the fits cached a week earlier [Doc B §6].
+
+| Check | Result |
+|---|---|
+| 5-min ASCII deliverables, 504 files | identical |
+| Per-month footprint source table | identical |
+| Hull diagnostics (areas, spans, flags) | identical; 10 hull-served months flagged, same ten |
+| Fit matrix (convergence, RRMSE, AIC per month) | identical |
+| 15-min deliverables | not regenerated; committed May 2026, before the hull fix (Doc C R7) |
 
 ## 7. Discussion
 
@@ -140,7 +148,7 @@ The product is 504 monthly maps for 1985 to 2026 on the 5-min grid, committed in
 
 ## 9. Appendices
 
-### 9.1 Glossary (to be completed in Phase 5)
+### 9.1 Glossary (the plain-language glossary is Doc B §10.4)
 
 | Term in the code | Meaning | Units |
 |---|---|---|
@@ -152,6 +160,15 @@ The product is 504 monthly maps for 1985 to 2026 on the 5-min grid, committed in
 | `clipping_source.csv` | which footprint each month used (`viirs`, `modis`, `pred` = hull) | |
 | `hull_diagnostics.csv` | per-month hull cluster counts, area, span and flag | km², km |
 
-### 9.2 Figures and tables: pending.
+### 9.2 Figures and tables
+
+| Item | Source |
+|---|---|
+| Example map, September 2018 (`example_201809.png`) | README; committed deliverable `out/5min/ecospace_ascii/sdmTMB_log__201809.asc` |
+| Before/after hull figure (`docs/issue3_hull_before_after.png`) and `out/5min/plots/hull_check_issue3.pdf` | issue #3 QA script, 30 Sept 2026 |
+| Monthly panels, `out/5min/plots/sdmTMB_log_stack_198501-202612_clipped_combined.pdf` and `sdmTMB log maps.pdf` | pipeline run of 30 Sept 2026 (regenerated identically on 6 Oct) |
+| Table §4 (data sources) | README "Inputs", the tracked files, Doc C §3 |
+| Table §6 (months by footprint source and fit status) | `clipping_source.csv`, `RT_fit_matrix.RData`, `hull_diagnostics.csv` of the 30 Sept run, cross-tabulated on 6 Oct (Doc C §3) |
+| Table §6 (verification) | Doc B §9.1 |
 
 ### 9.3 Version history: see §0.
