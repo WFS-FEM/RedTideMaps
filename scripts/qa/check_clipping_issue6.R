@@ -17,18 +17,18 @@
 #'   RT_QA_QUICK=1        draw only the pages holding headline months
 #'
 #' Output:
-#'   docs/issue6/clip_comparison_issue6.csv     one row per month (504)
-#'   docs/issue6/clip_comparison_summary.md     tables for the issues
-#'   docs/issue6/fig1_viirs_calendar.png        VIIRS status by year x month
-#'   docs/issue6/fig2_insitu_vs_viirs.png       in-situ positives vs VIIRS cells
-#'   docs/issue6/fig3_bloom_area_unclipped_vs_final.png
-#'   docs/issue6/fig4_headline_months.png       the headline months in the monthly-PDF row format
-#'   docs/issue6/fig5_monthly_rows_example.png  four example rows (2012-01 to 2012-04)
-#'   docs/issue6/clip_check_issue6-OLD.pdf      superseded: one page per fitted month (4 panels), opt-in
-#'   docs/issue6/clip_months_issue6.pdf         one row per month, 12 rows (a year) per
+#'   docs/issue6_VIIRS-zeros/tables/clip_comparison_issue6.csv     one row per month (504)
+#'   docs/issue6_VIIRS-zeros/comments/clip_comparison_summary.md     tables for the issues
+#'   docs/issue6_VIIRS-zeros/figures/fig1_viirs_calendar.png        VIIRS status by year x month
+#'   docs/issue6_VIIRS-zeros/figures/fig2_insitu_vs_viirs.png       in-situ positives vs VIIRS cells
+#'   docs/issue6_VIIRS-zeros/figures/fig3_bloom_area_unclipped_vs_final.png
+#'   docs/issue6_VIIRS-zeros/figures/fig4_headline_months.png       the headline months in the monthly-PDF row format
+#'   docs/issue6_VIIRS-zeros/figures/fig5_monthly_rows_example.png  four example rows (2012-01 to 2012-04)
+#'   docs/issue6_VIIRS-zeros/hoard/clip_check_issue6-OLD.pdf      superseded: one page per fitted month (4 panels), opt-in
+#'   docs/issue6_VIIRS-zeros/clip_months_issue6.pdf         one row per month, 12 rows (a year) per
 #'       page: FWC counts | unclipped | VIIRS | MODIS | hulls, each with its legend
 #'       and a count box; the panel the final map uses is framed in red
-#'   docs/issue6/clip_class_counts_issue6.csv   the count-box numbers, one month per row
+#'   docs/issue6_VIIRS-zeros/tables/clip_class_counts_issue6.csv   the count-box numbers, one month per row
 #'   console: the summary and the stopifnot() results
 #'
 #' Deterministic: no RNG, no timestamps in any output.
@@ -70,8 +70,12 @@ dir_sdm      <- file.path(dir_out, "sdm")
 dir_clipped  <- file.path(dir_out, "clipped")
 dir_combined <- file.path(dir_out, "combined")
 dir_plots    <- file.path(dir_out, "plots")
-dir_docs     <- file.path(.root, "docs", "issue6")
-dir.create(dir_docs, recursive = TRUE, showWarnings = FALSE)
+dir_docs  <- file.path(.root, "docs", "issue6_VIIRS-zeros")   # monthly PDF and README
+dir_fig   <- file.path(dir_docs, "figures")                     # fig1-fig5
+dir_tab   <- file.path(dir_docs, "tables")                       # the two CSVs
+dir_cmt   <- file.path(dir_docs, "comments")                     # summary tables and comment drafts
+dir_hoard <- file.path(dir_docs, "hoard")                        # superseded per-month PDF (gitignored)
+for (d in c(dir_docs, dir_fig, dir_tab, dir_cmt, dir_hoard)) dir.create(d, recursive = TRUE, showWarnings = FALSE)
 
 one_file <- function(dir, pattern, what) {
   f <- list.files(dir, pattern = pattern, full.names = TRUE)
@@ -243,7 +247,7 @@ hl <- tab$yrmo[tab$zeroed_material]   # headline months: zeroed by VIIRS althoug
 tab$pdf_page <- NA_integer_
 tab$pdf_page[match(fitted_months, tab$yrmo)] <- seq_along(fitted_months)
 
-file_csv <- file.path(dir_docs, "clip_comparison_issue6.csv")
+file_csv <- file.path(dir_tab, "clip_comparison_issue6.csv")
 write.csv(tab, file_csv, row.names = FALSE)
 message("Table written: ", file_csv, " (", nrow(tab), " rows)")
 
@@ -396,7 +400,7 @@ md <- c(
   "",
   "The satellite saw a bloom but fewer than 6 positive samples exist, so the prediction is all NA and the clip writes zeros (issue M2 territory, not a clipping fault).",
   "", md_table(vpos_nofit, 0), "")
-file_md <- file.path(dir_docs, "clip_comparison_summary.md")
+file_md <- file.path(dir_cmt, "clip_comparison_summary.md")
 writeLines(md, file_md)
 cat("\n", paste(md, collapse = "\n"), "\n", sep = "")
 message("Summary written: ", file_md)
@@ -580,7 +584,7 @@ g1 <- ggplot(era, aes(x = month, y = year)) +
        subtitle = "Tile text = positive FWC samples that month (bold: at least one sample >= 100,000 cells/L). Red border = fitted sdmTMB surface written as an all-zero map.") +
   theme_minimal(base_size = 11) + theme(legend.position = "bottom", panel.grid = element_blank(),
                                         plot.subtitle = element_text(size = 8.5))
-ggsave(file.path(dir_docs, "fig1_viirs_calendar.png"), g1, width = 9, height = 7.5, dpi = 300, bg = "white")
+ggsave(file.path(dir_fig, "fig1_viirs_calendar.png"), g1, width = 9, height = 7.5, dpi = 300, bg = "white")
 
 # Fig 2: in-situ positives vs VIIRS positive cells, monthly.
 era$date <- as.Date(sprintf("%d-%02d-01", era$year, era$month))
@@ -606,7 +610,7 @@ g2 <- ggplot() +
        title = "In-situ positives vs VIIRS detections by month, 2012-2024",
        subtitle = "Grey bands: months whose VIIRS layer has no positive cell (written as all-zero maps). Red triangles: fitted months zeroed that way.") +
   theme_minimal(base_size = 11) + theme(panel.grid.minor = element_blank(), plot.subtitle = element_text(size = 8.5))
-ggsave(file.path(dir_docs, "fig2_insitu_vs_viirs.png"), g2, width = 11, height = 6, dpi = 300, bg = "white")
+ggsave(file.path(dir_fig, "fig2_insitu_vs_viirs.png"), g2, width = 11, height = 6, dpi = 300, bg = "white")
 
 # Fig 3: unclipped vs final bloom area, fitted months.
 ft <- tab[tab$fit_status == "fitted", ]
@@ -630,16 +634,16 @@ g3b <- ggplot(ft[!is.na(ft$retained_1e4), ], aes(source, retained_1e4, colour = 
   labs(x = "clip source", y = "share of unclipped bloom area kept", title = "Retention by clip source") +
   theme_minimal(base_size = 11)
 g3 <- cowplot::plot_grid(g3a, g3b, ncol = 2, rel_widths = c(1.6, 1))
-ggsave(file.path(dir_docs, "fig3_bloom_area_unclipped_vs_final.png"), g3, width = 12, height = 5, dpi = 300, bg = "white")
+ggsave(file.path(dir_fig, "fig3_bloom_area_unclipped_vs_final.png"), g3, width = 12, height = 5, dpi = 300, bg = "white")
 
 # Fig 4 (headline months) is drawn in the monthly-PDF section below, with draw_row().
-message("Figures written to ", dir_docs)
+message("Figures written to ", dir_fig)
 
 # Per-month PDF (superseded by the monthly PDF below; kept as -OLD, opt-in) -------
 if (render_pdf) {
   pages <- if (quick) hl else fitted_months
-  file_pdf <- file.path(dir_docs, "clip_check_issue6-OLD.pdf")
-  file_tmp <- file.path(dir_docs, "clip_check_issue6-OLD_tmp.pdf")
+  file_pdf <- file.path(dir_hoard, "clip_check_issue6-OLD.pdf")
+  file_tmp <- file.path(dir_hoard, "clip_check_issue6-OLD_tmp.pdf")
   opened <- tryCatch({ pdf(file_tmp, width = 16, height = 5, onefile = TRUE); TRUE },
                      error = function(e) { warning("Cannot open ", file_tmp, ": ", conditionMessage(e), call. = FALSE); FALSE })
   if (opened) {
@@ -680,7 +684,7 @@ stopifnot(nrow(cls) == length(key),
           all(tab$n_samples[is.na(cls$fwc_n_pos)] == 0),
           all(rowSums(cls[, paste0("fwc_", class_names[-1])], na.rm = TRUE) == ifelse(is.na(cls$fwc_n_pos), 0, cls$fwc_n_pos)),
           all(rowSums(cls[, paste0("final_", class_names[-1])]) == cls$final_n_pos))
-file_cls <- file.path(dir_docs, "clip_class_counts_issue6.csv")
+file_cls <- file.path(dir_tab, "clip_class_counts_issue6.csv")
 write.csv(cls, file_cls, row.names = FALSE)
 message("Class counts written: ", file_cls, " (", nrow(cls), " rows)")
 
@@ -756,7 +760,7 @@ if (monthly_pdf) {
 }
 # Example rows of the monthly PDF for the issue (tracked figure).
 example_rows <- c("201201", "201202", "201203", "201204")
-png(file.path(dir_docs, "fig5_monthly_rows_example.png"), width = page_w,
+png(file.path(dir_fig, "fig5_monthly_rows_example.png"), width = page_w,
     height = 2.35 * length(example_rows) + 0.6, units = "in", res = 150)
 par(mfrow = c(length(example_rows), 5), mar = c(0.4, 0.5, 1.5, 2.1), oma = c(0.3, 0, 1.2, 0))
 for (ym in example_rows) draw_row(ym)
@@ -764,7 +768,7 @@ mtext("Example rows of clip_months_issue6.pdf, 2012-01 to 2012-04 (red frame = u
       outer = TRUE, cex = 0.9, font = 2, line = 0.2)
 dev.off()
 # Fig 4: the headline months in the monthly-PDF row format (tracked figure).
-png(file.path(dir_docs, "fig4_headline_months.png"), width = page_w,
+png(file.path(dir_fig, "fig4_headline_months.png"), width = page_w,
     height = 2.35 * length(hl) + 0.6, units = "in", res = 120)
 par(mfrow = c(length(hl), 5), mar = c(0.4, 0.5, 1.5, 2.1), oma = c(0.3, 0, 2.2, 0))
 for (ym in hl) draw_row(ym)

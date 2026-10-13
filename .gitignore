@@ -42,3 +42,6 @@ VIIRS/VIIRS_*.gri
 
 # QA scratch copies (e.g. the pre-fix polygon_clipping_rt.R from main)
 scripts/qa/_*
+
+# Local keep-for-now folders, never tracked (any folder named hoard)
+hoard/

@@ -7,24 +7,24 @@ Everything is produced by one tracked script, run from the repo root:
 ```
 Rscript scripts/qa/check_clipping_issue6.R   # ~50 s: table, summary, figures, monthly PDF
 #   RT_QA_MONTHLY_PDF=0   skip the monthly PDF (~25 s)
-#   RT_QA_PDF=1           also rewrite the superseded per-month PDF (clip_check_issue6-OLD.pdf)
+#   RT_QA_PDF=1           also rewrite the superseded per-month PDF (hoard/clip_check_issue6-OLD.pdf, not tracked)
 #   RT_QA_QUICK=1         draw only the pages that hold headline months
 ```
 
 | File | What |
 |---|---|
-| `docs/issue6/clip_comparison_issue6.csv` | one row per month, 1985-01 to 2026-12 (504 rows); columns in §1.2 |
-| `docs/issue6/clip_class_counts_issue6.csv` | the count-box numbers of the monthly PDF, one month per row: for the samples and for each map (unclipped, VIIRS, MODIS, hull, final) the positives and the five FWC classes (§1.3) |
-| `docs/issue6/clip_comparison_summary.md` | the tables below in full (all 58 zeroed months, all 33 other flagged months) |
-| `docs/issue6/clip_months_issue6.pdf` | the main figure: one row per month for all 504 months, 12 rows (one calendar year) per page, 42 pages: FWC counts, unclipped, VIIRS-clipped, MODIS-clipped, hull-clipped, each panel with its legend and a count box; the clipped panel the final map uses is framed in red (§1.3) |
-| `docs/issue6/fig1_viirs_calendar.png` | VIIRS layer status by year and month, with in-situ positives |
-| `docs/issue6/fig2_insitu_vs_viirs.png` | monthly in-situ positives vs VIIRS positive cells, 2012-2024 |
-| `docs/issue6/fig3_bloom_area_unclipped_vs_final.png` | bloom area before and after clipping, by clip source |
-| `docs/issue6/fig4_headline_months.png` | the 16 headline months (§2.2) in the monthly-PDF row format: FWC counts, unclipped, VIIRS, MODIS, hulls |
-| `docs/issue6/fig5_monthly_rows_example.png` | four rows of the monthly PDF (2012-01 to 2012-04) as a PNG, for the issue |
-| `docs/issue6/clip_check_issue6-OLD.pdf` | superseded by the monthly PDF, kept for reference: one page per fitted month (329 pages, 7.7 MB): unclipped + samples + footprint, VIIRS-clipped, MODIS-clipped, hull-clipped; the `pdf_page` column of the CSV and the tables refers to its pages. Rewritten only with `RT_QA_PDF=1` |
+| `tables/clip_comparison_issue6.csv` | one row per month, 1985-01 to 2026-12 (504 rows); columns in §1.2 |
+| `tables/clip_class_counts_issue6.csv` | the count-box numbers of the monthly PDF, one month per row: for the samples and for each map (unclipped, VIIRS, MODIS, hull, final) the positives and the five FWC classes (§1.3) |
+| `comments/clip_comparison_summary.md` | the tables below in full (all 58 zeroed months, all 33 other flagged months) |
+| `clip_months_issue6.pdf` | the main figure: one row per month for all 504 months, 12 rows (one calendar year) per page, 42 pages: FWC counts, unclipped, VIIRS-clipped, MODIS-clipped, hull-clipped, each panel with its legend and a count box; the clipped panel the final map uses is framed in red (§1.3) |
+| `figures/fig1_viirs_calendar.png` | VIIRS layer status by year and month, with in-situ positives |
+| `figures/fig2_insitu_vs_viirs.png` | monthly in-situ positives vs VIIRS positive cells, 2012-2024 |
+| `figures/fig3_bloom_area_unclipped_vs_final.png` | bloom area before and after clipping, by clip source |
+| `figures/fig4_headline_months.png` | the 16 headline months (§2.2) in the monthly-PDF row format: FWC counts, unclipped, VIIRS, MODIS, hulls |
+| `figures/fig5_monthly_rows_example.png` | four rows of the monthly PDF (2012-01 to 2012-04) as a PNG, for the issue |
+| `hoard/clip_check_issue6-OLD.pdf` (local only, `hoard/` is gitignored) | superseded by the monthly PDF, kept for reference: one page per fitted month (329 pages, 7.7 MB): unclipped + samples + footprint, VIIRS-clipped, MODIS-clipped, hull-clipped; the `pdf_page` column of the CSV and the tables refers to its pages. Rewritten only with `RT_QA_PDF=1` |
 
-The `issue6-*-comment.md` files in this folder are the drafts of the comments posted to #6 and are not tracked.
+Paths are relative to this folder, `docs/issue6_VIIRS-zeros/`. The `comments/issue6-*-comment.md` files are the drafts of the comments posted to #6 (local, ignored by this folder's `.gitignore`).
 
 ## 1. What was compared
 
@@ -43,7 +43,7 @@ Bloom area is the km2 of water cells at or above 10,000 cells/L (`area_1e4_*`, t
 - cascade: `use` (viirs / modis / pred = hull), `viirs_status` (positive / zero / missing / no_coverage), `viirs_n_pos_cells`, `viirs_max_freq`, `modis_present`, `modis_n_polys`, `hull_n_polys`, `hull_footprint_km2`;
 - bloom area of the unclipped, final, VIIRS-, MODIS- and hull-clipped maps, `retained_1e4` (final / unclipped), `hull_ratio_1e4` (final / hull-clipped);
 - samples vs map: how many water-cell samples at or above 10,000 (and 100,000) cells/L sit in a non-zero cell of the final map (`n_pos_1e4_in_fp`, `frac_pos_1e4_in_fp`, ...);
-- flags, and `pdf_page`, the month's page in the superseded `clip_check_issue6-OLD.pdf` (fitted months only). In `clip_months_issue6.pdf` a month's page is its year minus 1984.
+- flags, and `pdf_page`, the month's page in the superseded `hoard/clip_check_issue6-OLD.pdf` (fitted months only). In `clip_months_issue6.pdf` a month's page is its year minus 1984.
 
 Flags (thresholds are parameters at the top of the script):
 
