@@ -1,25 +1,30 @@
 # Issue #6: non-clipped vs clipped monthly red tide maps
 
-Diagnostic comparison prepared 8 October 2026 on branch `6-nonclipped-comparison-maps` for [WFS-FEM/RedTideMaps#6](https://github.com/WFS-FEM/RedTideMaps/issues/6), the sub-issue of [#5](https://github.com/WFS-FEM/RedTideMaps/issues/5) (VIIRS months with no positive cell are written as all-zero maps). Nothing in the pipeline or the deliverables was changed; every number here is read from the stacks the 6 October 2026 run left on disk. Sections 1 to 3 are written to be pasted into #6, sections 4 and 5 into #5.
+Diagnostic comparison for [WFS-FEM/RedTideMaps#6](https://github.com/WFS-FEM/RedTideMaps/issues/6), the sub-issue of [#5](https://github.com/WFS-FEM/RedTideMaps/issues/5) (VIIRS months with no positive cell are written as all-zero maps), prepared 8 to 13 October 2026 on branch `6-nonclipped-comparison-maps` (PR #7). Nothing in the pipeline or the deliverables was changed; every number here is read from the stacks the 6 October 2026 run left on disk. The results have been posted to #6 as comments; the decision on the VIIRS rule is tracked in #5.
 
-Everything is produced by one tracked script:
+Everything is produced by one tracked script, run from the repo root:
 
 ```
-Rscript scripts/qa/check_clipping_issue6.R        # ~30 s; RT_QA_PDF=0 skips the PDF
+Rscript scripts/qa/check_clipping_issue6.R   # ~50 s: table, summary, figures, monthly PDF
+#   RT_QA_MONTHLY_PDF=0   skip the monthly PDF (~25 s)
+#   RT_QA_PDF=1           also rewrite the superseded per-month PDF (clip_check_issue6-OLD.pdf)
+#   RT_QA_QUICK=1         draw only the pages that hold headline months
 ```
 
 | File | What |
 |---|---|
 | `docs/issue6/clip_comparison_issue6.csv` | one row per month, 1985-01 to 2026-12 (504 rows); columns in §1.2 |
+| `docs/issue6/clip_class_counts_issue6.csv` | the count-box numbers of the monthly PDF, one month per row: for the samples and for each map (unclipped, VIIRS, MODIS, hull, final) the positives and the five FWC classes (§1.3) |
 | `docs/issue6/clip_comparison_summary.md` | the tables below in full (all 58 zeroed months, all 33 other flagged months) |
+| `docs/issue6/clip_months_issue6.pdf` | the main figure: one row per month for all 504 months, 12 rows (one calendar year) per page, 42 pages: FWC counts, unclipped, VIIRS-clipped, MODIS-clipped, hull-clipped, each panel with its legend and a count box; the clipped panel the final map uses is framed in red (§1.3) |
 | `docs/issue6/fig1_viirs_calendar.png` | VIIRS layer status by year and month, with in-situ positives |
 | `docs/issue6/fig2_insitu_vs_viirs.png` | monthly in-situ positives vs VIIRS positive cells, 2012-2024 |
 | `docs/issue6/fig3_bloom_area_unclipped_vs_final.png` | bloom area before and after clipping, by clip source |
-| `docs/issue6/fig4_headline_months.png` | the 16 headline months (fitted surface reaching 10,000 cells/L, written as zero by an all-zero VIIRS layer) in the monthly-PDF row format: FWC counts, unclipped, VIIRS, MODIS, hulls |
-| `docs/issue6/clip_check_issue6.pdf` | one page per fitted month (329 pages, 7.7 MB): unclipped + samples + footprint, VIIRS-clipped, MODIS-clipped, hull-clipped |
-| `docs/issue6/clip_months_issue6.pdf` | one row per month for all 504 months, 12 rows (one calendar year) per page: FWC counts, unclipped, VIIRS-clipped, MODIS-clipped, hull-clipped, each panel with its legend and a count box; the clipped panel the final map uses is framed in red (§1.3) |
+| `docs/issue6/fig4_headline_months.png` | the 16 headline months (§2.2) in the monthly-PDF row format: FWC counts, unclipped, VIIRS, MODIS, hulls |
 | `docs/issue6/fig5_monthly_rows_example.png` | four rows of the monthly PDF (2012-01 to 2012-04) as a PNG, for the issue |
-| `docs/issue6/clip_class_counts_issue6.csv` | the count-box numbers, one month per row: for the samples and for each map (unclipped, VIIRS, MODIS, hull, final) the positives and the five FWC classes (§1.3) |
+| `docs/issue6/clip_check_issue6-OLD.pdf` | superseded by the monthly PDF, kept for reference: one page per fitted month (329 pages, 7.7 MB): unclipped + samples + footprint, VIIRS-clipped, MODIS-clipped, hull-clipped; the `pdf_page` column of the CSV and the tables refers to its pages. Rewritten only with `RT_QA_PDF=1` |
+
+The `issue6-*-comment.md` files in this folder are the drafts of the comments posted to #6 and are not tracked.
 
 ## 1. What was compared
 
@@ -27,7 +32,7 @@ Rscript scripts/qa/check_clipping_issue6.R        # ~30 s; RT_QA_PDF=0 skips the
 
 The pipeline predicts one sdmTMB surface per month (the **unclipped** map, `out/5min/sdm/sdmTMB_log_stack_*.grd`) and masks it three ways: to the VIIRS positive cells, to the MODIS nFLH polygons, and to the buffered hulls around the positive samples (`out/5min/clipped/*_clipped_{viirs,modis,hull}.grd`). The **final** map (`out/5min/combined/`) is the VIIRS-clipped one if a VIIRS tif exists for the month, else the MODIS-clipped one, else the hull-clipped one. All three alternatives are on disk for every month that has that source, so "what would the other rule have produced" needs no rerun.
 
-Each PDF page shows the four maps side by side in the palette of the pipeline PDFs (white below 10,000 cells/L). The panel the final map actually uses has a red frame and the title prefix "USED". The unclipped panel carries every sample of the month (small dots for zero counts, viridis-filled circles for positives binned at 1,000 / 10,000 / 100,000 / 1,000,000 cells/L) and the outline of the footprint used; the used panel repeats the samples at or above 10,000 cells/L as open circles so samples outside the footprint are visible.
+The monthly PDF (§1.3) shows the samples and the four maps side by side for every month, in the palette of the pipeline PDFs (white below 10,000 cells/L), with the panel the final map uses framed in red. The superseded per-month PDF (`clip_check_issue6-OLD.pdf`) showed the same four maps one month per page, with the samples at or above 10,000 cells/L repeated on the used panel.
 
 ### 1.2 The per-month table
 
@@ -38,7 +43,7 @@ Bloom area is the km2 of water cells at or above 10,000 cells/L (`area_1e4_*`, t
 - cascade: `use` (viirs / modis / pred = hull), `viirs_status` (positive / zero / missing / no_coverage), `viirs_n_pos_cells`, `viirs_max_freq`, `modis_present`, `modis_n_polys`, `hull_n_polys`, `hull_footprint_km2`;
 - bloom area of the unclipped, final, VIIRS-, MODIS- and hull-clipped maps, `retained_1e4` (final / unclipped), `hull_ratio_1e4` (final / hull-clipped);
 - samples vs map: how many water-cell samples at or above 10,000 (and 100,000) cells/L sit in a non-zero cell of the final map (`n_pos_1e4_in_fp`, `frac_pos_1e4_in_fp`, ...);
-- flags and `pdf_page`.
+- flags, and `pdf_page`, the month's page in the superseded `clip_check_issue6-OLD.pdf` (fitted months only). In `clip_months_issue6.pdf` a month's page is its year minus 1984.
 
 Flags (thresholds are parameters at the top of the script):
 
@@ -57,7 +62,7 @@ One row per month from 1985-01 to 2026-12, twelve rows per page so each page is 
 
 ### 1.4 Checks the script enforces
 
-Before anything is plotted the script asserts that the final map equals the chosen clipped layer cell for cell in all 504 months (NA to 0, land to NA, exactly as `make_redtide_ascii()` does), that `clipping_source.csv` matches the stacks (155 VIIRS, 123 MODIS, 226 hull), that 89 of the 155 VIIRS layers have no positive cell, that the fit status read from the layers agrees with `RT_fit_matrix.RData` for every month (329 fitted, 5 failed, 170 not attempted), that every month with a positive sample has a hull footprint, and that the matrix-to-image orientation is right. All pass on the 6 October run.
+Before anything is plotted the script asserts that the final map equals the chosen clipped layer cell for cell in all 504 months (NA to 0, land to NA, exactly as `make_redtide_ascii()` does), that `clipping_source.csv` matches the stacks (155 VIIRS, 123 MODIS, 226 hull), that 89 of the 155 VIIRS layers have no positive cell, that the fit status read from the layers agrees with `RT_fit_matrix.RData` for every month (329 fitted, 5 failed, 170 not attempted), that every month with a positive sample has a hull footprint, and that the matrix-to-image orientation is right. For the class counts it asserts that the sample positives equal `n_pos` of the main table, that months without a row have no samples, and that the five classes sum to the positives for the samples and for the final map. All pass on the 6 October run, and the CSVs, summary and PNG figures are byte-identical from run to run.
 
 ## 2. Results
 
@@ -79,11 +84,11 @@ VIIRS era (2012-01 to 2024-12), VIIRS layer status by fit status:
 
 ### 2.2 The 58 fitted months written as all-zero maps
 
-All 58 are VIIRS months whose layer has no positive cell; no MODIS or hull month is zeroed. Of the 58, 17 have at least one sample at or above 100,000 cells/L, 14 have 100 or more positive samples, and **16 have a fitted surface that reaches 10,000 cells/L somewhere** (`zeroed_material`). In the other 42 the fitted surface stays below 10,000 cells/L everywhere (maximum 6,915 cells/L), so for them the zero map differs from the alternatives only below the first colour bin of the PDFs (not nothing for Ecospace, whose foraging response starts at 12,500 cells/L, but small).
+All 58 are VIIRS months whose layer has no positive cell; no MODIS or hull month is zeroed. Of the 58, 17 have at least one sample above 100,000 cells/L (475 such samples in total), 6 have a sample above 1,000,000 cells/L (2016-04, 2017-01, 2017-02, 2018-03, 2018-04, 2021-06; 47 samples), 14 have 100 or more positive samples, and **16 have a fitted surface that reaches 10,000 cells/L somewhere** (`zeroed_material`). In the other 42 the fitted surface stays below 10,000 cells/L everywhere (maximum 6,915 cells/L), so for them the zero map differs from the alternatives only below the first colour bin of the PDFs (not nothing for Ecospace, whose foraging response starts at 12,500 cells/L, but small).
 
-The 16 material months, with what the two alternatives already on disk would keep:
+The 16 material months are the **headline months** of `fig4_headline_months.png` (the script derives the list from `zeroed_material`, so it follows the data). They differ from the 17 months with a sample above 100,000 cells/L by three months whose fitted surface stays below 10,000 cells/L everywhere (2013-04, 2013-10, 2023-05, not headline) and two whose surface exceeds it although their highest samples are 72,333 and 60,500 cells/L (2020-01, 2020-11, headline). With what the two alternatives already on disk would keep (`page` = page in `clip_check_issue6-OLD.pdf`):
 
-| yrmo | n_pos | n >= 1e4 | n >= 1e5 | max cells/L | unclipped bloom km2 | hull-clipped km2 | MODIS-clipped km2 | PDF page |
+| yrmo | n_pos | n >= 1e4 | n >= 1e5 | max cells/L | unclipped bloom km2 | hull-clipped km2 | MODIS-clipped km2 | page |
 |---|---|---|---|---|---|---|---|---|
 | 201203 | 41 | 14 | 8 | 513,300 | 8,657 | 5,098 | 2,318 | 197 |
 | 201303 | 173 | 69 | 15 | 853,300 | 10,402 | 2,292 | 763 | 208 |
@@ -121,7 +126,7 @@ Three VIIRS-positive months (2015-05, 2015-07, 2015-08: 3 positive cells each) h
 
 ## 3. What the comparison says for #6
 
-- The unclipped maps are already in the repository (`out/5min/plots/sdmTMB log maps.pdf`); what was missing was the side-by-side with samples and alternatives, now in `clip_check_issue6.pdf`, and the per-month numbers, now in the CSV.
+- The unclipped maps are already in the repository (`out/5min/plots/sdmTMB log maps.pdf`); what was missing was the side-by-side with samples and alternatives, now in `clip_months_issue6.pdf`, and the per-month numbers, now in the two CSVs.
 - "Drastic difference between clipped and unclipped" is the normal case, not the exception: the fitted surface covers the shelf in most months and the clip removes 90% or more of its bloom area in 178 of the 235 fitted months whose unclipped surface has any bloom area at all (the other 94 fitted surfaces stay below 10,000 cells/L everywhere). The informative comparisons are between the clip sources (satellite vs hull) and between the final map and the samples.
 - Two kinds of month stand out: the 58 (16 material) VIIRS-zero months, which is #5; and the VIIRS-positive months where the satellite footprint misses 40% of the sampled bloom on average, which bears on how any VIIRS rule should treat the hull footprint.
 

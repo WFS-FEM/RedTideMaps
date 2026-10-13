@@ -12,8 +12,9 @@
 #' out/5min/clipped, out/5min/combined, VIIRS/VIIRS_*.grd).
 #'
 #' Run from the repo root:  Rscript scripts/qa/check_clipping_issue6.R
-#'   RT_QA_PDF=0    skip the per-month PDF (table, summary and figures only)
-#'   RT_QA_QUICK=1  draw only the headline months in the PDF
+#'   RT_QA_MONTHLY_PDF=0  skip the monthly PDF (table, summary and figures only)
+#'   RT_QA_PDF=1          also write the superseded per-month PDF (clip_check_issue6-OLD.pdf)
+#'   RT_QA_QUICK=1        draw only the pages holding headline months
 #'
 #' Output:
 #'   docs/issue6/clip_comparison_issue6.csv     one row per month (504)
@@ -21,8 +22,9 @@
 #'   docs/issue6/fig1_viirs_calendar.png        VIIRS status by year x month
 #'   docs/issue6/fig2_insitu_vs_viirs.png       in-situ positives vs VIIRS cells
 #'   docs/issue6/fig3_bloom_area_unclipped_vs_final.png
-#'   docs/issue6/fig4_headline_months.png       unclipped / final / hull / MODIS
-#'   docs/issue6/clip_check_issue6.pdf          one page per fitted month (4 panels)
+#'   docs/issue6/fig4_headline_months.png       the headline months in the monthly-PDF row format
+#'   docs/issue6/fig5_monthly_rows_example.png  four example rows (2012-01 to 2012-04)
+#'   docs/issue6/clip_check_issue6-OLD.pdf      superseded: one page per fitted month (4 panels), opt-in
 #'   docs/issue6/clip_months_issue6.pdf         one row per month, 12 rows (a year) per
 #'       page: FWC counts | unclipped | VIIRS | MODIS | hulls, each with its legend
 #'       and a count box; the panel the final map uses is framed in red
@@ -57,7 +59,7 @@ expected <- list(n_months = 504L,
                  use = c(viirs = 155L, modis = 123L, pred = 226L),
                  viirs_layers = 155L, viirs_zero = 89L)
 viirs_era  <- c("201201", "202412")   # months with a VIIRS tif expected
-render_pdf  <- !identical(Sys.getenv("RT_QA_PDF"), "0")           # per-month PDF (clip_check_issue6.pdf)
+render_pdf  <- identical(Sys.getenv("RT_QA_PDF"), "1")            # superseded per-month PDF (clip_check_issue6-OLD.pdf), opt-in
 monthly_pdf <- !identical(Sys.getenv("RT_QA_MONTHLY_PDF"), "0")   # one-row-per-month PDF (clip_months_issue6.pdf)
 rows_per_page <- 12L   # rows (months) per page of the monthly PDF; 12 = one calendar year per page
 quick      <- nzchar(Sys.getenv("RT_QA_QUICK"))
@@ -633,11 +635,11 @@ ggsave(file.path(dir_docs, "fig3_bloom_area_unclipped_vs_final.png"), g3, width 
 # Fig 4 (headline months) is drawn in the monthly-PDF section below, with draw_row().
 message("Figures written to ", dir_docs)
 
-# Per-month PDF -----------------------------------------------------------------
+# Per-month PDF (superseded by the monthly PDF below; kept as -OLD, opt-in) -------
 if (render_pdf) {
   pages <- if (quick) hl else fitted_months
-  file_pdf <- file.path(dir_docs, "clip_check_issue6.pdf")
-  file_tmp <- file.path(dir_docs, "clip_check_issue6_tmp.pdf")
+  file_pdf <- file.path(dir_docs, "clip_check_issue6-OLD.pdf")
+  file_tmp <- file.path(dir_docs, "clip_check_issue6-OLD_tmp.pdf")
   opened <- tryCatch({ pdf(file_tmp, width = 16, height = 5, onefile = TRUE); TRUE },
                      error = function(e) { warning("Cannot open ", file_tmp, ": ", conditionMessage(e), call. = FALSE); FALSE })
   if (opened) {
