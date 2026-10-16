@@ -1,8 +1,6 @@
-# FWC red tide evidence — 17 requested months
+# FWC red tide reports
 
 Updated October 16, 2026. Dated reports for Southwest Florida and the adjacent West Florida Shelf; these are not whole-month summaries.
-
-**Coverage:** 28 dated reports or summaries across 16 months, plus the unresolved April 2013 evidence gap. Sixteen reports link directly to official FWC GovDelivery bulletins. Seven months now have multiple dated evidence rows. Six direct FWC bulletins and four START reproductions were added in this review; two sources previously listed only as supplements now have their own dated rows.
 
 **How to read the table:** Each row applies to the report date shown in its link. Repeated months are intentional. Quotation marks identify short verbatim excerpts; … marks omissions. Unquoted text is summarized. Reproductions and the SFWMD summary are explicitly labeled; original FWC URLs were not recovered for every date. “Not stated” does not mean that no impacts occurred. Reporting windows overlap, so sample and impact-report counts must not be added as independent observations.
 
@@ -41,6 +39,8 @@ Updated October 16, 2026. Dated reports for Southwest Florida and the adjacent W
 | 2023-05 | [2023-05-26 · START reproduction](https://start1.org/red-tide-status/red-tide-status-report-may-26-2023/) | “Bloom concentrations (&gt;100,000 cells/liter) were not observed.”<br>The report still records K. brevis detections along the Gulf Coast. | 27 positive Gulf Coast samples. Southwest: Pinellas background (in/offshore); Manatee background (offshore); Sarasota background and very low (in/offshore); Charlotte background–low; Lee background–very low; Collier background (in/offshore); Monroe background (offshore). No samples above 100,000 cells/L. | “Reports of fish kills suspected to be related to red tide were received … from Sarasota County.” | Yes—Sarasota County, suspected to be red-tide-related, via the Beach Conditions Reporting System. |
 
 ## Sources and notes
+
+**Coverage:** 28 dated reports or summaries across 16 months, plus the unresolved April 2013 evidence gap. Sixteen reports link directly to official FWC GovDelivery bulletins. 
 
 Direct bulletins, secondary reproductions, the April 2013 evidence gap, and interpretation notes. Report dates take precedence over later posting or upload dates.
 
