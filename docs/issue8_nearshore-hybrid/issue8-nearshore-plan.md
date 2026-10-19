@@ -25,37 +25,37 @@ A read-only check of the VIIRS stack (`VIIRS/VIIRS_201201-202412.grd`, 155 layer
 
 **The no-data region is a static land-plus-coast mask, not a monthly cloud mask.** Every layer has 1,002 to 1,012 NA cells (six distinct counts over 155 months); 2017-01 has 1,004 NA, 2,571 zero and 0 positive cells, 2018-09 has 1,002 NA, 2,213 zero and 360 positive cells. Of the 1,004 NA cells of 2017-01, 912 are land in the template by nearest neighbour and 92 are water; 175 NA cells contain some template water and 97 are at least half water. No VIIRS-valid cell is wholly template land. The template depth of the NA cells that hold water has a median of 4.8 m (quartiles 2.0 and 12.7 m, maximum 24 m); the VIIRS-valid cells have a median depth of 156 m (quartiles 35 and 2,933 m, minimum 1.1 m). So the mask is, in effect, the first row of 0.1-degree cells along the coast plus the bays and estuaries: the nearshore band Yao described, readable from the files themselves.
 
-**The masked band holds most of the in-situ record, in every abundance class.** Filtered FWC samples 2012-01 to 2024-12 by FWC abundance class (section 4.0) and by the VIIRS cell they fall in that month: masked (NA), valid with no detection (0) or valid with a detection (> 0). The 610 samples of 2022-12, which has no VIIRS tif, are left out.
+**The masked band holds most of the in-situ record, in every abundance class.** Filtered FWC samples 2012-01 to 2024-12 by FWC abundance class (section 4.0) and by the VIIRS cell they fall in that month: masked (NA), valid with no detection (0) or valid with a detection (> 0). The 610 samples of 2022-12, which has no VIIRS tif, and 55 negative samples that sit just outside the grid box on its northern edge are left out (numbers as reproduced by the step-1 script).
 
 | FWC class | masked | valid, zero | valid, positive | total | masked share | detected share of the valid |
 |---|---|---|---|---|---|---|
-| negative (0) | 49,349 | 24,766 | 2,603 | 76,718 | 64% | 10% |
+| negative (0) | 49,295 | 24,766 | 2,603 | 76,664 | 64% | 10% |
 | background (<= 1,000) | 2,708 | 1,217 | 530 | 4,455 | 61% | 30% |
 | very low (1,000 to 10,000) | 3,054 | 817 | 835 | 4,706 | 65% | 51% |
 | low (10,000 to 100,000) | 3,288 | 728 | 1,247 | 5,263 | 62% | 63% |
 | medium (100,000 to 1,000,000) | 2,995 | 415 | 1,334 | 4,744 | 63% | 76% |
 | high (> 1,000,000) | 1,076 | 66 | 485 | 1,627 | 66% | 88% |
-| all | 62,470 | 28,009 | 7,034 | 97,513 | 64% | 20% |
+| all | 62,416 | 28,009 | 7,034 | 97,459 | 64% | 20% |
 
 Two readings. First, the mask takes the same share of every class, 61 to 66%: it is a matter of where FWC samples, not of what the samples find, so two thirds of the medium and high samples are in cells VIIRS never evaluates. Second, among the samples VIIRS does evaluate, the share in a positive cell rises steeply with abundance, from 30% of the background samples to 88% of the high ones; only 66 of the 1,627 high samples and 415 of the 4,744 medium samples sit in a valid cell that saw nothing that month. That is a first, coarse reading of H1 against H2 (section 3): the satellite sees most of what it is allowed to look at, and the problem is mostly what it is not allowed to look at. Step 1 repeats this per month and per footprint.
 
-Of the 62,470 masked samples, 41,784 are on template water cells and 20,686 on template land (bays and estuaries):
+Of the 62,416 masked samples, 41,784 are on template water cells and 20,632 on template land (bays and estuaries):
 
 | FWC class | masked, template water | masked, template land |
 |---|---|---|
-| negative | 32,690 | 16,659 |
+| negative | 32,690 | 16,605 |
 | background | 1,884 | 824 |
 | very low | 2,167 | 887 |
 | low | 2,284 | 1,004 |
 | medium | 2,034 | 961 |
 | high | 725 | 351 |
 
-The 41,784 masked samples on template water, 5,043 of them low or above, are the ones a nearshore rule can serve: they lie on Ecospace water cells that the current cascade writes as zero in every VIIRS month, whatever the samples say. The 20,686 on template land cannot be represented by any map, but they can still anchor a hull whose 10 km buffer reaches the adjacent water cells, as the hull path already does.
+The 41,784 masked samples on template water, 5,043 of them low or above, are the ones a nearshore rule can serve: they lie on Ecospace water cells that the current cascade writes as zero in every VIIRS month, whatever the samples say. The 20,632 on template land cannot be represented by any map, but they can still anchor a hull whose 10 km buffer reaches the adjacent water cells, as the hull path already does.
 
 Consequences for the plan:
 
 - "Nearshore" can be defined from the VIIRS files themselves, as the masked water cells, with no coastline data and no distance parameter. That definition is exactly "where VIIRS cannot look", which is the distinction Yao draws between no observation and a valid zero.
-- A distance-to-coast definition (2, 5, 10 km, Yao's range) is still needed, to describe the width of the mask and as the alternative rule. The 1:50m Natural Earth polygons the pipeline uses for basemaps are too coarse for a 2 km band; the proposed source is the Natural Earth 1:10m coastline, downloaded once with `rnaturalearth::ne_download(scale = 10, type = "coastline", category = "physical")`, cropped to the grid box and saved under `data/` (decision D6).
+- A distance-to-coast definition (2, 5, 10 km, Yao's range) is still needed, to describe the width of the mask and as the alternative rule. The 1:50m Natural Earth polygons the pipeline uses for basemaps are too coarse for a 2 km band; the proposed source is the Natural Earth 1:10m coastline, downloaded once with `rnaturalearth::ne_download(scale = 10, type = "coastline", category = "physical")`, cropped to the grid box and saved in this folder (`coastline/`; decision D6).
 - The all-zero months are not the only case. In every one of the 155 VIIRS months the masked band is written as zero; the 58 zeroed months are where that is most visible because nothing else survives.
 
 ## 3. Hypotheses to test in step 1
@@ -66,7 +66,7 @@ Consequences for the plan:
 
 The split between H1 and H2 is the result of step 1 and decides whether step 2 is worth doing.
 
-## 4. Step 1: diagnosis (`scripts/qa/check_nearshore_issue8.R`)
+## 4. Step 1: diagnosis (`docs/issue8_nearshore-hybrid/check_nearshore_issue8.R`)
 
 One deterministic script in the pattern of `check_clipping_issue6.R`: run from the repo root, reads only what the 6 October run left on disk (filtered samples, VIIRS raw stack, VIIRS-, MODIS- and hull-clipped stacks, final stack, depth template, hull polygons, `docs/issue6_VIIRS-zeros/tables/clip_comparison_issue6.csv`), no refits, no RNG, about a minute, CSVs and PNGs byte-identical from run to run. Outputs go to `docs/issue8_nearshore-hybrid/{tables,figures,comments}`.
 
@@ -101,7 +101,7 @@ Every table and figure counts samples by the FWC abundance classes of the in-sit
 
 ### 4.5 Checks the script enforces
 
-The mask counts of section 2 (1,002 to 1,012 NA cells per layer; 2017-01: 1,004 / 2,571 / 0; 2018-09: 1,002 / 2,213 / 360); the class x `viirs_cell` table of section 2 (97,513 samples, 62,470 masked, 1,627 high of which 1,076 masked); per-month `n_pos` and the five class counts equal to the #6 tables (`clip_class_counts_issue6.csv`, `fwc_*` columns); the five positive classes partition the positives; `viirs_cell` partitions every sample; samples with `in_final_fp` are only in valid-positive cells (H3 should show the reverse is not guaranteed).
+The mask counts of section 2 (1,002 to 1,012 NA cells per layer; 2017-01: 1,004 / 2,571 / 0; 2018-09: 1,002 / 2,213 / 360); the class x `viirs_cell` table of section 2 (97,459 samples, 62,416 masked, 1,627 high of which 1,076 masked); per-month `n_pos` and the five class counts equal to the #6 tables (`clip_class_counts_issue6.csv`, `fwc_*` columns); the five positive classes partition the positives; `viirs_cell` partitions every sample; samples with `in_final_fp` are only in valid-positive cells (H3 should show the reverse is not guaranteed).
 
 **Checkpoint 1** (posted to #8): T1 to T5, the four figures, and a one-paragraph answer to H1 vs H2. Decision on whether to proceed to the prototype and with which nearshore definition (D1) and sample threshold (D2).
 
@@ -134,7 +134,7 @@ Behind a config key, default = today's behaviour, so an unchanged config reprodu
 
 - **Config** (`run_redtide_maps.R`, documented in `config.local.example.R`): `cfg$viirs_nearshore` = `"none"` (default) | `"mask"` | `"coast"`; `cfg$nearshore_km` (used by `"coast"`, default 5); `cfg$nearshore_min_cells` (sample threshold for the nearshore hulls, default 0 = every positive, as the hull path does now).
 - **Code** (`scripts/process_VIIRS.R`): `fn.nearshore_mask(file_viirs, file_depth, rule, km, coastline)` returns one 5-arcmin raster per month (or one static raster for `"coast"`) with 1 on nearshore template-water cells; `fn.clip_2_hybrid(file_viirs_clipped, file_hull_clipped, masks, file_depth, dir_out)` writes `*_clipped_hybrid.grd`, taking the VIIRS-clipped layer where the mask is 0 and the hull-clipped layer where it is 1. `fn.clip_2_viirs()` and `fn.clip_2_hulls()` are not touched, so their outputs stay identical. `make_redtide_ascii()` gains `file_hybrid = NULL`, preferred over `file_viirs` when given; `clipping_source.csv` records `use = "hybrid"`; the run log names the rule, the parameters and the number of months whose map changed. `fn.buffered_hulls()` gains `min_cells = 0` (D2).
-- **Coastline** (only if `"coast"` is chosen): `data/coastline/ne_10m_coastline_wfs.gpkg`, cropped to the grid box, committed once (small), with its source and download date in `data/README` (D6).
+- **Coastline** (only if `"coast"` is chosen): the step-1 file (`docs/issue8_nearshore-hybrid/coastline/ne_10m_coastline_wfs.gpkg`, with its source and download date in the README beside it) moves to `data/coastline/` if the pipeline uses it (D6).
 - **Docs:** README cascade section and pipeline table; `config.local.example.R`; `docs/issue8_nearshore-hybrid/README.md` in the #6 style (what was compared, results, how to rerun).
 - **Verification:** MD5 of all 504 ASCII files before (the 6 October run) and after, with the expectation that only VIIRS months with a nearshore hull differ (no MODIS or hull month changes; no change at all with `viirs_nearshore = "none"`); before/after panels for the headline months; run time in the log.
 - **Out of scope, noted for follow-up:** the MODIS nFLH months (2002-07 to 2011-12, 2025-01 to 2025-09) presumably have the same nearshore gap; `fn.clip_2_hybrid()` is written so a MODIS-clipped stack can be passed in its place later.
@@ -160,6 +160,6 @@ Behind a config key, default = today's behaviour, so an unchanged config reprodu
 
 ## 9. Run notes
 
-- R 4.5.1: `"C:/Program Files/R/R-4.5.1/bin/x64/Rscript.exe" scripts/qa/check_nearshore_issue8.R` from the repo root; `RT_QA_HYBRID=1` adds step 2; `RT_QA_PDF=0` skips the PDF.
+- R 4.5.1: `"C:/Program Files/R/R-4.5.1/bin/x64/Rscript.exe" docs/issue8_nearshore-hybrid/check_nearshore_issue8.R` from the repo root; `RT_QA_HYBRID=1` adds step 2; `RT_QA_PDF=0` skips the PDF.
 - Steps 1 and 2 need no pipeline run. Step 3 reruns `run_redtide_maps.R` (about 9 minutes warm, 5-arcmin) alone on the machine; close any output PDF in Acrobat first.
 - The 6 October run is the baseline for every comparison; its MD5 table is written before step 3 starts.
