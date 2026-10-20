@@ -247,19 +247,22 @@ make_redtide_ascii <- function(file_hull,
   depth <- raster(file_depth)
   land  <- is.na(values(depth))
 
+  # An absent stack stays NULL: names(stack()) is the string "NULL.", which
+  # would enter the month list as a phantom month.
   hull_stack   <- stack(file_hull)
-  viirs_stack  <- if (!is.null(file_viirs))  stack(file_viirs)  else stack()
-  modis_stack  <- if (!is.null(file_modis))  stack(file_modis)  else stack()
-  hybrid_stack <- if (!is.null(file_hybrid)) stack(file_hybrid) else stack()
+  viirs_stack  <- if (!is.null(file_viirs))  stack(file_viirs)  else NULL
+  modis_stack  <- if (!is.null(file_modis))  stack(file_modis)  else NULL
+  hybrid_stack <- if (!is.null(file_hybrid)) stack(file_hybrid) else NULL
+  stack_names  <- function(s) if (is.null(s)) character(0) else names(s)
 
   clip_source <- data.frame(yrmo = sort(unique(c(names(hull_stack),
-                                                 names(viirs_stack),
-                                                 names(modis_stack),
-                                                 names(hybrid_stack)))))
+                                                 stack_names(viirs_stack),
+                                                 stack_names(modis_stack),
+                                                 stack_names(hybrid_stack)))))
   clip_source$pred   <- clip_source$yrmo %in% names(hull_stack)
-  clip_source$viirs  <- clip_source$yrmo %in% names(viirs_stack)
-  clip_source$modis  <- clip_source$yrmo %in% names(modis_stack)
-  clip_source$hybrid <- clip_source$yrmo %in% names(hybrid_stack)
+  clip_source$viirs  <- clip_source$yrmo %in% stack_names(viirs_stack)
+  clip_source$modis  <- clip_source$yrmo %in% stack_names(modis_stack)
+  clip_source$hybrid <- clip_source$yrmo %in% stack_names(hybrid_stack)
   clip_source$hybrid_changed <- FALSE
   clip_source$use    <- ifelse(clip_source$hybrid, "hybrid",
                         ifelse(clip_source$viirs, "viirs",
