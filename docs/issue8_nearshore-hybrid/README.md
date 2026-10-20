@@ -44,6 +44,56 @@ Rscript docs/issue8_nearshore-hybrid/check_nearshore_issue8.R   # ~15 s; interne
 
 Reading for the two hypotheses of the plan: H1 (nearshore mask) accounts for 70 to 79% of the high-count samples VIIRS misses, H2 (valid but not detected) for 21 to 30%, and H3 (resolution) for none. Most of the H2 samples are themselves within 2 km of the coast.
 
-## Step 2: hybrid prototype
+## Step 2: hybrid footprints for four nearshore sets
 
-Not started; see the plan, section 5.
+```
+Rscript docs/issue8_nearshore-hybrid/hybrid_nearshore_issue8.R   # ~40 s; sources step 1 first
+#   RT_QA_MONTHLY_PDF=0   skip the monthly PDF (~20 s)
+```
+
+For every one of the 155 VIIRS months and each nearshore set N, the hybrid footprint is
+
+    hybrid_N[cell] = max(viirs_clipped[cell], hull_clipped[cell] * [cell in N])
+
+Outside N the VIIRS result stands, zeros included (Yao's condition); inside N the buffered-hull footprint is added and never removes a VIIRS detection (the union rule). The hull is the pipeline's own hull-clipped stack, built as for the months without satellite data (every positive sample, 75 km linkage, 10 km buffer); nothing is refit or re-clipped. Comparators: `current` (the final map) and `hull` (the hull-clipped map, what a full hull fallback would give).
+
+| File | What |
+|---|---|
+| `tables/hybrid_sets_issue8.csv` | the four sets: cells, km2, share in the VIIRS mask, overlaps, depth, distance to coast, cells per region |
+| `tables/hybrid_months_long_issue8.csv` | 155 months x 6 variants (930 rows): footprint and bloom area (>= 10,000 and >= 100,000 cells/L), area and cells added to the current map (split by whether the 0.1-degree VIIRS cell is masked or valid that month), area removed (0 for the hybrids), water samples by class inside the footprint, month descriptors and group flags |
+| `tables/hybrid_months_issue8.csv` | the same, wide, one row per month |
+| `tables/hybrid_groups_issue8.csv` | totals by month group x variant: all 155; the 58 zeroed; the 16 headline; the 60 VIIRS-positive fitted months of #6; the 66 VIIRS-positive; the 89 all-zero |
+| `figures/fig5_nearshore_sets.png` | the four sets on the map (full grid and the Tampa Bay to Lee County zoom), coloured by in-set-and-mask / in-set-only / mask-only |
+| `figures/fig6_hybrid_headline.png` | 20 months (16 headline, the two `low_vs_hull` months 2018-01 and 2021-04, two controls 2014-08 and 2021-09) x 7 panels: samples \| current \| mask \| coast2 \| coast5 \| coast10 \| hull; orange = cells where the variant differs from the current map |
+| `figures/fig7_hybrid_area_2012-2024.png` | bloom area (>= 10,000 and >= 100,000 cells/L) and share of water samples >= 10,000 cells/L inside the footprint, per month, by variant |
+| `hybrid_months_issue8.pdf` | all 155 months in the fig6 layout, one calendar year per page (13 pages, 7.7 MB) |
+| `comments/hybrid_summary.md` | every table above in markdown, as written by the script |
+
+### Definitions
+
+- **Sets** (5-arcmin Gulf-domain water cells): `mask` = cells whose 0.1-degree VIIRS cell is in the static no-data mask (84 cells, 6,316 km2); `coast2`, `coast5`, `coast10` = cells whose centre is within 2, 5, 10 km of the Natural Earth 1:10m coastline (64 / 132 / 213 cells; 4,812 / 9,922 / 16,015 km2). The coast sets are nested; `coast5` holds 80 of the 84 mask cells and `coast10` all of them; `coast2` only 44.
+- **Metrics per month and variant**: footprint and bloom area in km2 of water cells; `added` = area the variant adds to the current map, `added_*_masked` / `added_*_valid` by the VIIRS status of the cell's 0.1-degree cell that month; `removed` = current footprint the variant drops (0 for every hybrid by construction; non-zero only for `hull`); `in_low / in_medium / in_high / in_ge1e4` = water samples of the month whose 5-arcmin cell is non-zero in the variant. Land samples are not counted (step 1 reports them).
+- **Control months**: VIIRS-positive fitted months of #6 with no flag, at least 80% of the water samples >= 10,000 cells/L inside the current footprint and a hull ratio within 0.75 to 1.33; the two with the highest share (2014-08, 2021-09), asserted by the script.
+
+### Results (6 October 2026 run)
+
+| variant | samples >= 10,000 cells/L inside, all 155 months | high samples inside, all months | bloom area added, all months (km2 >= 10,000 cells/L) | of which in VIIRS-valid cells | hull bloom area restored, 58 zeroed months | high samples inside, 58 zeroed months |
+|---|---|---|---|---|---|---|
+| current | 53% | 64% | 0 | 0 | 0% | 0% |
+| mask | 88% | 96% | 90,389 | 227 | 24% | 63% |
+| coast2 | 80% | 91% | 65,182 | 13,026 | 17% | 34% |
+| coast5 | 91% | 97% | 118,206 | 32,143 | 35% | 81% |
+| coast10 | 98% | 99% | 161,811 | 71,649 | 54% | 97% |
+| hull | 100% | 100% | 358,244 | 268,083 | 100% | 100% |
+
+1. **Every hybrid lifts sample coverage a lot and changes the maps only near the coast.** The share of water samples >= 10,000 cells/L inside the footprint goes from 53% (current) to 88% (`mask`), 91% (`coast5`) and 98% (`coast10`); for the high class from 64% to 96 to 99%. In the 60 VIIRS-positive fitted months of #6 the hybrids add 7 to 17% to a current bloom area of 776,173 km2; in the two control months they add nothing (2014-08) or 5 to 9% (2021-09).
+2. **`mask` adds only where VIIRS has no data** (227 of 90,389 km2 in valid cells, from the three cells masked in 145 to 152 months). It restores 24% of the hull-clipped bloom area in the 58 zeroed months and covers 59% of their samples >= 10,000 cells/L (63% of the high ones); the rest of those samples sit in valid cells that saw nothing.
+3. **`coast2` is below `mask` on every measure** (smaller inside the bays, 40 mask cells outside it) while overriding 13,026 km2 of valid cells. **`coast5`** nearly contains the mask (80 of 84 cells) and adds a 2 to 5 km strip of valid cells: 32,143 km2 of valid-cell area over 155 months (7,571 km2 in the zeroed months), for 81% of the zeroed months' high samples. **`coast10`** reaches 97 to 99% of the high samples but 71,649 km2 of its additions are in valid cells, more than its masked additions.
+4. **The hull alone is not a substitute for VIIRS:** used instead of the satellite it would drop 438,288 km2 of the VIIRS footprint over the 66 VIIRS-positive months (the union rule avoids that), which is why `hull` is a reference column, not a candidate.
+5. **Headline months** (`fig6`): 2017-01 goes from 0 to 1,821 (`mask`), 2,276 (`coast5`), 3,341 (`coast10`) km2 of bloom area against 4,181 for the hull, with 74 / 100 / 113 of its 116 samples >= 10,000 cells/L inside; 2021-06 from 0 to 2,044 / 2,731 / 4,027 km2 (hull 7,361) with 144 / 132 / 183 of 188 samples. The four months whose high-count samples sit offshore in valid cells (2012-03, 2019-02, 2020-01, 2020-11) stay almost unchanged under every set.
+
+Reading for decision D1: `mask` is the parameter-free option that respects Yao's condition exactly; `coast5` is the option that also reaches the nearshore valid-zero samples of step 1, at the cost of overriding a 2 to 5 km strip where VIIRS reported no bloom; `coast2` and `coast10` bracket them. Decision D4 (what the VIIRS-valid area gets in all-zero months) is visible in the `hull` column of the zeroed-month totals.
+
+### Checks
+
+The script asserts that every hybrid equals the current map outside its set and the cell-wise maximum of the current and hull-clipped maps inside it, never below the current map and never above that maximum; that an empty set reproduces the current map and the whole domain the full union; that the sets are nested and the areas monotone; that per-month water-sample counts by class equal the step-1 month table and the counts of samples >= 10,000 cells/L on water and inside the current footprint equal the #6 month table; and that the control-month rule reproduces the frozen months. CSVs, PNGs and the summary are byte-identical across reruns; the PDF differs only in the two date lines every R `pdf()` device writes. (The issue plan's single `fig5_hybrid_headline.png` became fig5 to fig7.)
