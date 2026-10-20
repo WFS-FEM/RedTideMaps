@@ -28,13 +28,13 @@
 #'   tables/hybrid_months_issue8.csv        the same, wide, one row per month
 #'   tables/hybrid_groups_issue8.csv        totals by month group x variant
 #'   figures/fig5_nearshore_sets.png        the four N sets on the map
-#'   figures/fig6_hybrid_headline.png       headline, low_vs_hull and control months: 7 panels per month
+#'   figures/fig6_hybrid_headline.pdf       headline, low_vs_hull and control months: 7 panels per month, 10 months per page
 #'   figures/fig7_hybrid_area_2012-2024.png bloom area and sample coverage per month by variant
 #'   hybrid_months_issue8.pdf               all 155 months, 12 rows (a calendar year) per page
 #'   comments/hybrid_summary.md             the tables in markdown, for #8
 #'
-#' Deterministic: no RNG, no timestamps in any output (the PDF carries the two
-#' date lines every R pdf() device writes).
+#' Deterministic: no RNG, no timestamps in any output (the two PDFs carry the
+#' two date lines every R pdf() device writes).
 
 # Repo root: the working directory if it holds the .Rproj, else two levels
 # above this script (docs/issue8_nearshore-hybrid/).
@@ -67,8 +67,9 @@ lowhull_months <- c("201801", "202104")   # VIIRS-positive months flagged low_vs
 # water samples >= 10,000 cells/L inside the current footprint and a hull ratio within
 # 0.75 to 1.33; the two with the highest share. Derived from the rule, frozen in expected2.
 control_rule   <- list(min_frac_in_fp = 0.8, hull_ratio = c(0.75, 1.33), n = 2L)
-rows_per_page  <- 12L                      # PDF rows per page; pages are calendar years
-coast_tol_m    <- 500                      # coastline simplification for the PDF only
+rows_per_page  <- 12L                      # monthly PDF rows per page; pages are calendar years
+fig6_per_page  <- 10L                      # fig6 PDF months per page
+coast_tol_m    <- 500                      # coastline simplification for the two PDFs (fig6, monthly)
 monthly_pdf    <- !identical(Sys.getenv("RT_QA_MONTHLY_PDF"), "0")
 expected2 <- list(n_months = 155L,
                   n_sets = c(mask = 84L, coast2 = 64L, coast5 = 132L, coast10 = 213L),   # from mask_band_issue8.csv (step 1)
@@ -367,16 +368,48 @@ mtext("Nearshore sets handed to the hull: the VIIRS no-data mask, and the Gulf w
       outer = TRUE, cex = 0.9, font = 2, line = 0.6)
 invisible(dev.off())
 
-# Fig 6: headline, low_vs_hull and control months, 7 panels per month.
-fig6_rows <- show_months
-png(file.path(dir_fig, "fig6_hybrid_headline.png"), width = 16, height = 2.4 * length(fig6_rows) + 1.2, units = "in", res = 110)
-par(mfrow = c(length(fig6_rows), 7), mar = c(0.4, 0.5, 1.5, 0.5), oma = c(0.3, 0, 3.4, 0))
-for (ym in fig6_rows) draw_row(ym, paste0(" [", tag_of(ym), "]"))
-mtext(sprintf("Hybrid footprints for the %d headline months of #6, the two months flagged low_vs_hull and two control months: samples | current | mask | coast2 | coast5 | coast10 | hull", length(headline)),
-      outer = TRUE, cex = 0.95, font = 2, line = 1.9)
-mtext("km2 in the titles = bloom area >= 10,000 cells/L (+ = added to the current map). Orange = cells where the variant differs from the current map (hybrids: cells the hull adds; hull column: cells where the hull and VIIRS footprints differ). Samples: fill = FWC class, border = VIIRS cell status (red masked, black valid-0, blue valid+). Map colours as the pipeline PDFs, white below 10,000 cells/L.",
-      outer = TRUE, cex = 0.72, line = 0.5)
-invisible(dev.off())
+# Fig 6 and the monthly PDF are vector output: the coastline is drawn simplified to
+# coast_tol_m (invisible at 7 panels per row) to keep the files small. draw_land()
+# reads `coast` from the global environment; it is restored after the monthly PDF.
+coast_full <- coast
+coast <- suppressWarnings(sf::st_simplify(coast_full, dTolerance = coast_tol_m))
+
+# Write a PDF to a temporary file and rename it into place, so a copy open in a
+# viewer does not kill the run (pattern of check_clipping_issue6.R). draw() draws
+# every page; returns TRUE when the file was written.
+write_pdf <- function(file_pdf, width, height, draw) {
+  file_tmp <- sub("\\.pdf$", "_tmp.pdf", file_pdf)
+  opened <- tryCatch({ pdf(file_tmp, width = width, height = height, onefile = TRUE); TRUE },
+                     error = function(e) { warning("Cannot open ", file_tmp, ": ", conditionMessage(e), call. = FALSE); FALSE })
+  if (!opened) return(invisible(FALSE))
+  tryCatch(draw(), finally = invisible(dev.off()))
+  if (file.exists(file_pdf) && !file.remove(file_pdf)) {
+    warning("Could not replace ", file_pdf, " (open in a viewer?); the new file is ", file_tmp, call. = FALSE)
+    return(invisible(FALSE))
+  }
+  file.rename(file_tmp, file_pdf)
+  invisible(TRUE)
+}
+
+# Fig 6: headline, low_vs_hull and control months, 7 panels per month, as a PDF
+# of fig6_per_page months per page.
+fig6_rows  <- show_months
+fig6_pages <- split(fig6_rows, ceiling(seq_along(fig6_rows) / fig6_per_page))
+draw_fig6_page <- function(ch, i) {
+  par(mfrow = c(fig6_per_page, 7), mar = c(0.4, 0.5, 1.5, 0.5), oma = c(0.3, 0, 4.2, 0))
+  for (ym in ch) draw_row(ym, paste0(" [", tag_of(ym), "]"))
+  mtext(sprintf("Hybrid footprints, %d headline months of #6 + two low_vs_hull + two control months (page %d of %d): samples | current | mask | coast2 | coast5 | coast10 | hull",
+                length(headline), i, length(fig6_pages)),
+        outer = TRUE, cex = 0.95, font = 2, line = 2.8)
+  mtext("km2 in the titles = bloom area >= 10,000 cells/L (+ = added to the current map). Orange = cells where the variant differs from the current map (hybrids: cells the hull adds; hull column: cells where the hull and VIIRS footprints differ).",
+        outer = TRUE, cex = 0.72, line = 1.5)
+  mtext("Samples: fill = FWC class, border = VIIRS cell status (red masked, black valid-0, blue valid+). Map colours as the pipeline PDFs, white below 10,000 cells/L.",
+        outer = TRUE, cex = 0.72, line = 0.4)
+}
+file_fig6 <- file.path(dir_fig, "fig6_hybrid_headline.pdf")
+if (write_pdf(file_fig6, width = 16, height = 2.4 * fig6_per_page + 1.2,
+              function() for (i in seq_along(fig6_pages)) draw_fig6_page(fig6_pages[[i]], i)))
+  message("Fig 6 written: ", file_fig6, " (", length(fig6_pages), " pages, ", round(file.size(file_fig6) / 1e6, 1), " MB)")
 
 # Fig 7: per-month bloom area and sample coverage by variant, 2012-2024.
 vcol <- c(current = "black", mask = "orangered", coast2 = "gold3", coast5 = "darkorange3", coast10 = "saddlebrown", hull = "gray40")
@@ -417,19 +450,9 @@ draw_month_page <- function(ch) {
 }
 page_w <- 16; page_h <- 2.4 * rows_per_page + 0.9
 if (monthly_pdf) {
-  coast_full <- coast
-  coast <- suppressWarnings(sf::st_simplify(coast_full, dTolerance = coast_tol_m))   # draw_land() reads `coast` from the global environment
   file_pdf <- file.path(dir_docs, "hybrid_months_issue8.pdf")
-  file_tmp <- file.path(dir_docs, "hybrid_months_issue8_tmp.pdf")
-  opened <- tryCatch({ pdf(file_tmp, width = page_w, height = page_h, onefile = TRUE); TRUE },
-                     error = function(e) { warning("Cannot open ", file_tmp, ": ", conditionMessage(e), call. = FALSE); FALSE })
-  if (opened) {
-    tryCatch(for (ch in page_chunks) draw_month_page(ch), finally = invisible(dev.off()))
-    if (file.exists(file_pdf) && !file.remove(file_pdf))
-      warning("Could not replace ", file_pdf, " (open in a viewer?); the new file is ", file_tmp, call. = FALSE)
-    else { file.rename(file_tmp, file_pdf)
-           message("Monthly PDF written: ", file_pdf, " (", length(page_chunks), " pages, ", round(file.size(file_pdf) / 1e6, 1), " MB)") }
-  }
-  coast <- coast_full
+  if (write_pdf(file_pdf, width = page_w, height = page_h, function() for (ch in page_chunks) draw_month_page(ch)))
+    message("Monthly PDF written: ", file_pdf, " (", length(page_chunks), " pages, ", round(file.size(file_pdf) / 1e6, 1), " MB)")
 }
+coast <- coast_full
 cat("\nStep 2 done.\n")
