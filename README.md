@@ -29,7 +29,7 @@ Developed as part of the *Operationalizing the West Florida Shelf ecosystem mode
                               │                                          │
                               ▼                                          │
    VIIRS tifs  ─┐                                                        │
-   MODIS polys ─┼──► clip cascade (VIIRS > MODIS > buffered hulls)       │
+   MODIS polys ─┼──► clip cascade (VIIRS+nearshore > MODIS > hulls)      │
    buffered    ─┘            │                                           │
    hulls                     ▼                                           │
                        combined stack ──────► monthly ASCII ─────────────┘
@@ -48,6 +48,8 @@ Each step is one function in `scripts/`:
 | Clip predictions to hulls | `fn.clip_2_hulls` | `polygon_clipping_rt.R` |
 | Stack VIIRS tifs | `fn.viirs_tifs2stack` | `process_VIIRS.R` |
 | Clip predictions to VIIRS | `fn.clip_2_viirs` | `process_VIIRS.R` |
+| Nearshore set (VIIRS no-data mask, or within 5 km of the coast) | `fn.nearshore_mask` | `process_VIIRS.R` |
+| Add the hull footprint to the VIIRS clip inside that set (opt-in) | `fn.clip_2_hybrid` | `process_VIIRS.R` |
 | Clip predictions to MODIS nFLH | `fn.clip_2_modis` | `process_MODIS.R` |
 | Combine + write ASCII | `make_redtide_ascii` | `polygon_clipping_rt.R` |
 | Copy to Ecospace drivers (opt-in) | `export_to_ecospace` | `polygon_clipping_rt.R` |
@@ -57,10 +59,11 @@ Each step is one function in `scripts/`:
 Predicted cell concentrations from sdmTMB can extend across the entire shelf even when no bloom is actually present. The clipping step restricts the prediction to the actual bloom footprint for that month:
 
 - **VIIRS (2012–present)** — NOAA monthly red-tide probability rasters (0.1°). Where any cell is > 0, the prediction in that month is masked to those cells. This is the highest-confidence source.  These maps are developed by the [University of South Florida Optical Oceanography Laboratory](https://optics.marine.usf.edu/). See [Yao et al. (2023)](https://doi.org/10.1016/j.rse.2023.113833) and [Hu et al. (2015)](https://doi.org/10.3390/s150202873) for details.
+- **Nearshore hybrid for the VIIRS months (opt-in, `viirs_nearshore = "mask5"`)** — The VIIRS product carries no data in a 0 to about 5 km band along the coast and in the bays (the first row of 0.1° cells), where about two thirds of the FWC samples of every abundance class are taken, so in-situ blooms there never reach a VIIRS-clipped map (issue #8). With `"mask5"` the pipeline builds a static nearshore set, the water cells whose 0.1° VIIRS cell is in that no-data mask or whose centre lies within 5 km of the Natural Earth 1:10m coastline (`data/coastline/`; 136 cells, 10,227 km² at 5 arcmin), and inside it takes the cell-wise maximum of the VIIRS-clipped and hull-clipped maps; outside it the VIIRS result stands, zeros included. So the sample-based footprint is added nearshore and never removes a VIIRS detection. The default `"none"` leaves the VIIRS maps as they are. Decision in issue #8, implementation and checks in issue #11 (`docs/issue11_nearshore-hybrid-pipeline/`).
 - **MODIS nFLH (2003–2025)** — Normalized fluorescence-line-height rasters thresholded at ≥ 0.02 mW cm⁻² μm⁻¹ sr⁻¹ (per [Hu et al. 2005](https://doi.org/10.1016/j.rse.2005.05.013), updated calibration via Chuanmin Hu, pers. comm.) are dissolved into polygons used as the clipping mask when VIIRS is unavailable.
 - **Buffered concave hulls (all years, fallback)** — For months with no satellite coverage, positive in-situ observations define the bloom footprint. Positives are grouped by single-linkage clustering: two samples share a footprint when a chain of positives connects them with every link shorter than `hull_link_km` (default 75 km). Each cluster with at least `hull_min_pts` (4) distinct locations gets a concave hull; smaller clusters get the points themselves; every footprint is buffered by `hull_buffer_km` (10 km). Every month with at least one positive gets a footprint. The rule is deterministic. Each run writes `out/<res>min/sdm/hull_diagnostics.csv` (one row per month: positives, clusters, footprint area and span) and the run log flags months whose largest footprint spans more than `hull_warn_span_km` (300 km), counting only months the hull path actually serves (no VIIRS or MODIS coverage); a flag is a prompt to look at the panel, not a failure.
 
-For each (year, month), the combined stack picks **VIIRS if available**, otherwise **MODIS**, otherwise **the buffered-hull-clipped prediction**. The decision per month is logged to `out/<res>min/clipped/clipping_source.csv`.
+For each (year, month), the combined stack picks **VIIRS if available** (with the nearshore hull added inside the set when `viirs_nearshore = "mask5"`, recorded as `hybrid`), otherwise **MODIS**, otherwise **the buffered-hull-clipped prediction**. The decision per month is logged to `out/<res>min/clipped/clipping_source.csv` (`use`, plus `hybrid` and `hybrid_changed`, which say whether the hybrid served the month and whether it differs from the plain VIIRS clip there).
 
 ## Quick start
 
@@ -160,6 +163,8 @@ All knobs live in the `cfg` list at the top of `run_redtide_maps.R`. To change o
 | `hull_min_pts` | `4L` | Distinct locations a cluster needs for a concave hull; smaller clusters get buffered points. |
 | `hull_concavity` | `2` | `concaveman` concavity for every hull (lower = tighter). |
 | `hull_warn_span_km` | `300` | Months whose largest footprint spans more than this are flagged in `sdm/hull_diagnostics.csv` and the run log. |
+| `viirs_nearshore` | `"none"` | Nearshore hybrid for the VIIRS months. `"none"` uses the VIIRS-clipped map as it is; `"mask5"` adds the buffered-hull footprint inside the nearshore set (VIIRS no-data mask, or within 5 km of the coast), taking the cell-wise maximum there. The run log names the rule and the months it changed. |
+| `fwc_refresh` | `TRUE` | Set `FALSE` to reuse the local merged FWC CSV without querying FWC, so a rerun sees exactly the samples of the previous run (reproducibility checks). A first run still pulls everything. |
 
 ## Inputs
 
@@ -169,6 +174,7 @@ All knobs live in the `cfg` list at the top of `run_redtide_maps.R`. To change o
 - `MODIS/FLH polys *.Rdata` — pre-built nFLH-threshold polygons (2002-present).
 - `template rasters/depth *.asc`, `excl layer *.asc` — depth + exclusion templates for 4, 5, 6, 10, and 15-minute resolutions.
 - `data/FWC HAB API query urls.txt` — list of 6 FWC ArcGIS REST endpoints.
+- `data/coastline/ne_10m_coastline_wfs.gpkg` — Natural Earth 1:10m coastline cropped to the grid box, used by the nearshore set (source and date in the README beside it).
 
 **Pulled fresh from the FWC ArcGIS REST API at every run** (not committed):
 
@@ -192,9 +198,11 @@ out/<res>min/
     *_clipped_hull.grd      # predictions masked to buffered hulls
     *_clipped_viirs.grd     # predictions masked to VIIRS positive cells
     *_clipped_modis.grd     # predictions masked to MODIS nFLH polygons
-    clipping_source.csv     # per-month decision: VIIRS / MODIS / hull
+    nearshore_mask_mask5.grd  # the nearshore set (1 nearshore, 0 other water); only with viirs_nearshore = "mask5"
+    *_clipped_hybrid.grd    # VIIRS clip with the hull added inside the set; only with "mask5"
+    clipping_source.csv     # per-month decision: hybrid / VIIRS / MODIS / hull, and whether the hybrid changed the month
   combined/
-    *_clipped_combined.grd  # final merged stack (VIIRS > MODIS > hull)
+    *_clipped_combined.grd  # final merged stack (hybrid > VIIRS > MODIS > hull)
   ecospace_ascii/
     sdmTMB_log__<yyyymm>.asc  # one ASCII per month — the deliverable
   plots/
