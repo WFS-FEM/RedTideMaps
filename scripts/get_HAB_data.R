@@ -101,8 +101,12 @@
 #' @param urls_file Path to the URL list (one endpoint per line, blanks
 #'   and '#' comments ignored).
 #' @param force_full If TRUE, ignore any local CSV and do a full pull.
+#' @param refresh If FALSE and a local CSV exists, use it as it is and do
+#'   not query FWC at all (for reproducing a run); the merged file is
+#'   rewritten unchanged. Ignored on a first run or with `force_full`.
 #' @return list(csv, rdata) with the written file paths.
-fn.get_fwc_data <- function(dir_data, urls_file, force_full = FALSE) {
+fn.get_fwc_data <- function(dir_data, urls_file, force_full = FALSE,
+                            refresh = TRUE) {
   if (!file.exists(urls_file))
     stop("URL file not found: ", urls_file)
   urls <- trimws(readLines(urls_file, warn = FALSE))
@@ -122,7 +126,10 @@ fn.get_fwc_data <- function(dir_data, urls_file, force_full = FALSE) {
     message("Last SAMPLE_DATE in local data: ", last_date)
 
     recent_urls <- urls[grepl("Recent_", urls)]
-    if (length(recent_urls) == 0) {
+    if (!isTRUE(refresh)) {
+      message("refresh = FALSE: using the local file as it is (no query to FWC).")
+      hab_out <- hab_existing[, .FWC_COLS, drop = FALSE]
+    } else if (length(recent_urls) == 0) {
       message("No Recent_ endpoint found in URLs; nothing to update.")
       hab_out <- hab_existing
     } else {

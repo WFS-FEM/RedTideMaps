@@ -37,3 +37,19 @@
 # cfg$hull_min_pts      <- 4L
 # cfg$hull_concavity    <- 2
 # cfg$hull_warn_span_km <- 300
+
+
+# Nearshore hybrid for the VIIRS months (issue #11). The VIIRS product has no
+# data in a 0 to 5 km band along the coast and in the bays, where most FWC
+# samples are taken. "mask5" adds the buffered-hull footprint to the
+# VIIRS-clipped map inside that set (cells in the VIIRS no-data mask, or
+# within 5 km of the coast; 136 cells at 5 arcmin): inside it a cell takes
+# max(VIIRS, hull), outside it the VIIRS result stands, zeros included.
+# "none" (default) leaves the VIIRS-clipped map as it is.
+# cfg$viirs_nearshore <- "mask5"
+
+
+# Reuse the local merged FWC CSV in cell_counts/ without querying FWC, so a
+# rerun sees exactly the samples of the previous run (for reproducing a run;
+# a first run still pulls everything).
+# cfg$fwc_refresh <- FALSE
