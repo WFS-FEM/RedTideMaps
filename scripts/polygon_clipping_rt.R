@@ -6,8 +6,9 @@
 #'     observations. Used for all months (fallback). Also writes
 #'     hull_diagnostics.csv.
 #'   - fn.clip_2_hulls(): mask the predicted stack with those hulls.
-#'   - make_redtide_ascii(): merge hull/MODIS/VIIRS-clipped stacks into a
-#'     single combined stack (VIIRS > MODIS > hulls by preference)
+#'   - make_redtide_ascii(): merge hull/MODIS/VIIRS-clipped stacks (and the
+#'     VIIRS + hull hybrid stack when the nearshore rule is on) into a
+#'     single combined stack (hybrid > VIIRS > MODIS > hulls by preference)
 #'     and write monthly ASCII files for Ecospace.
 #'
 #' fn.plot_redtide_stack() renders the combined stack to a PDF.
@@ -210,14 +211,24 @@ fn.clip_2_hulls <- function(file_pred, file_polys, file_depth, dir_out) {
 #' Combine hull/MODIS/VIIRS-clipped stacks into one stack and write the
 #' per-month ASCII files for Ecospace.
 #'
-#' Preference rule per month: VIIRS > MODIS > hull (i.e. observation-based
-#' satellite clipping is preferred where available). Function takes the
+#' Preference rule per month: hybrid > VIIRS > MODIS > hull (i.e.
+#' observation-based satellite clipping is preferred where available; the
+#' hybrid is the VIIRS-clipped layer with the hull footprint added inside
+#' the nearshore set, fn.clip_2_hybrid(), and exists only for VIIRS months
+#' and only when cfg$viirs_nearshore is not "none"). Function takes the
 #' clipped-stack paths explicitly so it can't pick up stale files from
 #' prior runs.
+#'
+#' Writes `clipping_source.csv` beside the hull stack: one row per month
+#' with `pred`, `viirs`, `modis`, `hybrid` (which stacks hold the month),
+#' `hybrid_changed` (TRUE where the hybrid layer differs from the
+#' VIIRS-clipped one; FALSE elsewhere, so all FALSE without the hybrid)
+#' and `use` (the stack the month is written from).
 #'
 #' @param file_hull  Path (without ext) of the hull-clipped stack. Required.
 #' @param file_viirs Path (without ext) of the VIIRS-clipped stack, or NULL.
 #' @param file_modis Path (without ext) of the MODIS-clipped stack, or NULL.
+#' @param file_hybrid Path (without ext) of the hybrid stack, or NULL.
 #' @param dir_ascii  Directory to write monthly ASCII files into.
 #' @param dir_combined Directory to write the combined .grd stack into.
 #' @param file_depth Path to depth ASCII (ocean/land mask).
@@ -226,6 +237,7 @@ fn.clip_2_hulls <- function(file_pred, file_polys, file_depth, dir_out) {
 make_redtide_ascii <- function(file_hull,
                                file_viirs   = NULL,
                                file_modis   = NULL,
+                               file_hybrid  = NULL,
                                dir_ascii,
                                dir_combined,
                                file_depth,
@@ -233,21 +245,28 @@ make_redtide_ascii <- function(file_hull,
   if (is.null(file_hull) || !any(file.exists(paste0(file_hull, c(".grd",".gri")))))
     stop("file_hull is required and must point to an existing .grd stack.")
   depth <- raster(file_depth)
+  land  <- is.na(values(depth))
 
-  hull_stack  <- stack(file_hull)
-  viirs_stack <- if (!is.null(file_viirs)) stack(file_viirs) else stack()
-  modis_stack <- if (!is.null(file_modis)) stack(file_modis) else stack()
+  hull_stack   <- stack(file_hull)
+  viirs_stack  <- if (!is.null(file_viirs))  stack(file_viirs)  else stack()
+  modis_stack  <- if (!is.null(file_modis))  stack(file_modis)  else stack()
+  hybrid_stack <- if (!is.null(file_hybrid)) stack(file_hybrid) else stack()
 
   clip_source <- data.frame(yrmo = sort(unique(c(names(hull_stack),
                                                  names(viirs_stack),
-                                                 names(modis_stack)))))
-  clip_source$pred  <- clip_source$yrmo %in% names(hull_stack)
-  clip_source$viirs <- clip_source$yrmo %in% names(viirs_stack)
-  clip_source$modis <- clip_source$yrmo %in% names(modis_stack)
-  clip_source$use   <- ifelse(clip_source$viirs, "viirs",
-                       ifelse(clip_source$modis, "modis", "pred"))
-  write.csv(clip_source, file.path(dirname(file_hull), "clipping_source.csv"),
-            row.names = FALSE)
+                                                 names(modis_stack),
+                                                 names(hybrid_stack)))))
+  clip_source$pred   <- clip_source$yrmo %in% names(hull_stack)
+  clip_source$viirs  <- clip_source$yrmo %in% names(viirs_stack)
+  clip_source$modis  <- clip_source$yrmo %in% names(modis_stack)
+  clip_source$hybrid <- clip_source$yrmo %in% names(hybrid_stack)
+  clip_source$hybrid_changed <- FALSE
+  clip_source$use    <- ifelse(clip_source$hybrid, "hybrid",
+                        ifelse(clip_source$viirs, "viirs",
+                        ifelse(clip_source$modis, "modis", "pred")))
+
+  # The normalisation every written layer gets: NA -> 0 on water, land -> NA.
+  norm_v <- function(v) { v[is.na(v)] <- 0; v[land] <- NA; v }
 
   full_stack <- stack()
   for (i in seq_len(nrow(clip_source))) {
@@ -256,13 +275,21 @@ make_redtide_ascii <- function(file_hull,
     message(yrmo_i, " -> ", src_i)
 
     raster_i <- switch(src_i,
-                       pred  = hull_stack[[which(names(hull_stack) == yrmo_i)]],
-                       modis = modis_stack[[which(names(modis_stack) == yrmo_i)]],
-                       viirs = viirs_stack[[which(names(viirs_stack) == yrmo_i)]])
+                       pred   = hull_stack[[which(names(hull_stack) == yrmo_i)]],
+                       modis  = modis_stack[[which(names(modis_stack) == yrmo_i)]],
+                       viirs  = viirs_stack[[which(names(viirs_stack) == yrmo_i)]],
+                       hybrid = hybrid_stack[[which(names(hybrid_stack) == yrmo_i)]])
+    if (src_i == "hybrid" && clip_source$viirs[i]) {
+      v_i <- viirs_stack[[which(names(viirs_stack) == yrmo_i)]]
+      clip_source$hybrid_changed[i] <-
+        any(norm_v(values(raster_i)) != norm_v(values(v_i)), na.rm = TRUE)
+    }
     raster_i[is.na(raster_i)] <- 0
     raster_i[is.na(depth)]    <- NA
     full_stack <- addLayer(full_stack, raster_i)
   }
+  write.csv(clip_source, file.path(dirname(file_hull), "clipping_source.csv"),
+            row.names = FALSE)
 
   message("saving rasters and ASCII files")
   combined_path <- file.path(dir_combined,
