@@ -175,8 +175,11 @@ metrics_of <- function(M) data.frame(
   n_cells_fp = colSums(!is.na(M) & M > 0), max_cells = apply(M, 2, max, na.rm = TRUE),
   mean_cells_water = colMeans(M[water, , drop = FALSE]), stringsAsFactors = FALSE)
 md_table <- function(df, digits = 3) {
-  cell <- function(x) if (is.numeric(x)) ifelse(is.na(x), "", fmt_n(round(x, digits))) else ifelse(is.na(x), "", as.character(x))
-  body <- do.call(cbind, lapply(df, cell))
+  cell <- function(x, nm) {
+    if (!is.numeric(x) || nm %in% c("year", "month", "yrmo", "cell")) return(ifelse(is.na(x), "", as.character(x)))
+    ifelse(is.na(x), "", format(round(x, digits), big.mark = ",", trim = TRUE, scientific = FALSE, drop0trailing = TRUE))
+  }
+  body <- do.call(cbind, Map(cell, df, names(df)))
   if (is.null(dim(body))) body <- matrix(body, nrow = 1)
   c(paste0("| ", paste(names(df), collapse = " | "), " |"), paste0("|", paste(rep("---", ncol(df)), collapse = "|"), "|"),
     apply(body, 1, function(r) paste0("| ", paste(r, collapse = " | "), " |")))
@@ -334,20 +337,26 @@ if (stage == "mask5") {
                    extra = sprintf("inside: %d / %d", samples_of(Hm[, k, drop = FALSE], pw[pw$yrmo == ym, ], ym)$in_ge1e4, s_v$n_ge1e4[k]))
   }
   pages <- split(headline, ceiling(seq_along(headline) / fig1_per_page))
+  draw_fig1_page <- function(i) {
+    par(mfrow = c(fig1_per_page, 4), mar = c(0.4, 0.5, 1.5, 0.5), oma = c(0.3, 0, 4.4, 0))
+    for (ym in pages[[i]]) draw_row(ym)
+    mtext(sprintf("Issue #11: the %d headline months of #6 before and after the nearshore hybrid (page %d of %d): samples | VIIRS-clipped (the 6 Oct 2026 map) | hybrid mask5 | hull-clipped",
+                  length(headline), i, length(pages)), outer = TRUE, cex = 0.9, font = 2, line = 2.9)
+    mtext("km2 in the titles = bloom area >= 10,000 cells/L (+ = added by the hybrid). Orange = cells the hybrid changed. Purple shading in the hull column = the mask5 set (VIIRS no-data mask or within 5 km of the coast).",
+          outer = TRUE, cex = 0.7, line = 1.6)
+    mtext("Samples: fill = FWC class (viridis, light = background to dark = > 1,000,000 cells/L), border = VIIRS cell that month (red masked, black valid with no detection, blue valid with a detection). Maps: pipeline palette, white below 10,000 cells/L.",
+          outer = TRUE, cex = 0.7, line = 0.5)
+  }
+  fig1_w <- 10; fig1_h <- 2.4 * fig1_per_page + 1.3
   file_fig1 <- file.path(dir_fig, "fig1_headline_before_after_issue11.pdf")
-  ok_pdf <- write_pdf(file_fig1, width = 10, height = 2.4 * fig1_per_page + 1.3, function() {
-    for (i in seq_along(pages)) {
-      par(mfrow = c(fig1_per_page, 4), mar = c(0.4, 0.5, 1.5, 0.5), oma = c(0.3, 0, 4.4, 0))
-      for (ym in pages[[i]]) draw_row(ym)
-      mtext(sprintf("Issue #11: the %d headline months of #6 before and after the nearshore hybrid (page %d of %d): samples | VIIRS-clipped (the 6 Oct 2026 map) | hybrid mask5 | hull-clipped",
-                    length(headline), i, length(pages)), outer = TRUE, cex = 0.9, font = 2, line = 2.9)
-      mtext("km2 in the titles = bloom area >= 10,000 cells/L (+ = added by the hybrid). Orange = cells the hybrid changed. Purple shading in the hull column = the mask5 set (VIIRS no-data mask or within 5 km of the coast).",
-            outer = TRUE, cex = 0.7, line = 1.6)
-      mtext("Samples: fill = FWC class (viridis, light = background to dark = > 1,000,000 cells/L), border = VIIRS cell that month (red masked, black valid with no detection, blue valid with a detection). Maps: pipeline palette, white below 10,000 cells/L.",
-            outer = TRUE, cex = 0.7, line = 0.5)
-    }
-  })
+  ok_pdf <- write_pdf(file_fig1, width = fig1_w, height = fig1_h, function() for (i in seq_along(pages)) draw_fig1_page(i))
   if (ok_pdf) message("Fig 1 written: ", file_fig1)
+  # Optional PNG preview of the pages (RT_QA_PNG_DIR=<folder>), for a quick look without a PDF viewer.
+  png_dir <- Sys.getenv("RT_QA_PNG_DIR", "")
+  if (nzchar(png_dir)) for (i in seq_along(pages)) {
+    png(file.path(png_dir, sprintf("fig1_headline_p%d.png", i)), width = fig1_w, height = fig1_h, units = "in", res = 70)
+    draw_fig1_page(i); invisible(dev.off())
+  }
   message("Stage mask5 OK: ", sum(d$changed), " ASCII files changed, all hybrid months; set ", sum(set), " cells; prototype matched in every month.")
 }
 
@@ -491,15 +500,15 @@ if (stage == "compare") {
           "", "## Totals by month group (`tables/groups_issue11.csv`)", "",
           md_table(grp[, c("group", "n_months", "months_changed", "a1e4_km2_before", "a1e4_km2_after", "a1e4_ratio", "a1e5_km2_before", "a1e5_km2_after",
                            "months_with_bloom_before", "months_with_bloom_after", "mean_cells_water_before", "mean_cells_water_after",
-                           "n_ge1e4", "share_ge1e4_before", "share_ge1e4_after", "n_high", "share_high_before", "share_high_after")], 1),
+                           "n_ge1e4", "share_ge1e4_before", "share_ge1e4_after", "n_high", "share_high_before", "share_high_after")] |> round_cols(), 3),
           "", "## By year (`tables/annual_issue11.csv`; km2 summed over the months of the year)", "",
           md_table(ann[, c("year", "months_changed", "viirs_zero_months", "a1e4_km2_before", "a1e4_km2_after", "a1e4_ratio", "months_with_bloom_before", "months_with_bloom_after",
-                           "mean_cells_water_before", "mean_cells_water_after", "n_ge1e4", "in_ge1e4_before", "in_ge1e4_after", "n_high", "in_high_before", "in_high_after")], 1),
+                           "mean_cells_water_before", "mean_cells_water_after", "n_ge1e4", "in_ge1e4_before", "in_ge1e4_after", "n_high", "in_high_before", "in_high_after")] |> round_cols(), 3),
           "", "## By calendar month (`tables/climatology_issue11.csv`; means over 2012-2024)", "",
-          md_table(clim, 1),
+          md_table(round_cols(clim), 3),
           "", sprintf("## The %d headline months (`tables/months_issue11.csv`)", length(headline)), "",
           md_table(mon[mon$headline, c("yrmo", "a1e4_km2_before", "a1e4_km2_after", "a1e5_km2_before", "a1e5_km2_after", "mean_cells_water_before", "mean_cells_water_after",
-                                        "n_ge1e4", "in_ge1e4_before", "in_ge1e4_after", "n_high", "in_high_before", "in_high_after", "cells_changed")], 1),
+                                        "n_ge1e4", "in_ge1e4_before", "in_ge1e4_after", "n_high", "in_high_before", "in_high_after", "cells_changed")] |> round_cols(), 3),
           "", "## Bloom months per cell (`tables/bloom_months_per_cell_issue11.csv`)", "",
           sprintf("- %d water cells reach 10,000 cells/L in at least one VIIRS month before, %d after; %d cells gain months (1 to %d; median %d), none lose any.",
                   sum(nB > 0, na.rm = TRUE), sum(nA > 0, na.rm = TRUE), sum(nA > nB, na.rm = TRUE), max(nA - nB, na.rm = TRUE), as.integer(median((nA - nB)[which(nA > nB)]))),
