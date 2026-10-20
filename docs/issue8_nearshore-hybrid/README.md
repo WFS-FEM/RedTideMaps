@@ -23,7 +23,7 @@ Rscript docs/issue8_nearshore-hybrid/check_nearshore_issue8.R   # ~15 s; interne
 | `figures/fig3_headline_months.png` | the 16 headline months of #6: samples by status, the VIIRS layer, the hull-clipped map with the mask, and the part of it inside the mask |
 | `figures/fig4_monthly_status.png` | 2012-2024, low / medium / high samples per month in masked and in valid cells, with the all-zero VIIRS months shaded |
 | `comments/nearshore_summary.md` | every table above in markdown, as written by the script |
-| `coastline/ne_10m_coastline_wfs.gpkg` | Natural Earth 1:10m coastline cropped to the grid box (downloaded once by the script; source and date in `coastline/README.md`) |
+| `data/coastline/ne_10m_coastline_wfs.gpkg` (repo root; moved out of this folder by issue #11, where it became a pipeline input) | Natural Earth 1:10m coastline cropped to the grid box (downloaded once by the script; source and date in `data/coastline/README.md`) |
 
 ### Definitions
 
