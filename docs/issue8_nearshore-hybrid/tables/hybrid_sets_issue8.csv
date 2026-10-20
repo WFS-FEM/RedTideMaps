@@ -1,0 +1,6 @@
+"set","n_cells","km2","share_of_domain_cells","n_in_mask","share_in_mask","mask_cells_not_in_set","median_depth_m","max_depth_m","median_dist_km","max_dist_km","overlap_mask","overlap_coast2","overlap_coast5","overlap_mask5","overlap_coast10","n_Panhandle","n_Big_Bend","n_Tampa_Bay_to_Charlotte_Harbor","n_Lee_County_to_the_Keys"
+"mask",84,6316,0.022,84,1,0,2.3,18.1,1.8,6.3,84,44,80,84,84,34,7,29,14
+"coast2",64,4812,0.017,44,0.69,40,2.1,17.5,0.9,1.9,44,64,64,64,64,28,6,16,14
+"coast5",132,9922,0.035,80,0.61,4,2.9,18.1,2.1,5,80,64,132,132,132,57,13,36,26
+"mask5",136,10227,0.036,84,0.62,0,2.9,18.1,2.1,6.3,84,64,132,136,136,57,13,39,27
+"coast10",213,16015,0.056,84,0.39,0,3.8,27,3.9,9.8,84,64,132,136,213,84,31,55,43
