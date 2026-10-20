@@ -1,0 +1,7 @@
+"group","n_months","months_changed","a1e4_km2_before","a1e4_km2_after","a1e4_ratio","a1e5_km2_before","a1e5_km2_after","months_with_bloom_before","months_with_bloom_after","mean_cells_water_before","mean_cells_water_after","n_ge1e4","share_ge1e4_before","share_ge1e4_after","n_high","share_high_before","share_high_after"
+"all 155 VIIRS months",155,121,776173,898477,1.16,427929,475626,58,75,6925.2,7628.8,8745,0.532,0.951,1168,0.637,0.985
+"the 58 zeroed months",58,58,0,21750,NA,0,5805,0,16,0,137,904,0,0.855,32,0,0.875
+"the 16 headline months",16,16,0,21750,NA,0,5805,0,16,0,479.5,867,0,0.859,32,0,0.875
+"the 60 VIIRS-positive fitted months of #6",60,60,776173,876727,1.13,427929,469821,58,59,17889.9,19575,7841,0.594,0.962,1136,0.655,0.988
+"the 66 VIIRS-positive months",66,63,776173,876727,1.13,427929,469821,58,59,16263.7,17795.7,7841,0.594,0.962,1136,0.655,0.988
+"the 89 VIIRS all-zero months",89,58,0,21750,NA,0,5805,0,16,0,89.3,904,0,0.855,32,0,0.875
