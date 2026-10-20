@@ -154,6 +154,8 @@ Behind a config key, default = today's behaviour, so an unchanged config reprodu
 | D5 | MODIS months | in scope / follow-up | follow-up issue |
 | D6 | coastline source if `coast` is used anywhere | Natural Earth 1:10m / NOAA GSHHG / template land edge | Natural Earth 1:10m via `rnaturalearth::ne_download()`, cropped and committed; the template edge (5 arcmin, about 9 km) is too coarse |
 
+**Decided on 20 October 2026** (Holden, after the step-2 and step-2b results and the meeting with Yao; recorded in the #8 decision comment): D1 = `mask5`, the VIIRS no-data mask or any cell within 5 km of the coastline (`mask` and `coast10` stay in the prototype as the lower and upper bounds); D2 = the hulls as the pipeline builds them (every positive sample, no count threshold); D3 = all VIIRS months; D4 = VIIRS valid zeros stand outside the nearshore set, the hull applies inside it whether the cell is masked or valid, and the full hull fallback for all-zero months (#6 option b) is dropped, since the nearshore hybrid covers what it was for; D5 = follow-up issue; D6 = Natural Earth 1:10m, since the 5 km band needs it.
+
 ## 8. GitHub workflow and checkpoints
 
 - Branch `8-explore-nearshore`, draft PR against `main`, small commits split by type (`docs:` this plan and the issue README; `qa:` the script and its outputs; `feat:` the pipeline functions; `config:` the keys and example; `test:` the MD5 and acceptance checks). Each checkpoint is one comment on #8 with the tables and figures, and work pauses there for Holden's reply.
