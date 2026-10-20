@@ -1,4 +1,4 @@
-#' QA for issue #8, step 2: hybrid VIIRS + hull footprints for four nearshore sets.
+#' QA for issue #8, step 2: hybrid VIIRS + hull footprints for five nearshore sets.
 #'
 #' For every VIIRS month (2012-01 to 2024-12, 155 months) builds, from the clipped
 #' stacks of the last pipeline run, the footprint a hybrid rule would give:
@@ -8,10 +8,11 @@
 #' i.e. outside the nearshore set N the VIIRS result stands (including zeros);
 #' inside N the buffered-hull footprint (the pipeline's own hull method, every
 #' positive sample, 75 km linkage, 10 km buffer) is added to it and never removes
-#' a VIIRS detection. Four sets N on the 5-arcmin Gulf-domain water cells:
+#' a VIIRS detection. Five sets N on the 5-arcmin Gulf-domain water cells:
 #'   mask     cells whose 0.1-degree VIIRS cell is in the static no-data mask
 #'   coast2   cells whose centre is within 2 km of the Natural Earth 1:10m coastline
 #'   coast5   ... within 5 km
+#'   mask5    mask or coast5 (every masked cell, plus the 2 to 5 km strip; added 20 Oct 2026)
 #'   coast10  ... within 10 km
 #' Comparators: `current` (the final combined map) and `hull` (the hull-clipped map,
 #' what a full hull fallback would give). Nothing is refit or re-clipped.
@@ -23,12 +24,12 @@
 #'   RT_QA_MONTHLY_PDF=0  skip the monthly PDF
 #'
 #' Output (docs/issue8_nearshore-hybrid/):
-#'   tables/hybrid_sets_issue8.csv          the four N sets: cells, km2, overlaps, depth, distance, region
+#'   tables/hybrid_sets_issue8.csv          the five N sets: cells, km2, overlaps, depth, distance, region
 #'   tables/hybrid_months_long_issue8.csv   155 months x 6 variants: areas, cells added, samples inside
 #'   tables/hybrid_months_issue8.csv        the same, wide, one row per month
 #'   tables/hybrid_groups_issue8.csv        totals by month group x variant
-#'   figures/fig5_nearshore_sets.png        the four N sets on the map
-#'   figures/fig6_hybrid_headline.pdf       headline, low_vs_hull and control months: 7 panels per month, 10 months per page
+#'   figures/fig5_nearshore_sets.png        the five N sets on the map
+#'   figures/fig6_hybrid_headline.pdf       headline, low_vs_hull and control months: 8 panels per month, 10 months per page
 #'   figures/fig7_hybrid_area_2012-2024.png bloom area and sample coverage per month by variant
 #'   hybrid_months_issue8.pdf               all 155 months, 12 rows (a calendar year) per page
 #'   comments/hybrid_summary.md             the tables in markdown, for #8
@@ -60,8 +61,8 @@ message("Step 2: hybrid footprints")
 
 # Parameters ---------------------------------------------------------------
 coast_km  <- c(coast2 = 2, coast5 = 5, coast10 = 10)   # distance-to-coast sets (km)
-variants  <- c("current", "mask", "coast2", "coast5", "coast10", "hull")
-hybrids   <- variants[2:5]
+variants  <- c("current", "mask", "coast2", "coast5", "mask5", "coast10", "hull")   # mask5 = mask or within 5 km
+hybrids   <- variants[2:6]
 lowhull_months <- c("201801", "202104")   # VIIRS-positive months flagged low_vs_hull in #6
 # Control months: VIIRS-positive fitted months of #6 with no flag, at least 80% of the
 # water samples >= 10,000 cells/L inside the current footprint and a hull ratio within
@@ -72,15 +73,17 @@ fig6_per_page  <- 10L                      # fig6 PDF months per page
 coast_tol_m    <- 500                      # coastline simplification for the two PDFs (fig6, monthly)
 monthly_pdf    <- !identical(Sys.getenv("RT_QA_MONTHLY_PDF"), "0")
 expected2 <- list(n_months = 155L,
-                  n_sets = c(mask = 84L, coast2 = 64L, coast5 = 132L, coast10 = 213L),   # from mask_band_issue8.csv (step 1)
+                  n_sets = c(mask = 84L, coast2 = 64L, coast5 = 132L, mask5 = 136L, coast10 = 213L),   # from mask_band_issue8.csv (step 1); mask5 = 84 + 52
                   n_sel3 = 60L, n_viirs_pos = 66L, n_viirs_zero = 89L,
                   control = c("201408", "202109"))
 
-# The four nearshore sets ----------------------------------------------------------
+# The five nearshore sets ----------------------------------------------------------
 N <- c(list(mask = domain & masked5_static),
        lapply(coast_km, function(km) domain & !is.na(dist5) & dist5 <= km))
+N$mask5 <- N$mask | N$coast5                        # the mask, or within 5 km of the coast
+N <- N[hybrids]
 stopifnot(identical(names(N), hybrids),
-          all(N$coast2 <= N$coast5), all(N$coast5 <= N$coast10),      # nested
+          all(N$coast2 <= N$coast5), all(N$coast5 <= N$mask5), all(N$mask <= N$mask5), all(N$mask5 <= N$coast10),   # nested
           all(vapply(N, function(s) all(domain[s]), logical(1))))      # water, Gulf domain only
 n_sets <- vapply(N, sum, integer(1))
 if (!identical(n_sets, expected2$n_sets))
@@ -101,7 +104,7 @@ sets_tab <- do.call(rbind, lapply(hybrids, function(k) {
 }))
 write.csv(sets_tab, file.path(dir_tab, "hybrid_sets_issue8.csv"), row.names = FALSE)
 
-# The six variant maps (cells x months) ----------------------------------------------
+# The seven variant maps (cells x months) --------------------------------------------
 stopifnot(identical(months, colnames(Vr)), length(months) == expected2$n_months, !("202212" %in% months),
           all(months %in% colnames(H)), all(months %in% colnames(Fm)),
           identical(sort(months), sort(tab6$yrmo[tab6$use == "viirs"])))
@@ -206,8 +209,8 @@ stopifnot(all(cur$n_ge1e4 == tab6m$n_pos_1e4_water), all(cur$in_ge1e4 == tab6m$n
 stopifnot(all(long$removed_cells[long$variant %in% hybrids] == 0),
           all(long$added_cells[long$variant == "current"] == 0))
 a4 <- function(k) long$a1e4_km2[long$variant == k]
-stopifnot(all(a4("current") <= a4("coast2")), all(a4("coast2") <= a4("coast5")), all(a4("coast5") <= a4("coast10")),
-          all(a4("current") <= a4("mask")))
+stopifnot(all(a4("current") <= a4("coast2")), all(a4("coast2") <= a4("coast5")), all(a4("coast5") <= a4("mask5")),
+          all(a4("mask5") <= a4("coast10")), all(a4("current") <= a4("mask")), all(a4("mask") <= a4("mask5")))
 stopifnot(length(sel3) == expected2$n_sel3, length(viirs_pos) == expected2$n_viirs_pos, length(viirs_zero) == expected2$n_viirs_zero,
           all(lowhull_months %in% months), all(tab6$flag_low_vs_hull[match(lowhull_months, tab6$yrmo)] %in% TRUE),
           all(control_months %in% sel3), length(zeroed) == 58L, length(headline) == 16L)
@@ -275,10 +278,12 @@ hdr2 <- c(
   sprintf("Produced by `docs/issue8_nearshore-hybrid/hybrid_nearshore_issue8.R` from the clipped stacks of the 6 October 2026 run and the step-1 objects. For each of the %d VIIRS months and each nearshore set N, `hybrid_N = max(viirs_clipped, hull_clipped * [cell in N])`: outside N the VIIRS result stands, zeros included; inside N the hull footprint (the pipeline's hull method: every positive sample, 75 km linkage, 10 km buffer) is added and never removes a VIIRS detection. Comparators: `current` (the final map) and `hull` (the hull-clipped map, a full hull fallback). Bloom area is km2 of water cells at or above 10,000 cells/L (`a1e4`) or 100,000 cells/L (`a1e5`); `added` is area the variant adds to the current map, split by whether the 0.1-degree VIIRS cell is masked or valid that month; samples are water-cell samples whose 5-arcmin cell is non-zero in the variant.",
           length(months)),
   "",
-  "## The four nearshore sets (`tables/hybrid_sets_issue8.csv`)",
+  "## The five nearshore sets (`tables/hybrid_sets_issue8.csv`)",
+  "",
+  "`mask5` is the union of `mask` and `coast5`: every masked cell, plus the cells within 5 km of the coast.",
   "",
   md_table(sets_tab[, c("set", "n_cells", "km2", "share_in_mask", "mask_cells_not_in_set", "median_depth_m", "max_depth_m", "median_dist_km", "max_dist_km",
-                        "overlap_mask", "overlap_coast2", "overlap_coast5", "overlap_coast10")]),
+                        "overlap_mask", "overlap_coast2", "overlap_coast5", "overlap_mask5", "overlap_coast10")]),
   "",
   "## Totals by month group (`tables/hybrid_groups_issue8.csv`)",
   "")
@@ -286,15 +291,16 @@ grp_cols <- c("variant", "months_changed", "a1e4_km2", "a1e4_vs_hull", "a1e5_km2
               "removed_fp_km2", "n_ge1e4", "in_ge1e4", "share_ge1e4", "share_medium", "share_high")
 for (lab in names(groups)) hdr2 <- c(hdr2, paste0("### ", lab), "", md_table(grp[grp$group == lab, grp_cols], 3), "")
 hdr2 <- c(hdr2,
-  sprintf("Over all %d VIIRS months the `mask` rule changes %d months and adds %s km2 of bloom area (>= 10,000 cells/L), all of it in masked cells; `coast5` changes %d months and adds %s km2, of which %s km2 in VIIRS-valid cells; the share of water samples >= 10,000 cells/L inside the footprint goes from %d%% (current) to %d%% (mask), %d%% (coast2), %d%% (coast5), %d%% (coast10) and %d%% (hull). In the %d zeroed months the hybrids restore %d%% (mask), %d%% (coast2), %d%% (coast5) and %d%% (coast10) of the hull-clipped bloom area; in the %d VIIRS-positive fitted months of #6 they add %s / %s / %s / %s km2 against a current %s km2.",
+  sprintf("Over all %d VIIRS months the `mask` rule changes %d months and adds %s km2 of bloom area (>= 10,000 cells/L), all of it in masked cells; `coast5` changes %d months and adds %s km2, of which %s km2 in VIIRS-valid cells; `mask5` (mask or within 5 km) changes %d months and adds %s km2, of which %s km2 in VIIRS-valid cells; the share of water samples >= 10,000 cells/L inside the footprint goes from %d%% (current) to %d%% (mask), %d%% (coast2), %d%% (coast5), %d%% (mask5), %d%% (coast10) and %d%% (hull). In the %d zeroed months the hybrids restore %d%% (mask), %d%% (coast2), %d%% (coast5), %d%% (mask5) and %d%% (coast10) of the hull-clipped bloom area; in the %d VIIRS-positive fitted months of #6 they add %s / %s / %s / %s / %s km2 against a current %s km2.",
           length(months), pick(g_all, "mask", "months_changed"), fmt_n(pick(g_all, "mask", "added_1e4_km2")),
           pick(g_all, "coast5", "months_changed"), fmt_n(pick(g_all, "coast5", "added_1e4_km2")), fmt_n(pick(g_all, "coast5", "added_1e4_km2_valid")),
+          pick(g_all, "mask5", "months_changed"), fmt_n(pick(g_all, "mask5", "added_1e4_km2")), fmt_n(pick(g_all, "mask5", "added_1e4_km2_valid")),
           round(100 * pick(g_all, "current", "share_ge1e4")), round(100 * pick(g_all, "mask", "share_ge1e4")), round(100 * pick(g_all, "coast2", "share_ge1e4")),
-          round(100 * pick(g_all, "coast5", "share_ge1e4")), round(100 * pick(g_all, "coast10", "share_ge1e4")), round(100 * pick(g_all, "hull", "share_ge1e4")),
+          round(100 * pick(g_all, "coast5", "share_ge1e4")), round(100 * pick(g_all, "mask5", "share_ge1e4")), round(100 * pick(g_all, "coast10", "share_ge1e4")), round(100 * pick(g_all, "hull", "share_ge1e4")),
           length(zeroed), round(100 * pick(g_zero, "mask", "a1e4_vs_hull")), round(100 * pick(g_zero, "coast2", "a1e4_vs_hull")),
-          round(100 * pick(g_zero, "coast5", "a1e4_vs_hull")), round(100 * pick(g_zero, "coast10", "a1e4_vs_hull")),
+          round(100 * pick(g_zero, "coast5", "a1e4_vs_hull")), round(100 * pick(g_zero, "mask5", "a1e4_vs_hull")), round(100 * pick(g_zero, "coast10", "a1e4_vs_hull")),
           length(sel3), fmt_n(pick(g_pos, "mask", "added_1e4_km2")), fmt_n(pick(g_pos, "coast2", "added_1e4_km2")), fmt_n(pick(g_pos, "coast5", "added_1e4_km2")),
-          fmt_n(pick(g_pos, "coast10", "added_1e4_km2")), fmt_n(pick(g_pos, "current", "a1e4_km2"))),
+          fmt_n(pick(g_pos, "mask5", "added_1e4_km2")), fmt_n(pick(g_pos, "coast10", "added_1e4_km2")), fmt_n(pick(g_pos, "current", "a1e4_km2"))),
   "",
   sprintf("## The %d headline months, the two low_vs_hull months and the two control months (`tables/hybrid_months_issue8.csv`)", length(headline)),
   "",
@@ -309,7 +315,7 @@ hdr2 <- c(hdr2,
   "## Checks",
   "",
   "- Every hybrid equals the current map outside its set and the cell-wise maximum of the current and hull-clipped maps inside it; never below the current map, never above that maximum; an empty set reproduces the current map and the whole domain the full union.",
-  "- The sets are nested (coast2 in coast5 in coast10), so bloom areas are monotone; no hybrid removes a cell.",
+  "- The sets are nested (coast2 in coast5 in mask5 in coast10; mask in mask5), so bloom areas are monotone; no hybrid removes a cell.",
   "- Per-month water-sample counts by class equal the step-1 month table; the counts of samples >= 10,000 cells/L on water and inside the current footprint equal the #6 month table; the step-1 `in_final_fp` flag is reproduced.",
   sprintf("- Control months by the rule (no #6 flag, >= %d%% of the samples >= 10,000 cells/L inside, hull ratio %.2f to %.2f, the two highest shares): %s.",
           round(100 * control_rule$min_frac_in_fp), control_rule$hull_ratio[1], control_rule$hull_ratio[2], paste(control_months, collapse = ", ")),
@@ -346,9 +352,9 @@ draw_row <- function(ym, tag = "") {
                      extra = sprintf("inside: %d / %d; drops %s km2 of VIIRS fp", g$in_ge1e4, g$n_ge1e4, fmt_n(round(g$removed_fp_km2))))
 }
 
-# Fig 5: the four sets on the map.
-png(file.path(dir_fig, "fig5_nearshore_sets.png"), width = 14, height = 7.6, units = "in", res = 150)
-par(mfrow = c(2, 4), mar = c(2.5, 2.8, 2.6, 0.6), oma = c(0, 0, 2.2, 0))
+# Fig 5: the five sets on the map.
+png(file.path(dir_fig, "fig5_nearshore_sets.png"), width = 17, height = 7.6, units = "in", res = 150)
+par(mfrow = c(2, 5), mar = c(2.5, 2.8, 2.6, 0.6), oma = c(0, 0, 2.2, 0))
 set_col <- c("white", "orangered", "gold", "mediumpurple", "gray55")
 for (zoom in c(FALSE, TRUE)) for (k in hybrids) {
   s <- N[[k]]
@@ -364,12 +370,12 @@ for (zoom in c(FALSE, TRUE)) for (k in hybrids) {
                                    cex = 0.7, bg = "white", box.col = "gray60")
   box()
 }
-mtext("Nearshore sets handed to the hull: the VIIRS no-data mask, and the Gulf water cells within 2, 5 and 10 km of the coast (bottom row: zoom with the 0.1-degree VIIRS grid)",
+mtext("Nearshore sets handed to the hull: the VIIRS no-data mask, the Gulf water cells within 2, 5 and 10 km of the coast, and mask5 = mask or within 5 km (bottom row: zoom with the 0.1-degree VIIRS grid)",
       outer = TRUE, cex = 0.9, font = 2, line = 0.6)
 invisible(dev.off())
 
 # Fig 6 and the monthly PDF are vector output: the coastline is drawn simplified to
-# coast_tol_m (invisible at 7 panels per row) to keep the files small. draw_land()
+# coast_tol_m (invisible at 8 panels per row) to keep the files small. draw_land()
 # reads `coast` from the global environment; it is restored after the monthly PDF.
 coast_full <- coast
 coast <- suppressWarnings(sf::st_simplify(coast_full, dTolerance = coast_tol_m))
@@ -391,14 +397,14 @@ write_pdf <- function(file_pdf, width, height, draw) {
   invisible(TRUE)
 }
 
-# Fig 6: headline, low_vs_hull and control months, 7 panels per month, as a PDF
+# Fig 6: headline, low_vs_hull and control months, 8 panels per month, as a PDF
 # of fig6_per_page months per page.
 fig6_rows  <- show_months
 fig6_pages <- split(fig6_rows, ceiling(seq_along(fig6_rows) / fig6_per_page))
 draw_fig6_page <- function(ch, i) {
-  par(mfrow = c(fig6_per_page, 7), mar = c(0.4, 0.5, 1.5, 0.5), oma = c(0.3, 0, 4.2, 0))
+  par(mfrow = c(fig6_per_page, 8), mar = c(0.4, 0.5, 1.5, 0.5), oma = c(0.3, 0, 4.2, 0))
   for (ym in ch) draw_row(ym, paste0(" [", tag_of(ym), "]"))
-  mtext(sprintf("Hybrid footprints, %d headline months of #6 + two low_vs_hull + two control months (page %d of %d): samples | current | mask | coast2 | coast5 | coast10 | hull",
+  mtext(sprintf("Hybrid footprints, %d headline months of #6 + two low_vs_hull + two control months (page %d of %d): samples | current | mask | coast2 | coast5 | mask5 | coast10 | hull",
                 length(headline), i, length(fig6_pages)),
         outer = TRUE, cex = 0.95, font = 2, line = 2.8)
   mtext("km2 in the titles = bloom area >= 10,000 cells/L (+ = added to the current map). Orange = cells where the variant differs from the current map (hybrids: cells the hull adds; hull column: cells where the hull and VIIRS footprints differ).",
@@ -407,14 +413,14 @@ draw_fig6_page <- function(ch, i) {
         outer = TRUE, cex = 0.72, line = 0.4)
 }
 file_fig6 <- file.path(dir_fig, "fig6_hybrid_headline.pdf")
-if (write_pdf(file_fig6, width = 16, height = 2.4 * fig6_per_page + 1.2,
+if (write_pdf(file_fig6, width = 18, height = 2.4 * fig6_per_page + 1.2,
               function() for (i in seq_along(fig6_pages)) draw_fig6_page(fig6_pages[[i]], i)))
   message("Fig 6 written: ", file_fig6, " (", length(fig6_pages), " pages, ", round(file.size(file_fig6) / 1e6, 1), " MB)")
 
 # Fig 7: per-month bloom area and sample coverage by variant, 2012-2024.
-vcol <- c(current = "black", mask = "orangered", coast2 = "gold3", coast5 = "darkorange3", coast10 = "saddlebrown", hull = "gray40")
-vlty <- c(current = 1, mask = 1, coast2 = 1, coast5 = 1, coast10 = 1, hull = 2)
-vlwd <- c(current = 2.2, mask = 1.6, coast2 = 1.2, coast5 = 1.4, coast10 = 1.6, hull = 1.4)
+vcol <- c(current = "black", mask = "orangered", coast2 = "gold3", coast5 = "darkorange3", mask5 = "purple3", coast10 = "saddlebrown", hull = "gray40")
+vlty <- c(current = 1, mask = 1, coast2 = 1, coast5 = 1, mask5 = 1, coast10 = 1, hull = 2)
+vlwd <- c(current = 2.2, mask = 1.6, coast2 = 1.2, coast5 = 1.4, mask5 = 1.6, coast10 = 1.6, hull = 1.4)
 xpos <- match(months, all_months)
 series <- function(col, k) { y <- rep(NA_real_, length(all_months)); y[xpos] <- long[[col]][long$variant == k]; y }
 png(file.path(dir_fig, "fig7_hybrid_area_2012-2024.png"), width = 13, height = 9.5, units = "in", res = 150)
@@ -436,19 +442,19 @@ for (p in panels) {
   if (p$col == "a1e4_km2") legend("topleft", legend = c(variants, "VIIRS layer all zero", "VIIRS tif missing"), col = c(vcol, NA, NA), lty = c(vlty, NA, NA), lwd = c(vlwd, NA, NA),
                                   fill = c(rep(NA, 6), grDevices::adjustcolor("gray40", 0.15), grDevices::adjustcolor("red", 0.25)), border = NA, cex = 0.75, bg = "white", box.col = "gray60", ncol = 2)
 }
-mtext(sprintf("Current map vs the four hybrids and the hull-clipped map, %d-%d; shaded = VIIRS layer all zero, red = no tif (2022-12)", viirs_era[1], viirs_era[2]),
+mtext(sprintf("Current map vs the five hybrids and the hull-clipped map, %d-%d; shaded = VIIRS layer all zero, red = no tif (2022-12)", viirs_era[1], viirs_era[2]),
       outer = TRUE, cex = 0.9, font = 2, line = 0.4)
 invisible(dev.off())
 
 # The monthly PDF: all VIIRS months, one calendar year per page ---------------------------
 page_chunks <- split(months, substr(months, 1, 4))
 draw_month_page <- function(ch) {
-  par(mfrow = c(rows_per_page, 7), mar = c(0.4, 0.5, 1.5, 0.5), oma = c(0.3, 0, 2.0, 0))
+  par(mfrow = c(rows_per_page, 8), mar = c(0.4, 0.5, 1.5, 0.5), oma = c(0.3, 0, 2.0, 0))
   for (ym in ch) draw_row(ym, { t <- tag_of(ym); if (nzchar(t)) paste0(" [", t, "]") else "" })
-  mtext(sprintf("%s   |   samples  |  current  |  mask  |  coast2  |  coast5  |  coast10  |  hull   (km2 = bloom area >= 10,000 cells/L; orange = cells where the variant differs from the current map)", substr(ch[1], 1, 4)),
+  mtext(sprintf("%s   |   samples  |  current  |  mask  |  coast2  |  coast5  |  mask5  |  coast10  |  hull   (km2 = bloom area >= 10,000 cells/L; orange = cells where the variant differs from the current map)", substr(ch[1], 1, 4)),
         outer = TRUE, cex = 1, font = 2, line = 0.5)
 }
-page_w <- 16; page_h <- 2.4 * rows_per_page + 0.9
+page_w <- 18; page_h <- 2.4 * rows_per_page + 0.9
 if (monthly_pdf) {
   file_pdf <- file.path(dir_docs, "hybrid_months_issue8.pdf")
   if (write_pdf(file_pdf, width = page_w, height = page_h, function() for (ch in page_chunks) draw_month_page(ch)))

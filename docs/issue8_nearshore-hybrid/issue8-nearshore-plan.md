@@ -117,6 +117,8 @@ Nearshore definitions N (5-arcmin masks, template water only):
 | `coast2`, `coast5`, `coast10` | cells whose centre is within 2, 5, 10 km of the coastline | km |
 | `mask+coast5` | union of `mask` and `coast5` (if the mask has gaps along the coast) | km |
 
+Step 2 as run (19 October 2026) used `mask`, `coast2`, `coast5` and `coast10`; `mask+coast5` was added as `mask5` on 20 October 2026 at Holden's request after checkpoint 2, once the sets table showed that `coast5` leaves out 4 masked bay cells whose centres sit 5 to 6.3 km from the coastline (see `README.md`, Step 2).
+
 Hull source: (i) the pipeline's monthly hulls (all positives, 75 km linkage, 10 km buffer), already on disk; (ii) hulls built from the samples at or above 10,000 cells/L only, via `fn.buffered_hulls()` on a subset (the function takes `file_filtered`, so the prototype writes a filtered copy; the pipeline version gets a `min_cells` argument in step 3).
 
 Outputs:
