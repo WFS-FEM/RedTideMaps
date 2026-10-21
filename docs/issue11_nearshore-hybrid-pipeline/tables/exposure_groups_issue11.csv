@@ -1,8 +1,8 @@
-"group","n_months","months_changed","exposure_before","exposure_after","exposure_ratio","months_ge1e4_before","months_ge1e4_after","cellmonths_ge1e4_before","cellmonths_ge1e4_after","cellmonths_ge1e5_before","cellmonths_ge1e5_after","cellmonths_ge1e6_before","cellmonths_ge1e6_after"
-"all 504 months 1985-2026",504,121,8874996166,9293540606,1.047,217,234,35606,37220,13290,13919,1716,1788
-"the 226 hull months",226,0,2380759044,2380759044,1,98,98,7636,7636,2721,2721,463,463
-"the 123 MODIS months",123,0,2374510206,2374510206,1,61,61,17766,17766,4936,4936,352,352
-"the 155 VIIRS months",155,121,4119726916,4538271356,1.102,58,75,10204,11818,5633,6262,901,973
-"the 58 zeroed months",58,58,0,30490361,NA,0,16,0,285,0,76,0,1
-"the 16 headline months",16,16,0,29445109,NA,0,16,0,285,0,76,0,1
-"the 60 VIIRS-positive fitted months of #6",60,60,4119697293,4507721496,1.094,58,59,10204,11533,5633,6186,901,972
+"group","n_months","months_changed","exposure_before","exposure_after","exposure_ratio","months_ge1e4_before","months_ge1e4_after","cellmonths_ge1e4_before","cellmonths_ge1e4_after","cellmonths_ge1e5_before","cellmonths_ge1e5_after","cellmonths_ge1e6_before","cellmonths_ge1e6_after","samples_ge1e4","samples_ge1e4_in_before","samples_ge1e4_in_after","share_samples_ge1e4_before","share_samples_ge1e4_after","samples_high","samples_high_in_before","samples_high_in_after","share_samples_high_before","share_samples_high_after"
+"all 504 months 1985-2026",504,121,8874996166,9293540606,1.047,217,234,35606,37220,13290,13919,1716,1788,17760,12861,16522,0.724,0.93,2195,1722,2128,0.785,0.969
+"the 226 hull months",226,0,2380759044,2380759044,1,98,98,7636,7636,2721,2721,463,463,4480,4470,4470,0.998,0.998,585,585,585,1,1
+"the 123 MODIS months",123,0,2374510206,2374510206,1,61,61,17766,17766,4936,4936,352,352,4535,3736,3736,0.824,0.824,442,393,393,0.889,0.889
+"the 155 VIIRS months",155,121,4119726916,4538271356,1.102,58,75,10204,11818,5633,6262,901,973,8745,4655,8316,0.532,0.951,1168,744,1150,0.637,0.985
+"the 58 zeroed months",58,58,0,30490361,NA,0,16,0,285,0,76,0,1,904,0,773,0,0.855,32,0,28,0,0.875
+"the 16 headline months",16,16,0,29445109,NA,0,16,0,285,0,76,0,1,867,0,745,0,0.859,32,0,28,0,0.875
+"the 60 VIIRS-positive fitted months of #6",60,60,4119697293,4507721496,1.094,58,59,10204,11533,5633,6186,901,972,7841,4655,7543,0.594,0.962,1136,744,1122,0.655,0.988

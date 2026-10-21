@@ -576,13 +576,24 @@ if (stage == "exposure") {
   # A changed month has a cell the hybrid raised, so its exposure rises; nothing else moves.
   stopifnot(all(ex$exposure_added >= 0), identical(ex$exposure_added > 0, hyb_chg),
             all(ex$n_ge1e4_added >= 0), all(ex$n_ge1e5_added >= 0), all(ex$n_ge1e6_added >= 0))
-  # Against the compare-stage table for the VIIRS months (same cells, same thresholds).
+  # In-situ samples at or above 10,000 cells/L (and the high class, above 1,000,000) that
+  # the projection includes, i.e. that sit in a non-zero cell of the month's map: the
+  # converse of the samples the footprint cuts. Water-cell samples, all 504 months.
+  pts <- load_samples(all_yrmo); pw <- pts[pts$water, ]
+  sB <- samples_of(Bf, pw, all_yrmo); sA <- samples_of(Af, pw, all_yrmo)
+  stopifnot(identical(sB$n_ge1e4, sA$n_ge1e4), all(sA$in_ge1e4 >= sB$in_ge1e4), all(sA$in_high >= sB$in_high))
+  ex$samples_ge1e4 <- sB$n_ge1e4; ex$samples_ge1e4_in_before <- sB$in_ge1e4; ex$samples_ge1e4_in_after <- sA$in_ge1e4
+  ex$share_samples_ge1e4_before <- sB$share_ge1e4; ex$share_samples_ge1e4_after <- sA$share_ge1e4
+  ex$samples_high <- sB$n_high; ex$samples_high_in_before <- sB$in_high; ex$samples_high_in_after <- sA$in_high
+  # Against the compare-stage table for the VIIRS months (same cells, thresholds and samples).
   mon <- read.csv(file.path(dir_tab, "months_issue11.csv"), colClasses = c(yrmo = "character"), stringsAsFactors = FALSE)
   mm <- match(mon$yrmo, ex$yrmo); stopifnot(!anyNA(mm), length(mm) == expected$n_viirs)
   stopifnot(all(round(ex$km2_ge1e4_before[mm]) == mon$a1e4_km2_before), all(round(ex$km2_ge1e4_after[mm]) == mon$a1e4_km2_after),
             all(round(ex$km2_ge1e5_before[mm]) == mon$a1e5_km2_before), all(round(ex$km2_ge1e5_after[mm]) == mon$a1e5_km2_after),
             all(abs(ex$exposure_before[mm] - mon$mean_cells_water_before * n_water) <= 0.05 * n_water + 1e-6),
-            all(abs(ex$exposure_after[mm]  - mon$mean_cells_water_after  * n_water) <= 0.05 * n_water + 1e-6))
+            all(abs(ex$exposure_after[mm]  - mon$mean_cells_water_after  * n_water) <= 0.05 * n_water + 1e-6),
+            all(ex$samples_ge1e4[mm] == mon$n_ge1e4), all(ex$samples_ge1e4_in_before[mm] == mon$in_ge1e4_before),
+            all(ex$samples_ge1e4_in_after[mm] == mon$in_ge1e4_after))
   write.csv(round_cols(ex), file.path(dir_tab, "exposure_months_issue11.csv"), row.names = FALSE)
   cat(sprintf("Exposure (cells/L summed over %d water cells): %d months, %d changed; all months before %s, after %s (x %.3f)\n",
               n_water, nrow(ex), sum(hyb_chg), fmt_n(round(sum(ex$exposure_before))), fmt_n(round(sum(ex$exposure_after))),
@@ -595,6 +606,11 @@ if (stage == "exposure") {
                     exposure_ratio = if (sum(d$exposure_before) > 0) sum(d$exposure_after) / sum(d$exposure_before) else NA_real_,
                     months_ge1e4_before = sum(d$n_ge1e4_before > 0), months_ge1e4_after = sum(d$n_ge1e4_after > 0))
     for (k in names(thr)) { r[[paste0("cellmonths_", k, "_before")]] <- sum(d[[paste0("n_", k, "_before")]]); r[[paste0("cellmonths_", k, "_after")]] <- sum(d[[paste0("n_", k, "_after")]]) }
+    share <- function(num, den) if (den > 0) round(num / den, 3) else NA_real_
+    r$samples_ge1e4 <- sum(d$samples_ge1e4); r$samples_ge1e4_in_before <- sum(d$samples_ge1e4_in_before); r$samples_ge1e4_in_after <- sum(d$samples_ge1e4_in_after)
+    r$share_samples_ge1e4_before <- share(r$samples_ge1e4_in_before, r$samples_ge1e4); r$share_samples_ge1e4_after <- share(r$samples_ge1e4_in_after, r$samples_ge1e4)
+    r$samples_high <- sum(d$samples_high); r$samples_high_in_before <- sum(d$samples_high_in_before); r$samples_high_in_after <- sum(d$samples_high_in_after)
+    r$share_samples_high_before <- share(r$samples_high_in_before, r$samples_high); r$share_samples_high_after <- share(r$samples_high_in_after, r$samples_high)
     r
   }
   ann <- do.call(rbind, lapply(split(ex, ex$year), function(d) cbind(year = d$year[1], clip_sources = paste(sort(unique(d$use)), collapse = "/"), sum_block(d))))
@@ -608,6 +624,9 @@ if (stage == "exposure") {
                     exposure_before = mean(d$exposure_before), exposure_after = mean(d$exposure_after),
                     exposure_ratio = if (mean(d$exposure_before) > 0) mean(d$exposure_after) / mean(d$exposure_before) else NA_real_)
     for (k in names(thr)) { r[[paste0("n_", k, "_before")]] <- mean(d[[paste0("n_", k, "_before")]]); r[[paste0("n_", k, "_after")]] <- mean(d[[paste0("n_", k, "_after")]]) }
+    r$samples_ge1e4 <- sum(d$samples_ge1e4)
+    r$share_samples_ge1e4_before <- if (r$samples_ge1e4 > 0) round(sum(d$samples_ge1e4_in_before) / r$samples_ge1e4, 3) else NA_real_
+    r$share_samples_ge1e4_after  <- if (r$samples_ge1e4 > 0) round(sum(d$samples_ge1e4_in_after)  / r$samples_ge1e4, 3) else NA_real_
     r
   }))
   rownames(clim) <- NULL
@@ -634,37 +653,44 @@ if (stage == "exposure") {
   write.csv(round_cols(cells), file.path(dir_tab, "exposure_cells_issue11.csv"), row.names = FALSE)
 
   # Figs 4 and 5: the series, full record and VIIRS era, all panels on a linear
-  # axis (exposure in millions of cells/L).
+  # axis (exposure in millions of cells/L); the fifth panel is the share of the
+  # in-situ samples >= 10,000 cells/L the projection includes.
   use_col <- c(pred = grDevices::adjustcolor("gray40", 0.12), modis = grDevices::adjustcolor("steelblue", 0.18), hybrid = grDevices::adjustcolor("gold", 0.22))
   zero_col <- grDevices::adjustcolor("gray40", 0.3); miss_col <- grDevices::adjustcolor("red", 0.25)
+  min_samples_share <- 5L
   draw_series <- function(rows, title, era_shading) {
     d <- ex[rows, ]; n <- nrow(d); x <- seq_len(n)
+    few <- d$samples_ge1e4 < min_samples_share
     panels <- list(list(b = d$exposure_before / 1e6, a = d$exposure_after / 1e6, lab = "million cells/L (sum over water cells)", main = "Total exposure: cells/L summed over the 3,838 water cells"),
                    list(b = d$n_ge1e4_before, a = d$n_ge1e4_after, lab = "cells", main = "Grid cells at or above 10,000 cells/L"),
                    list(b = d$n_ge1e5_before, a = d$n_ge1e5_after, lab = "cells", main = "Grid cells at or above 100,000 cells/L"),
-                   list(b = d$n_ge1e6_before, a = d$n_ge1e6_after, lab = "cells", main = "Grid cells at or above 1,000,000 cells/L"))
-    par(mfrow = c(4, 1), mar = c(2.8, 4.6, 2.2, 0.6), oma = c(0, 0, 1.8, 0), mgp = c(3, 0.6, 0))
+                   list(b = d$n_ge1e6_before, a = d$n_ge1e6_after, lab = "cells", main = "Grid cells at or above 1,000,000 cells/L"),
+                   list(b = replace(d$share_samples_ge1e4_before, few, NA), a = replace(d$share_samples_ge1e4_after, few, NA), lab = "share of samples",
+                        main = sprintf("Share of the in-situ samples >= 10,000 cells/L (water cells) that the projection includes, months with at least %d such samples", min_samples_share), pts = TRUE))
+    par(mfrow = c(length(panels), 1), mar = c(2.8, 4.6, 2.2, 0.6), oma = c(0, 0, 1.8, 0), mgp = c(3, 0.6, 0))
     for (i in seq_along(panels)) {
       p <- panels[[i]]; yb <- p$b; ya <- p$a
-      yl <- c(0, max(c(yb, ya), 1) * 1.08)
+      yl <- if (isTRUE(p$pts)) c(0, 1.04) else c(0, max(c(yb, ya), 1) * 1.08)
       plot(NA, xlim = c(0.5, n + 0.5), ylim = yl, xlab = "", ylab = p$lab, main = p$main, cex.main = 0.95, axes = FALSE, xaxs = "i", yaxs = "i")
       if (era_shading) for (u in names(use_col)) { w <- which(d$use == u); if (length(w)) rect(w - 0.5, yl[1], w + 0.5, yl[2], col = use_col[[u]], border = NA) }
       zm <- which(d$viirs_status == "zero"); mm2 <- which(d$viirs_status == "missing")
       rect(zm - 0.5, yl[1], zm + 0.5, yl[2], col = zero_col, border = NA); rect(mm2 - 0.5, yl[1], mm2 + 0.5, yl[2], col = miss_col, border = NA)
-      lines(x, ya, col = "purple3", lwd = 1.8); lines(x, yb, col = "black", lwd = 1.6)
+      if (isTRUE(p$pts)) { points(x, ya, col = "purple3", pch = 1, cex = 0.8, lwd = 1.2); points(x, yb, col = "black", pch = 16, cex = 0.7) } else {
+        lines(x, ya, col = "purple3", lwd = 1.8); lines(x, yb, col = "black", lwd = 1.6) }
       jan <- which(d$month == 1); axis(1, at = jan, labels = d$year[jan], cex.axis = 0.85)
       axis(2, las = 1, cex.axis = 0.85)
       box()
       if (i == 1) legend("topleft", legend = c("before: VIIRS only (6 Oct 2026 maps)", "after: nearshore hybrid mask5", if (era_shading) c("hull months", "MODIS months", "VIIRS months"), "VIIRS layer all zero", "VIIRS tif missing (2022-12)"),
                          col = c("black", "purple3", rep(NA, if (era_shading) 5 else 2)), lwd = c(1.6, 1.8, rep(NA, if (era_shading) 5 else 2)),
                          fill = c(NA, NA, if (era_shading) unname(use_col), zero_col, miss_col), border = NA, cex = 0.78, bg = "white", box.col = "gray60", ncol = 2)
+      if (isTRUE(p$pts)) legend("bottomleft", legend = c("before: VIIRS only", "after: hybrid"), col = c("black", "purple3"), pch = c(16, 1), pt.cex = c(0.7, 0.8), cex = 0.78, bg = "white", box.col = "gray60", ncol = 2)
     }
     mtext(title, outer = TRUE, cex = 0.95, font = 2, line = 0.4)
   }
-  png(file.path(dir_fig, "fig4_exposure_1985-2026_issue11.png"), width = 15, height = 11, units = "in", res = 150)
+  png(file.path(dir_fig, "fig4_exposure_1985-2026_issue11.png"), width = 15, height = 13.5, units = "in", res = 150)
   draw_series(seq_len(nrow(ex)), "Red tide exposure per monthly map, 1985-2026, VIIRS-only vs nearshore-hybrid (identical outside the VIIRS months)", era_shading = TRUE)
   invisible(dev.off())
-  png(file.path(dir_fig, "fig5_exposure_2012-2024_issue11.png"), width = 13, height = 11, units = "in", res = 150)
+  png(file.path(dir_fig, "fig5_exposure_2012-2024_issue11.png"), width = 13, height = 13.5, units = "in", res = 150)
   draw_series(which(ex$year >= 2012 & ex$year <= 2024), "Red tide exposure per monthly map, 2012-2024 (the VIIRS era), VIIRS-only vs nearshore-hybrid (shaded = VIIRS layer all zero)", era_shading = FALSE)
   invisible(dev.off())
 
@@ -696,11 +722,23 @@ if (stage == "exposure") {
 
   # Markdown summary for #11.
   g_cols <- c("group", "n_months", "months_changed", "exposure_before", "exposure_after", "exposure_ratio", "months_ge1e4_before", "months_ge1e4_after",
-              "cellmonths_ge1e4_before", "cellmonths_ge1e4_after", "cellmonths_ge1e5_before", "cellmonths_ge1e5_after", "cellmonths_ge1e6_before", "cellmonths_ge1e6_after")
+              "cellmonths_ge1e4_before", "cellmonths_ge1e4_after", "cellmonths_ge1e5_before", "cellmonths_ge1e5_after", "cellmonths_ge1e6_before", "cellmonths_ge1e6_after",
+              "samples_ge1e4", "share_samples_ge1e4_before", "share_samples_ge1e4_after", "samples_high", "share_samples_high_before", "share_samples_high_after")
   gain <- cells$exposure_added > 0
+  overall <- function(lab) {
+    g <- egrp[egrp$group == lab, ]
+    sprintf("Over %s the hybrid raises total exposure by %.1f%% (%s to %s cells/L summed) and the share of the in-situ water samples >= 10,000 cells/L that the projection includes from %.1f%% to %.1f%% (%s to %s of %s; +%.1f percentage points, x %.2f); for the high samples (> 1,000,000 cells/L) from %.1f%% to %.1f%% (of %s).",
+            lab, 100 * (g$exposure_ratio - 1), fmt_n(round(g$exposure_before)), fmt_n(round(g$exposure_after)),
+            100 * g$share_samples_ge1e4_before, 100 * g$share_samples_ge1e4_after, fmt_n(g$samples_ge1e4_in_before), fmt_n(g$samples_ge1e4_in_after), fmt_n(g$samples_ge1e4),
+            100 * (g$share_samples_ge1e4_after - g$share_samples_ge1e4_before), g$share_samples_ge1e4_after / g$share_samples_ge1e4_before,
+            100 * g$share_samples_high_before, 100 * g$share_samples_high_after, fmt_n(g$samples_high))
+  }
   md <- c("# Issue #11: red tide exposure per monthly map, VIIRS-only vs nearshore hybrid", "",
-          sprintf("Produced by `docs/issue11_nearshore-hybrid-pipeline/check_hybrid_issue11.R` (stage `exposure`) from the combined stacks of the `none` run (the 6 October 2026 maps) and the `mask5` run, all %d months 1985-2026. **Total exposure** of a monthly map is the plain sum of cells/L over the %d template water cells (Ecospace works per cell, so no area weighting; the water-cell count is the same in every map). **Cell counts** are the grid cells at or above 10,000, 100,000 and 1,000,000 cells/L. Yearly and group totals are sums over the months (cell-months). The two methods are identical outside the %d VIIRS months (checked).",
+          sprintf("Produced by `docs/issue11_nearshore-hybrid-pipeline/check_hybrid_issue11.R` (stage `exposure`) from the combined stacks of the `none` run (the 6 October 2026 maps) and the `mask5` run, all %d months 1985-2026. **Total exposure** of a monthly map is the plain sum of cells/L over the %d template water cells (Ecospace works per cell, so no area weighting; the water-cell count is the same in every map). **Cell counts** are the grid cells at or above 10,000, 100,000 and 1,000,000 cells/L. **Samples included** are the in-situ water-cell samples at or above 10,000 cells/L (and the high class) whose 5-arcmin cell is non-zero in the map, the converse of the samples the footprint cuts. Yearly and group totals are sums over the months (cell-months). The two methods are identical outside the %d VIIRS months (checked).",
                   nrow(ex), n_water, sum(vm)),
+          "", "## Overall", "",
+          paste0("- ", overall(names(egroups)[4])),
+          paste0("- ", overall(names(egroups)[1])),
           "", "## Totals by month group (`tables/exposure_groups_issue11.csv`)", "",
           md_table(round_cols(egrp[, g_cols]), 3),
           "", "## By year (`tables/exposure_annual_issue11.csv`; sums over the months of the year)", "",
@@ -708,7 +746,8 @@ if (stage == "exposure") {
           "", "## By calendar month over the VIIRS era (`tables/exposure_climatology_issue11.csv`; means over 2012-2024)", "",
           md_table(round_cols(clim), 3),
           "", sprintf("## The %d headline months (`tables/exposure_months_issue11.csv`)", length(headline)), "",
-          md_table(round_cols(ex[ex$headline, c("yrmo", "exposure_before", "exposure_after", "n_ge1e4_before", "n_ge1e4_after", "n_ge1e5_before", "n_ge1e5_after", "n_ge1e6_before", "n_ge1e6_after", "max_cells_before", "max_cells_after")]), 0),
+          md_table(round_cols(ex[ex$headline, c("yrmo", "exposure_before", "exposure_after", "n_ge1e4_before", "n_ge1e4_after", "n_ge1e5_before", "n_ge1e5_after", "n_ge1e6_before", "n_ge1e6_after", "max_cells_before", "max_cells_after",
+                                                "samples_ge1e4", "samples_ge1e4_in_before", "samples_ge1e4_in_after")]), 0),
           "", "## Per cell over the VIIRS months (`tables/exposure_cells_issue11.csv`)", "",
           sprintf("- Cumulative exposure: %d of the %d water cells gain (1 to %s cells/L summed over the months, median %s); the cell maximum goes from %s to %s.",
                   sum(gain), n_water, fmt_n(signif(max(cells$exposure_added), 3)), fmt_n(signif(median(cells$exposure_added[gain]), 3)), fmt_n(signif(max(cum_b, na.rm = TRUE), 3)), fmt_n(signif(max(cum_a, na.rm = TRUE), 3))),
