@@ -1,0 +1,8 @@
+"group","n_months","months_changed","exposure_before","exposure_after","exposure_ratio","months_ge1e4_before","months_ge1e4_after","cellmonths_ge1e4_before","cellmonths_ge1e4_after","cellmonths_ge1e5_before","cellmonths_ge1e5_after","cellmonths_ge1e6_before","cellmonths_ge1e6_after"
+"all 504 months 1985-2026",504,121,8874996166,9293540606,1.047,217,234,35606,37220,13290,13919,1716,1788
+"the 226 hull months",226,0,2380759044,2380759044,1,98,98,7636,7636,2721,2721,463,463
+"the 123 MODIS months",123,0,2374510206,2374510206,1,61,61,17766,17766,4936,4936,352,352
+"the 155 VIIRS months",155,121,4119726916,4538271356,1.102,58,75,10204,11818,5633,6262,901,973
+"the 58 zeroed months",58,58,0,30490361,NA,0,16,0,285,0,76,0,1
+"the 16 headline months",16,16,0,29445109,NA,0,16,0,285,0,76,0,1
+"the 60 VIIRS-positive fitted months of #6",60,60,4119697293,4507721496,1.094,58,59,10204,11533,5633,6186,901,972
