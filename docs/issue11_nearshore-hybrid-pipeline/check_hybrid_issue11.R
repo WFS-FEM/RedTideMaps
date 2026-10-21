@@ -633,27 +633,27 @@ if (stage == "exposure") {
                       cellmonths_ge1e6_before = n6_b[water], cellmonths_ge1e6_after = n6_a[water])
   write.csv(round_cols(cells), file.path(dir_tab, "exposure_cells_issue11.csv"), row.names = FALSE)
 
-  # Figs 4 and 5: the series, full record and VIIRS era. Exposure on a log axis, zero
-  # months drawn at the axis floor; counts linear.
+  # Figs 4 and 5: the series, full record and VIIRS era, all panels on a linear
+  # axis (exposure in millions of cells/L).
   use_col <- c(pred = grDevices::adjustcolor("gray40", 0.12), modis = grDevices::adjustcolor("steelblue", 0.18), hybrid = grDevices::adjustcolor("gold", 0.22))
   zero_col <- grDevices::adjustcolor("gray40", 0.3); miss_col <- grDevices::adjustcolor("red", 0.25)
   draw_series <- function(rows, title, era_shading) {
-    d <- ex[rows, ]; n <- nrow(d); x <- seq_len(n); floor_y <- 1e4
-    panels <- list(list(b = d$exposure_before, a = d$exposure_after, lab = "cells/L (sum over water cells)", main = "Total exposure: cells/L summed over the 3,838 water cells (log axis; months at zero drawn at the floor)", log = TRUE),
+    d <- ex[rows, ]; n <- nrow(d); x <- seq_len(n)
+    panels <- list(list(b = d$exposure_before / 1e6, a = d$exposure_after / 1e6, lab = "million cells/L (sum over water cells)", main = "Total exposure: cells/L summed over the 3,838 water cells"),
                    list(b = d$n_ge1e4_before, a = d$n_ge1e4_after, lab = "cells", main = "Grid cells at or above 10,000 cells/L"),
                    list(b = d$n_ge1e5_before, a = d$n_ge1e5_after, lab = "cells", main = "Grid cells at or above 100,000 cells/L"),
                    list(b = d$n_ge1e6_before, a = d$n_ge1e6_after, lab = "cells", main = "Grid cells at or above 1,000,000 cells/L"))
     par(mfrow = c(4, 1), mar = c(2.8, 4.6, 2.2, 0.6), oma = c(0, 0, 1.8, 0), mgp = c(3, 0.6, 0))
     for (i in seq_along(panels)) {
       p <- panels[[i]]; yb <- p$b; ya <- p$a
-      if (isTRUE(p$log)) { yb <- pmax(yb, floor_y); ya <- pmax(ya, floor_y); yl <- c(floor_y, max(c(yb, ya)) * 1.5) } else yl <- c(0, max(c(yb, ya), 1) * 1.08)
-      plot(NA, xlim = c(0.5, n + 0.5), ylim = yl, log = if (isTRUE(p$log)) "y" else "", xlab = "", ylab = p$lab, main = p$main, cex.main = 0.95, axes = FALSE, xaxs = "i", yaxs = "i")
+      yl <- c(0, max(c(yb, ya), 1) * 1.08)
+      plot(NA, xlim = c(0.5, n + 0.5), ylim = yl, xlab = "", ylab = p$lab, main = p$main, cex.main = 0.95, axes = FALSE, xaxs = "i", yaxs = "i")
       if (era_shading) for (u in names(use_col)) { w <- which(d$use == u); if (length(w)) rect(w - 0.5, yl[1], w + 0.5, yl[2], col = use_col[[u]], border = NA) }
       zm <- which(d$viirs_status == "zero"); mm2 <- which(d$viirs_status == "missing")
       rect(zm - 0.5, yl[1], zm + 0.5, yl[2], col = zero_col, border = NA); rect(mm2 - 0.5, yl[1], mm2 + 0.5, yl[2], col = miss_col, border = NA)
       lines(x, ya, col = "purple3", lwd = 1.8); lines(x, yb, col = "black", lwd = 1.6)
       jan <- which(d$month == 1); axis(1, at = jan, labels = d$year[jan], cex.axis = 0.85)
-      if (isTRUE(p$log)) axis(2, at = 10^(4:9), labels = c("1e4", "1e5", "1e6", "1e7", "1e8", "1e9"), las = 1, cex.axis = 0.85) else axis(2, las = 1, cex.axis = 0.85)
+      axis(2, las = 1, cex.axis = 0.85)
       box()
       if (i == 1) legend("topleft", legend = c("before: VIIRS only (6 Oct 2026 maps)", "after: nearshore hybrid mask5", if (era_shading) c("hull months", "MODIS months", "VIIRS months"), "VIIRS layer all zero", "VIIRS tif missing (2022-12)"),
                          col = c("black", "purple3", rep(NA, if (era_shading) 5 else 2)), lwd = c(1.6, 1.8, rep(NA, if (era_shading) 5 else 2)),
