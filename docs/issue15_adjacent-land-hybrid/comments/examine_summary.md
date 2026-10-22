@@ -19,10 +19,18 @@ Produced by `docs/issue15_adjacent-land-hybrid/check_adjacent_hybrid_issue15.R` 
 
 - mask5 is exactly the VIIRS static mask or a centre within 5 km of the coastline (136 cells, recomposed and checked). The union adds the 53 land-adjacent cells mask5 lacks (centres 5.0 to 12.1 km from the coastline, median 6.6; a cell is 8 to 9 km wide, so a corner-touching neighbour reaches further than 5 km on the open coast) and so covers the 84 mask cells, the 132 within-5-km cells and the 177 adjacent cells by construction. The 12 mask5 cells that touch no land cell (13, 14, 91, 92, 333, 413, 649, 736, 812, 2710, 3573, 3651) all sit two cells from the nearest basemap land cell: bays cut by the map edge and barrier islands the 5-arcmin grid draws as water while the coastline draws them as land.
 
-| variant | cells | km2 | viirs_mask_covered | within5km_covered | adjacent_covered | exposure | exposure_ratio | cellmonths_ge10k | cellmonths_ge100k | cellmonths_ge1M | months_changed | in_ge10k | share_ge10k | share_gt1M | share_ge10k_zeroed | share_ge10k_viirs | share_ge10k_modis | exposure_ratio_viirs | exposure_ratio_modis |
-|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| mask5 (VIIRS mask or within 5 km), hull fill | 136 | 10,227 | 84 | 132 | 124 | 6,967,296,294 | 1.073 | 29,962 | 11,297 | 1,336 | 208 | 12,351 | 0.93 | 0.971 | 0.855 | 0.951 | 0.89 | 1.102 | 1.023 |
-| union of mask5 and land-adjacent, hull fill | 189 | 14,205 | 84 | 132 | 177 | 7,041,082,852 | 1.084 | 30,474 | 11,462 | 1,346 | 210 | 12,515 | 0.942 | 0.977 | 0.885 | 0.966 | 0.896 | 1.113 | 1.035 |
+| variant | cells | km2 | viirs_mask_covered | within5km_covered | adjacent_covered | exposure | exposure_ratio | cellmonths_ge10k | cellmonths_ge100k | cellmonths_ge1M | months_changed | in_ge10k | share_ge10k | share_gt1M | share_ge10k_zeroed | share_ge10k_viirs | share_ge10k_modis | exposure_ratio_viirs | exposure_ratio_modis | exposure_viirs | exposure_modis |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| mask5 (VIIRS mask or within 5 km), hull fill | 136 | 10,227 | 84 | 132 | 124 | 6,967,296,294 | 1.073 | 29,962 | 11,297 | 1,336 | 208 | 12,351 | 0.93 | 0.971 | 0.855 | 0.951 | 0.89 | 1.102 | 1.023 | 4,538,271,356 | 2,429,024,938 |
+| union of mask5 and land-adjacent, hull fill | 189 | 14,205 | 84 | 132 | 177 | 7,041,082,852 | 1.084 | 30,474 | 11,462 | 1,346 | 210 | 12,515 | 0.942 | 0.977 | 0.885 | 0.966 | 0.896 | 1.113 | 1.035 | 4,583,313,352 | 2,457,769,500 |
+
+### Total exposure by era (`tables/exposure_by_era_issue15.csv`; cells/L summed over the water cells and the months)
+
+| era | n_months | exposure_v6oct | exposure_mask5 | exposure_union | ratio_mask5_vs_v6oct | ratio_union_vs_v6oct | ratio_union_vs_mask5 | cellmonths_ge10k_v6oct | cellmonths_ge10k_mask5 | cellmonths_ge10k_union | samples_ge10k | share_ge10k_v6oct | share_ge10k_mask5 | share_ge10k_union |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| all 278 satellite months | 278 | 6,494,237,122 | 6,967,296,294 | 7,041,082,852 | 1.073 | 1.084 | 1.011 | 27,970 | 29,962 | 30,474 | 13,280 | 0.632 | 0.93 | 0.942 |
+| the 155 VIIRS months | 155 | 4,119,726,916 | 4,538,271,356 | 4,583,313,352 | 1.102 | 1.113 | 1.01 | 10,204 | 11,818 | 12,133 | 8,745 | 0.532 | 0.951 | 0.966 |
+| the 123 MODIS months | 123 | 2,374,510,206 | 2,429,024,938 | 2,457,769,500 | 1.023 | 1.035 | 1.012 | 17,766 | 18,144 | 18,341 | 4,535 | 0.824 | 0.89 | 0.896 |
 
 ## Overall
 

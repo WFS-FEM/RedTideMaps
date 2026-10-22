@@ -1,3 +1,3 @@
-"variant","cells","km2","viirs_mask_covered","within5km_covered","adjacent_covered","exposure","exposure_ratio","cellmonths_ge10k","cellmonths_ge100k","cellmonths_ge1M","months_changed","in_ge10k","share_ge10k","share_gt1M","share_ge10k_zeroed","share_ge10k_viirs","share_ge10k_modis","exposure_ratio_viirs","exposure_ratio_modis"
-"mask5 (VIIRS mask or within 5 km), hull fill",136,10227,84,132,124,6967296294,1.073,29962,11297,1336,208,12351,0.93,0.971,0.855,0.951,0.89,1.102,1.023
-"union of mask5 and land-adjacent, hull fill",189,14205,84,132,177,7041082852,1.084,30474,11462,1346,210,12515,0.942,0.977,0.885,0.966,0.896,1.113,1.035
+"variant","cells","km2","viirs_mask_covered","within5km_covered","adjacent_covered","exposure","exposure_ratio","cellmonths_ge10k","cellmonths_ge100k","cellmonths_ge1M","months_changed","in_ge10k","share_ge10k","share_gt1M","share_ge10k_zeroed","share_ge10k_viirs","share_ge10k_modis","exposure_ratio_viirs","exposure_ratio_modis","exposure_viirs","exposure_modis"
+"mask5 (VIIRS mask or within 5 km), hull fill",136,10227,84,132,124,6967296294,1.073,29962,11297,1336,208,12351,0.93,0.971,0.855,0.951,0.89,1.102,1.023,4538271356,2429024938
+"union of mask5 and land-adjacent, hull fill",189,14205,84,132,177,7041082852,1.084,30474,11462,1346,210,12515,0.942,0.977,0.885,0.966,0.896,1.113,1.035,4583313352,2457769500

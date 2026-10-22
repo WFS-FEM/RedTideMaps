@@ -732,8 +732,19 @@ if (stage == "examine") {
                    share_ge10k_viirs = sapply(names(uk), function(k) gv[[paste0("share_ge10k_", k)]]), share_ge10k_modis = sapply(names(uk), function(k) gm[[paste0("share_ge10k_", k)]]),
                    exposure_ratio_viirs = sapply(names(uk), function(k) gv[[paste0("exposure_ratio_", k)]]), exposure_ratio_modis = sapply(names(uk), function(k) gm[[paste0("exposure_ratio_", k)]]),
                    stringsAsFactors = FALSE)
+  ut$exposure_viirs <- sapply(names(uk), function(k) gv[[paste0("exposure_", k)]]); ut$exposure_modis <- sapply(names(uk), function(k) gm[[paste0("exposure_", k)]])
   rownames(ut) <- NULL
   write.csv(round_cols(ut), file.path(dir_tab, "mask5_vs_union_issue15.csv"), row.names = FALSE)
+  # Total exposure by era (Holden, 22 Oct 2026): all satellite months, the VIIRS months, the
+  # MODIS months; the delivered maps, mask5 and the union, with the ratios and the samples included.
+  ue <- do.call(rbind, lapply(list(g, gv, gm), function(r) data.frame(
+    n_months = r$n_months, exposure_v6oct = r$exposure_v6oct, exposure_mask5 = r$exposure_mask5, exposure_union = r$exposure_union_hull,
+    ratio_mask5_vs_v6oct = r$exposure_ratio_mask5, ratio_union_vs_v6oct = r$exposure_ratio_union_hull, ratio_union_vs_mask5 = round(r$exposure_union_hull / r$exposure_mask5, 3),
+    cellmonths_ge10k_v6oct = r$cellmonths_ge10k_v6oct, cellmonths_ge10k_mask5 = r$cellmonths_ge10k_mask5, cellmonths_ge10k_union = r$cellmonths_ge10k_union_hull,
+    samples_ge10k = r$samples_ge10k, share_ge10k_v6oct = r$share_ge10k_v6oct, share_ge10k_mask5 = r$share_ge10k_mask5, share_ge10k_union = r$share_ge10k_union_hull)))
+  ue <- cbind(era = names(groups)[1:3], ue, stringsAsFactors = FALSE); rownames(ue) <- NULL
+  stopifnot(abs(ue$exposure_union[2] + ue$exposure_union[3] - ue$exposure_union[1]) <= 1, abs(ue$exposure_mask5[2] + ue$exposure_mask5[3] - ue$exposure_mask5[1]) <= 1)
+  write.csv(round_cols(ue), file.path(dir_tab, "exposure_by_era_issue15.csv"), row.names = FALSE)
   mo <- which(set5 & !adj8); ao <- which(adj8 & !set5)
   md <- c("# Issue #15: the land-adjacent nearshore rule against mask5 (examine stage)", "",
           sprintf("Produced by `docs/issue15_adjacent-land-hybrid/check_adjacent_hybrid_issue15.R` from the stacks on disk, no pipeline run. Five variants over the %d satellite months (%d VIIRS, %d MODIS; the %d hull months are identical in every variant): the delivered 6 Oct 2026 maps; the mask5 hybrid for both sensors (run B of #10); the land-adjacent set (%d Gulf-domain cells, %s km2) with the raw sdmTMB projection inside it (the #15 rule); the same with the %d cells of the static VIIRS no-data mask added (%d cells); and the land-adjacent set with the mask5 fill (max of the satellite- and hull-clipped maps). Total exposure = the plain sum of cells/L over the %s water cells; cell-months at or above 10k / 100k / 1M cells/L; samples included = water-cell samples >= 10k cells/L (and > 1M) whose cell is non-zero in the map. The Atlantic-side box is always excluded.",
@@ -747,6 +758,8 @@ if (stage == "examine") {
           sprintf("- mask5 is exactly the VIIRS static mask or a centre within 5 km of the coastline (%d cells, recomposed and checked). The union adds the %d land-adjacent cells mask5 lacks (centres %.1f to %.1f km from the coastline, median %.1f; a cell is 8 to 9 km wide, so a corner-touching neighbour reaches further than 5 km on the open coast) and so covers the %d mask cells, the %d within-5-km cells and the %d adjacent cells by construction. The %d mask5 cells that touch no land cell (%s) all sit two cells from the nearest basemap land cell: bays cut by the map edge and barrier islands the 5-arcmin grid draws as water while the coastline draws them as land.",
                   sum(set5), length(ao), min(dist_w[ao]), max(dist_w[ao]), median(dist_w[ao]), sum(in_mask), sum(near5), sum(adj8), length(mo), paste(mo, collapse = ", ")),
           "", md_table(round_cols(ut), 3), "",
+          "### Total exposure by era (`tables/exposure_by_era_issue15.csv`; cells/L summed over the water cells and the months)", "",
+          md_table(round_cols(ue), 3), "",
           "## Overall", "",
           paste0("- ", line_of(grp[1, ], names(groups)[1])),
           paste0("- ", line_of(grp[2, ], names(groups)[2])),
