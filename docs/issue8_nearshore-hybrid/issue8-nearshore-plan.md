@@ -141,7 +141,7 @@ Behind a config key, default = today's behaviour, so an unchanged config reprodu
 - **Coastline** (only if `"coast"` is chosen): the step-1 file (`docs/issue8_nearshore-hybrid/coastline/ne_10m_coastline_wfs.gpkg`, with its source and download date in the README beside it) moves to `data/coastline/` if the pipeline uses it (D6).
 - **Docs:** README cascade section and pipeline table; `config.local.example.R`; `docs/issue8_nearshore-hybrid/README.md` in the #6 style (what was compared, results, how to rerun).
 - **Verification:** MD5 of all 504 ASCII files before (the 6 October run) and after, with the expectation that only VIIRS months with a nearshore hull differ (no MODIS or hull month changes; no change at all with `viirs_nearshore = "none"`); before/after panels for the headline months; run time in the log.
-- **Out of scope, noted for follow-up:** the MODIS nFLH months (2002-07 to 2011-12, 2025-01 to 2025-09) presumably have the same nearshore gap; `fn.clip_2_hybrid()` is written so a MODIS-clipped stack can be passed in its place later.
+- **Out of scope, noted for follow-up:** the MODIS nFLH months (2002-07 to 2011-12, 2025-01 to 2025-09) presumably have the same nearshore gap; `fn.clip_2_hybrid()` is written so a MODIS-clipped stack can be passed in its place later. **Done in issue #10 (October 2026):** the same set and rule behind `cfg$modis_nearshore`; examination and checks in `docs/issue10_modis-nearshore-hybrid/`.
 
 **Checkpoint 3:** regenerated 5-arcmin deliverables, the MD5 table and the panels; PR marked ready with `Closes #8`; the #5 decision recorded in #5.
 
@@ -153,7 +153,7 @@ Behind a config key, default = today's behaviour, so an unchanged config reprodu
 | D2 | which samples build the nearshore hulls | all positives (as the hull path now) / >= 10,000 / >= 100,000 cells/L | prototype with the existing hulls (all positives); show >= 10,000 as sensitivity; FWC "background" (< 1,000) is the #5 item M3 and is not changed here |
 | D3 | apply in all VIIRS months or only the 89 all-zero ones | all / all-zero only | all: the rule is about where VIIRS can look, not whether it saw something; the all-zero months are where it matters most |
 | D4 | the VIIRS-valid area in all-zero months | VIIRS zero stands (Yao) / hull fallback (Dave's interim, #6 option b) | VIIRS zero stands, unless step 1 shows a material H2 share; the prototype reports both so the difference is visible |
-| D5 | MODIS months | in scope / follow-up | follow-up issue |
+| D5 | MODIS months | in scope / follow-up | follow-up issue (#10, done October 2026) |
 | D6 | coastline source if `coast` is used anywhere | Natural Earth 1:10m / NOAA GSHHG / template land edge | Natural Earth 1:10m via `rnaturalearth::ne_download()`, cropped and committed; the template edge (5 arcmin, about 9 km) is too coarse |
 
 **Decided on 20 October 2026** (Holden, after the step-2 and step-2b results and the meeting with Yao; recorded in the #8 decision comment): D1 = `mask5`, the VIIRS no-data mask or any cell within 5 km of the coastline (`mask` and `coast10` stay in the prototype as the lower and upper bounds); D2 = the hulls as the pipeline builds them (every positive sample, no count threshold); D3 = all VIIRS months; D4 = VIIRS valid zeros stand outside the nearshore set, the hull applies inside it whether the cell is masked or valid, and the full hull fallback for all-zero months (#6 option b) is dropped, since the nearshore hybrid covers what it was for; D5 = follow-up issue; D6 = Natural Earth 1:10m, since the 5 km band needs it.

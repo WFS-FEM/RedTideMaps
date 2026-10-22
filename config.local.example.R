@@ -49,6 +49,14 @@
 # cfg$viirs_nearshore <- "mask5"
 
 
+# The same rule for the months served from MODIS nFLH polygons (2002-07 to
+# 2011-12, 2022-12, 2025; issue #10): the same 136-cell set, inside it
+# max(MODIS, hull), outside it the MODIS result stands. Needs use_viirs = TRUE
+# (the set is read from the VIIRS stack). "none" (default) leaves the
+# MODIS-clipped maps as they are.
+# cfg$modis_nearshore <- "mask5"
+
+
 # Reuse the local merged FWC CSV in cell_counts/ without querying FWC, so a
 # rerun sees exactly the samples of the previous run (for reproducing a run;
 # a first run still pulls everything).

@@ -1,0 +1,5 @@
+"band","water_cells","never_modis_positive","share_never","set_cells","set_cells_never"
+"0-2 km",72,2,0.028,64,2
+"2-5 km",75,2,0.027,68,1
+"5-10 km",89,1,0.011,4,1
+"> 10 km",3602,2118,0.588,0,0
