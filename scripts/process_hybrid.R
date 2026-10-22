@@ -98,53 +98,73 @@ fn.nearshore_mask <- function(file_viirs, file_depth, file_coast, rule = "mask5"
        n_mask_cells = sum(domain & in_mask), n_coast_cells = sum(domain & near_coast))
 }
 
-# Hybrid clip: VIIRS outside the nearshore set, VIIRS or hull inside -----
+# Hybrid clip: satellite outside the nearshore set, satellite or hull inside -----
 
-#' Add the hull footprint to the VIIRS-clipped layers inside the nearshore set.
+#' Add the hull footprint to satellite-clipped layers inside the nearshore set.
 #'
-#' For every layer of the VIIRS-clipped stack: outside the nearshore set the
-#' VIIRS-clipped layer stands, zeros included (where VIIRS has valid
-#' observations its result is kept, Yao Yao's condition); inside the set a
-#' cell takes the maximum of the VIIRS-clipped and hull-clipped layers of
-#' the month, so the sample-based footprint is added nearshore and never
-#' removes a VIIRS detection. Months without a VIIRS layer are not in the
-#' output; make_redtide_ascii() serves them from MODIS or the hulls as
+#' For every layer of a satellite-clipped stack (VIIRS, fn.clip_2_viirs(),
+#' or MODIS, fn.clip_2_modis()): outside the nearshore set the
+#' satellite-clipped layer stands, zeros included (where the satellite has
+#' valid observations its result is kept, Yao Yao's condition); inside the
+#' set a cell takes the maximum of the satellite-clipped and hull-clipped
+#' layers of the month, so the sample-based footprint is added nearshore
+#' and never removes a satellite detection. Months not in the output are
+#' served by make_redtide_ascii() from the next source of the cascade as
 #' before.
 #'
-#' @param file_viirs_clipped Path (without extension) to the VIIRS-clipped
-#'   stack from fn.clip_2_viirs().
+#' @param file_sat_clipped Path (without extension) to the satellite-clipped
+#'   stack (`*_clipped_viirs` or `*_clipped_modis`).
 #' @param file_hull_clipped Path (without extension) to the hull-clipped
 #'   stack from fn.clip_2_hulls().
 #' @param file_mask Path (without extension) to the nearshore raster from
 #'   fn.nearshore_mask().
 #' @param file_depth Path to the depth ASCII (ocean/land mask).
-#' @param dir_out Directory to write the *_clipped_hybrid.grd stack into.
-#' @return List: `file` (path without extension), `stack`, and `months`, a
-#'   data frame with one row per VIIRS month: `yrmo`, `cells_changed`
-#'   (cells where the hybrid differs from the VIIRS-clipped layer) and
-#'   `changed`.
-fn.clip_2_hybrid <- function(file_viirs_clipped, file_hull_clipped, file_mask,
-                             file_depth, dir_out) {
+#' @param dir_out Directory to write the hybrid stack into.
+#' @param source `"viirs"` or `"modis"`: names the output
+#'   (`*_clipped_hybrid` for VIIRS, as in issue #11; `*_clipped_hybrid_modis`
+#'   for MODIS, issue #10) and the messages.
+#' @param months Optional character vector of months (`"yyyymm"`) to keep;
+#'   NULL (default) takes every layer of the satellite stack. The driver
+#'   passes the MODIS months that have no VIIRS layer, i.e. the months the
+#'   cascade serves from MODIS, so the hybrid stack holds only months it
+#'   will write.
+#' @return List: `file` (path without extension), `stack`, `source`, and
+#'   `months`, a data frame with one row per layer: `yrmo`, `source`,
+#'   `cells_changed` (cells where the hybrid differs from the
+#'   satellite-clipped layer) and `changed`.
+fn.clip_2_hybrid <- function(file_sat_clipped, file_hull_clipped, file_mask,
+                             file_depth, dir_out, source = c("viirs", "modis"),
+                             months = NULL) {
+  source    <- match.arg(source)
+  label     <- c(viirs = "VIIRS", modis = "MODIS")[[source]]
   depth     <- raster(file_depth)
-  viirs     <- stack(file_viirs_clipped)
+  sat       <- stack(file_sat_clipped)
   hull      <- stack(file_hull_clipped)
   nearshore <- raster(file_mask)
-  compareRaster(depth, viirs, hull, nearshore)
+  compareRaster(depth, sat, hull, nearshore)
   land   <- is.na(values(depth))
   inside <- values(nearshore) %in% 1
-  missing_hull <- setdiff(names(viirs), names(hull))
+  if (!is.null(months)) {
+    keep <- paste0("X", sub("^X", "", months))
+    missing_sat <- setdiff(keep, names(sat))
+    if (length(missing_sat) > 0)
+      stop("No ", label, "-clipped layer for month(s): ",
+           paste(sub("^X", "", missing_sat), collapse = ", "), call. = FALSE)
+    sat <- sat[[keep]]
+  }
+  missing_hull <- setdiff(names(sat), names(hull))
   if (length(missing_hull) > 0)
-    stop("No hull-clipped layer for VIIRS month(s): ",
+    stop("No hull-clipped layer for ", label, " month(s): ",
          paste(sub("^X", "", missing_hull), collapse = ", "), call. = FALSE)
 
   # The same normalisation make_redtide_ascii() applies: NA -> 0 on water
-  # (an all-zero VIIRS month is written with zeros everywhere), land -> NA.
+  # (an all-zero satellite month is written with zeros everywhere), land -> NA.
   norm <- function(v) { v[is.na(v)] <- 0; v[land] <- NA; v }
   hybrid <- stack()
-  rows   <- vector("list", nlayers(viirs))
-  for (i in seq_len(nlayers(viirs))) {
-    nm  <- names(viirs)[i]
-    v   <- norm(values(viirs[[i]]))
+  rows   <- vector("list", nlayers(sat))
+  for (i in seq_len(nlayers(sat))) {
+    nm  <- names(sat)[i]
+    v   <- norm(values(sat[[i]]))
     h   <- norm(values(hull[[which(names(hull) == nm)]]))
     out <- v
     out[inside] <- pmax(v[inside], h[inside])
@@ -153,18 +173,19 @@ fn.clip_2_hybrid <- function(file_viirs_clipped, file_hull_clipped, file_mask,
     r[] <- out
     names(r) <- nm
     hybrid <- addLayer(hybrid, r)
-    rows[[i]] <- data.frame(yrmo = sub("^X", "", nm), cells_changed = n_changed,
+    rows[[i]] <- data.frame(yrmo = sub("^X", "", nm), source = source, cells_changed = n_changed,
                             changed = n_changed > 0, stringsAsFactors = FALSE)
-    cat(sprintf("################## %s: %d nearshore cell(s) changed\n", sub("^X", "", nm), n_changed))
+    cat(sprintf("################## %s (%s): %d nearshore cell(s) changed\n", sub("^X", "", nm), label, n_changed))
   }
-  months <- do.call(rbind, rows)
+  months_tab <- do.call(rbind, rows)
 
-  base <- basename(file_viirs_clipped)
-  base <- if (grepl("_clipped_viirs$", base)) sub("_clipped_viirs$", "_clipped_hybrid", base) else
-    paste0(base, "_clipped_hybrid")
+  suffix <- if (source == "viirs") "_clipped_hybrid" else "_clipped_hybrid_modis"
+  base <- basename(file_sat_clipped)
+  base <- if (grepl(paste0("_clipped_", source, "$"), base))
+    sub(paste0("_clipped_", source, "$"), suffix, base) else paste0(base, suffix)
   file_hybrid <- file.path(dir_out, base)
   writeRaster(hybrid, file_hybrid, overwrite = TRUE)
-  message(sprintf("Hybrid: %d of %d VIIRS month(s) changed by the nearshore rule",
-                  sum(months$changed), nrow(months)))
-  list(file = file_hybrid, stack = hybrid, months = months)
+  message(sprintf("Hybrid (%s): %d of %d month(s) changed by the nearshore rule",
+                  label, sum(months_tab$changed), nrow(months_tab)))
+  list(file = file_hybrid, stack = hybrid, source = source, months = months_tab)
 }

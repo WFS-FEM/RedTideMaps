@@ -225,11 +225,12 @@ if (cfg$use_viirs && cfg$viirs_nearshore != "none") {
                         cfg$viirs_nearshore, nearshore$n_cells,
                         format(round(nearshore$km2), big.mark = ","),
                         nearshore$n_mask_cells, nearshore$n_coast_cells))
-  clip_hybrid <- fn.clip_2_hybrid(file_viirs_clipped = clip_viirs$file,
-                                  file_hull_clipped  = clip_hull$file,
-                                  file_mask          = nearshore$file,
-                                  file_depth         = paths$file_depth,
-                                  dir_out            = paths$clipped_out)
+  clip_hybrid <- fn.clip_2_hybrid(file_sat_clipped  = clip_viirs$file,
+                                  file_hull_clipped = clip_hull$file,
+                                  file_mask         = nearshore$file,
+                                  file_depth        = paths$file_depth,
+                                  dir_out           = paths$clipped_out,
+                                  source            = "viirs")
   rt_log(paths, sprintf("Hybrid: %d of %d VIIRS months changed by the nearshore rule: %s",
                         sum(clip_hybrid$months$changed), nrow(clip_hybrid$months),
                         paste(clip_hybrid$months$yrmo[clip_hybrid$months$changed], collapse = ", ")))
