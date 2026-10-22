@@ -19,6 +19,8 @@ The land cells of the basemap are the NODATA cells of `template rasters/depth 5m
 
 After checkpoint 1 Holden kept the hull fill and narrowed the question to the set: `mask5` against the union of `mask5` and the land-adjacent cells, which captures every VIIRS-masked cell and every cell near the shore by distance or by grid proximity (question 3 below). The first three variants stay as the record of the fill question.
 
+**Decision (Holden, 22 October 2026): the nearshore set is the union.** A Gulf-domain water cell is nearshore if it is in the static VIIRS no-data mask, or its centre is within 5 km of the Natural Earth coastline, or it shares an edge or a corner with a land cell of the basemap; inside it the satellite months take the maximum of the satellite-clipped and hull-clipped maps. The rule is written out in full in `nearshore-set-method.md`; the set is `tables/nearshore_set_issue15.csv` (189 cells) and `figures/fig5_nearshore_set_issue15.png`. Next: the rule in the pipeline as `"mask5adj"`, then the #5 closure.
+
 ## How to run
 
 ```
@@ -34,8 +36,11 @@ RT_QA_STAGE=examine Rscript docs/issue15_adjacent-land-hybrid/check_adjacent_hyb
 
 | File | What |
 |---|---|
-| `issue15-adjacent-land-plan.md` | the plan: the review of where things stood, the facts established before the run, the three decisions, the GitHub workflow, the stage, the verification |
+| `issue15-adjacent-land-plan.md` | the plan: the review of where things stood, the facts established before the run, the three decisions, the GitHub workflow, the stage, the verification; part 2 for the set question |
+| `nearshore-set-method.md` | the decided rule written out: the grid, land and domain; the three criteria (VIIRS no-data mask, within 5 km of the Natural Earth coastline, edge or corner contact with a land cell) with their parameters and sources; the set; how it is used |
 | `check_adjacent_hybrid_issue15.R` | the check script, stage `examine` |
+| `tables/nearshore_set_issue15.csv` | the decided set, one row per cell (189): position, depth, km2, distance to the coastline, the three criteria flags, how many are met, distance to the nearest land cell |
+| `figures/fig5_nearshore_set_issue15.png` | the decided set on the map, coloured by the criteria met, the VIIRS mask outlined, the coastline drawn |
 | `tables/set_coverage_issue15.csv` | one row per candidate set (rook-adjacent, edge-or-corner-adjacent, within 2 cells, adjacent or VIIRS mask, mask5, the union): cells, km2, VIIRS-mask cells covered (of 84), within-5-km cells covered (of 132), land-adjacent cells covered (of 177), mask5 cells covered (of 136), cells not in mask5, Atlantic-box cells excluded |
 | `tables/set_missed_mask_cells_issue15.csv` | the VIIRS-mask cells each candidate misses: cell, row, column, position, depth, distance to the coast, whether it is in the top grid row |
 | `tables/set_cells_issue15.csv` | every cell in any candidate set or in mask5: position, depth, km2, distance to the coast, distance to the nearest basemap land cell (in cells), the set flags (adjacent, within 5 km, VIIRS mask, mask5, union), the Atlantic flag, months the satellite map / the hull map / the raw surface (>= 10k cells/L) is positive there |
