@@ -1,0 +1,6 @@
+"set","cells","km2","viirs_mask_cells_covered","viirs_mask_cells","mask5_cells_covered","mask5_cells","cells_not_in_mask5","mask5_cells_not_in_set","atlantic_cells_excluded"
+"adj4",128,9627,66,84,105,136,23,31,20
+"adj8",177,13311,78,84,124,136,53,12,25
+"ring2",338,25417,84,84,136,136,202,0,40
+"adj8_mask",183,13759,84,84,130,136,53,6,25
+"mask5",136,10227,84,84,136,136,0,0,0
