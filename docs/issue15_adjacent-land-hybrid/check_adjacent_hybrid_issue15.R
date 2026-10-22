@@ -69,6 +69,7 @@ coast_step_m  <- 200      # coastline densified for distances (as fn.nearshore_m
 expected <- list(n_cells = 5148L, n_land = 1310L, n_water = 3838L, n_atl_water = 56L,
                  n_adj8_all = 202L, n_adj8 = 177L, km2_adj8 = 13311, n_adj4 = 128L, n_ring2 = 338L,
                  n_mask = 84L, n_set5 = 136L, km2_set5 = 10227, n_adj8_mask = 183L, n_near5 = 132L, n_union = 189L, km2_union = 14205,
+                 set_classes = c(75L, 49L, 53L, 12L),   # all three criteria; mask or 5 km and adjacent; adjacent only; mask or 5 km, not adjacent
                  adj8_covers_mask = 78L, adj8_covers_set5 = 124L, adj8_not_in_set5 = 53L,
                  n_sat = 278L, n_viirs = 155L, n_modis = 123L, n_hull = 226L,
                  n_zeroed = 58L, n_headline = 16L, n_sel3 = 60L,
@@ -544,6 +545,42 @@ if (stage == "examine") {
                           months_sat_positive = rowSums(S[any_set, ] > 0, na.rm = TRUE), months_hull_positive = rowSums(H[any_set, ] > 0, na.rm = TRUE),
                           months_raw_ge10k = rowSums(Rn[any_set, ] >= thr_bloom, na.rm = TRUE), stringsAsFactors = FALSE)
   write.csv(cells_tab, file.path(dir_tab, "set_cells_issue15.csv"), row.names = FALSE)
+
+  # 8b. The nearshore set decided on 22 October 2026 (Holden): the union. A Gulf-domain
+  # water cell is nearshore if it is in the static VIIRS no-data mask, or its centre is
+  # within 5 km of the coastline, or it shares an edge or a corner with a land cell. The
+  # definitive table (nearshore-set-method.md) and one figure.
+  crit <- cbind(viirs_mask = in_mask, within5km = near5, adjacent = adj8)
+  n_crit <- rowSums(crit)
+  stopifnot(identical(n_crit > 0, union_set))
+  ns <- data.frame(cell = which(union_set), row = row5[union_set], col = col5[union_set], lon = round(xy5[union_set, 1], 4), lat = round(xy5[union_set, 2], 4),
+                   depth_m = round(dv[union_set], 1), km2 = round(cell_km2[union_set], 1), dist_coast_km = round(dist_w[union_set], 2),
+                   viirs_mask = in_mask[union_set], within5km = near5[union_set], adjacent = adj8[union_set], n_criteria = n_crit[union_set],
+                   nearest_land_cells = sapply(which(union_set), nearest_land), stringsAsFactors = FALSE)
+  write.csv(ns, file.path(dir_tab, "nearshore_set_issue15.csv"), row.names = FALSE)
+  cls <- ifelse(n_crit == 3, 1, ifelse(adj8 & n_crit == 2, 2, ifelse(adj8, 3, ifelse(union_set, 4, NA))))
+  cls_n <- tabulate(cls[!is.na(cls)], nbins = 4)
+  stopifnot(sum(cls_n) == sum(union_set), identical(cls_n, expected$set_classes))
+  cat(sprintf("Nearshore set (the union): %d cells, %s km2; all three criteria %d, mask or 5 km and adjacent %d, adjacent only %d, mask or 5 km not adjacent %d; depth median %.1f m (max %.1f); %d of %d water cells\n",
+              sum(union_set), fmt_n(round(sum(cell_km2[union_set]))), cls_n[1], cls_n[2], cls_n[3], cls_n[4], median(dv[union_set]), max(dv[union_set]), sum(union_set), sum(water)))
+  f_fig5 <- png_open(file.path(dir_fig, "fig5_nearshore_set_issue15.png"), width = 11, height = 9.4)
+  par(mar = c(2.8, 3.0, 3.4, 0.8))
+  cls_col <- c("#3f007d", "#9e9ac8", "#e08214", "#1f9fd6")   # all three; two criteria with adjacency; adjacent only; mask or 5 km, not adjacent
+  base_panel(sprintf("The nearshore set: %d cells, %s km2 of the %s water cells (Gulf domain; decided 22 October 2026, issue #15)", sum(union_set), fmt_n(round(sum(cell_km2[union_set]))), fmt_n(sum(water))), axes = TRUE, cex_main = 1.0)
+  rect(xlim[1], ylim[1], xlim[2], ylim[2], col = "white", border = NA)
+  image(xs, ys, to_z(cls), breaks = c(0.5, 1.5, 2.5, 3.5, 4.5), col = cls_col, add = TRUE, useRaster = TRUE)
+  draw_land()
+  half <- raster::res(depth) / 2; mk <- which(in_mask)
+  rect(xy5[mk, 1] - half[1], xy5[mk, 2] - half[2], xy5[mk, 1] + half[1], xy5[mk, 2] + half[2], border = "black", lwd = 0.6)
+  abline(v = -82, h = 28.5, lty = 3, col = "gray40")
+  legend("bottomleft", legend = c(sprintf("all three criteria (%d)", cls_n[1]), sprintf("VIIRS mask or within 5 km, and touching land (%d)", cls_n[2]),
+                                  sprintf("touching land only (%d)", cls_n[3]), sprintf("VIIRS mask or within 5 km, not touching land (%d)", cls_n[4]),
+                                  sprintf("the static VIIRS no-data mask (%d cells, outlined)", sum(in_mask)), "Natural Earth 1:10m coastline (the 5 km reference)",
+                                  "land on the Ecospace basemap (NODATA of the depth grid)", "Atlantic-side box, always excluded"),
+         fill = c(cls_col, NA, NA, "gray82", NA), border = c(rep(NA, 4), "black", NA, "gray60", NA), lty = c(rep(NA, 5), 1, NA, 3), col = c(rep(NA, 5), "gray30", NA, "gray40"),
+         cex = 0.85, bg = "white", box.col = "gray60", title = "Nearshore = in the VIIRS no-data mask, or centre within 5 km of the coastline, or edge or corner contact with a land cell", title.cex = 0.85)
+  box()
+  png_done(f_fig5)
 
   # 9. Per water cell over the satellite months: cumulative exposure and cell-months at or
   # above 100k and 1M cells/L, v6oct, mask5, adj8_sdm.
