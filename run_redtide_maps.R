@@ -7,9 +7,11 @@
 #'   4. Predict to the depth-template grid -> monthly raster stack.
 #'   5. Clip the stack to buffered concave hulls; optionally also to
 #'      MODIS nFLH polygons and VIIRS probability rasters. With
-#'      cfg$viirs_nearshore = "mask5" the hull footprint is added to the
-#'      VIIRS layers inside the nearshore set (the hybrid, issue #11).
-#'   6. Merge clipped stacks (hybrid > VIIRS > MODIS > hulls) -> combined stack.
+#'      cfg$viirs_nearshore / cfg$modis_nearshore = "mask5" the hull
+#'      footprint is added to the satellite layers inside the nearshore
+#'      set (the hybrids, issues #11 and #10).
+#'   6. Merge clipped stacks (hybrid > VIIRS > hybrid_modis > MODIS > hulls)
+#'      -> combined stack.
 #'   7. Write per-month ASCII for Ecospace under out/<res>min/ecospace_ascii/.
 #'   8. Optionally export ASCII files to the external Ecospace ST drivers.
 #'
@@ -74,6 +76,10 @@ cfg <- list(
   # 5 km of the coast) a cell takes max(VIIRS-clipped, hull-clipped); outside it the
   # VIIRS result stands, zeros included.
   viirs_nearshore  = "none",
+  # The same rule for the months served from MODIS nFLH polygons (issue #10): the
+  # same set, max(MODIS-clipped, hull-clipped) inside it. Needs use_viirs (the set
+  # is read from the VIIRS stack) and use_modis.
+  modis_nearshore  = "none",
 
   # Toggles
   use_viirs        = TRUE,
@@ -94,10 +100,19 @@ if (file.exists(file.path(cfg$repo_dir, "config.local.R"))) {
 }
 
 # A mistyped nearshore rule must stop the run here, not in step 5.
-if (!is.character(cfg$viirs_nearshore) || length(cfg$viirs_nearshore) != 1 ||
-    !cfg$viirs_nearshore %in% c("none", "mask5"))
-  stop("cfg$viirs_nearshore must be \"none\" or \"mask5\" (got: ",
-       paste(format(cfg$viirs_nearshore), collapse = ", "), ").", call. = FALSE)
+for (.key in c("viirs_nearshore", "modis_nearshore")) {
+  if (!is.character(cfg[[.key]]) || length(cfg[[.key]]) != 1 ||
+      !cfg[[.key]] %in% c("none", "mask5"))
+    stop("cfg$", .key, " must be \"none\" or \"mask5\" (got: ",
+         paste(format(cfg[[.key]]), collapse = ", "), ").", call. = FALSE)
+}
+if (cfg$modis_nearshore != "none" && !(isTRUE(cfg$use_viirs) && isTRUE(cfg$use_modis)))
+  stop("cfg$modis_nearshore = \"", cfg$modis_nearshore, "\" needs use_viirs = TRUE ",
+       "(the nearshore set is read from the VIIRS stack) and use_modis = TRUE.", call. = FALSE)
+if (cfg$viirs_nearshore != "none" && cfg$modis_nearshore != "none" &&
+    cfg$viirs_nearshore != cfg$modis_nearshore)
+  stop("cfg$viirs_nearshore and cfg$modis_nearshore must name the same set when both are on (got \"",
+       cfg$viirs_nearshore, "\" and \"", cfg$modis_nearshore, "\").", call. = FALSE)
 
 # Check the export destination now rather than after a 20-minute run. It
 # must already exist: creating it would hide a mistyped root.
@@ -211,34 +226,7 @@ if (cfg$use_viirs) {
                                 dir_out    = paths$clipped_out)
 }
 
-# 5b2) Nearshore hybrid (issue #11): inside the nearshore set the hull
-# footprint is added to the VIIRS-clipped layer; outside it the VIIRS
-# result stands, zeros included. Off by default.
-clip_hybrid <- NULL
-if (cfg$use_viirs && cfg$viirs_nearshore != "none") {
-  nearshore <- fn.nearshore_mask(file_viirs = viirs$file,
-                                 file_depth = paths$file_depth,
-                                 file_coast = paths$file_coast,
-                                 rule       = cfg$viirs_nearshore,
-                                 dir_out    = paths$clipped_out)
-  rt_log(paths, sprintf("Nearshore rule %s: %d cells, %s km2 (%d in the VIIRS no-data mask, %d within 5 km of the coast); inside the set max(VIIRS-clipped, hull-clipped), outside it VIIRS as is",
-                        cfg$viirs_nearshore, nearshore$n_cells,
-                        format(round(nearshore$km2), big.mark = ","),
-                        nearshore$n_mask_cells, nearshore$n_coast_cells))
-  clip_hybrid <- fn.clip_2_hybrid(file_sat_clipped  = clip_viirs$file,
-                                  file_hull_clipped = clip_hull$file,
-                                  file_mask         = nearshore$file,
-                                  file_depth        = paths$file_depth,
-                                  dir_out           = paths$clipped_out,
-                                  source            = "viirs")
-  rt_log(paths, sprintf("Hybrid: %d of %d VIIRS months changed by the nearshore rule: %s",
-                        sum(clip_hybrid$months$changed), nrow(clip_hybrid$months),
-                        paste(clip_hybrid$months$yrmo[clip_hybrid$months$changed], collapse = ", ")))
-} else {
-  rt_log(paths, "Nearshore rule: none (VIIRS-clipped layers used as they are)")
-}
-
-# 5c) MODIS nFLH clipping (2003-2012)
+# 5c) MODIS nFLH clipping (2002-07 to 2011-12, and later months without a VIIRS layer)
 clip_modis <- NULL
 if (cfg$use_modis) {
   if (cfg$update_modis) {
@@ -263,12 +251,63 @@ if (cfg$use_modis) {
   }
 }
 
+# 5d) Nearshore hybrids (issues #11 and #10): inside the nearshore set the
+# hull footprint is added to the satellite-clipped layer (cell-wise
+# maximum); outside it the satellite result stands, zeros included. Each
+# rule is off by default. The set is built once, from the VIIRS stack.
+clip_hybrid <- NULL; clip_hybrid_modis <- NULL
+if (cfg$use_viirs && (cfg$viirs_nearshore != "none" || cfg$modis_nearshore != "none")) {
+  rule <- if (cfg$viirs_nearshore != "none") cfg$viirs_nearshore else cfg$modis_nearshore
+  nearshore <- fn.nearshore_mask(file_viirs = viirs$file,
+                                 file_depth = paths$file_depth,
+                                 file_coast = paths$file_coast,
+                                 rule       = rule,
+                                 dir_out    = paths$clipped_out)
+  rt_log(paths, sprintf("Nearshore %s %s: %d cells, %s km2 (%d in the VIIRS no-data mask, %d within 5 km of the coast); inside the set max(satellite-clipped, hull-clipped), outside it the satellite result as is",
+                        if (cfg$viirs_nearshore != "none") "rule" else "set", rule, nearshore$n_cells,
+                        format(round(nearshore$km2), big.mark = ","),
+                        nearshore$n_mask_cells, nearshore$n_coast_cells))
+}
+if (cfg$use_viirs && cfg$viirs_nearshore != "none") {
+  clip_hybrid <- fn.clip_2_hybrid(file_sat_clipped  = clip_viirs$file,
+                                  file_hull_clipped = clip_hull$file,
+                                  file_mask         = nearshore$file,
+                                  file_depth        = paths$file_depth,
+                                  dir_out           = paths$clipped_out,
+                                  source            = "viirs")
+  rt_log(paths, sprintf("Hybrid: %d of %d VIIRS months changed by the nearshore rule: %s",
+                        sum(clip_hybrid$months$changed), nrow(clip_hybrid$months),
+                        paste(clip_hybrid$months$yrmo[clip_hybrid$months$changed], collapse = ", ")))
+} else {
+  rt_log(paths, "Nearshore rule: none (VIIRS-clipped layers used as they are)")
+}
+if (cfg$modis_nearshore != "none" && !is.null(clip_modis)) {
+  # Only the months the cascade serves from MODIS: those without a VIIRS layer.
+  modis_served <- setdiff(sub("^X", "", names(clip_modis$stack)),
+                          sub("^X", "", names(clip_viirs$stack)))
+  clip_hybrid_modis <- fn.clip_2_hybrid(file_sat_clipped  = clip_modis$file,
+                                        file_hull_clipped = clip_hull$file,
+                                        file_mask         = nearshore$file,
+                                        file_depth        = paths$file_depth,
+                                        dir_out           = paths$clipped_out,
+                                        source            = "modis",
+                                        months            = modis_served)
+  rt_log(paths, sprintf("Hybrid (MODIS): %d of %d MODIS-served months changed by the nearshore rule: %s",
+                        sum(clip_hybrid_modis$months$changed), nrow(clip_hybrid_modis$months),
+                        paste(clip_hybrid_modis$months$yrmo[clip_hybrid_modis$months$changed], collapse = ", ")))
+} else if (cfg$modis_nearshore != "none") {
+  rt_log(paths, sprintf("Nearshore rule (MODIS) %s requested but there is no MODIS-clipped stack; skipped", cfg$modis_nearshore))
+} else {
+  rt_log(paths, "Nearshore rule (MODIS): none (MODIS-clipped layers used as they are)")
+}
+
 # 6 + 7) Combine and write ASCII -----------------------------------------
 rt_log(paths, "Step 6: combine clipped stacks + write ASCII for Ecospace")
 combined_path <- make_redtide_ascii(file_hull    = clip_hull$file,
                                     file_viirs   = if (!is.null(clip_viirs)) clip_viirs$file else NULL,
                                     file_modis   = if (!is.null(clip_modis)) clip_modis$file else NULL,
                                     file_hybrid  = if (!is.null(clip_hybrid)) clip_hybrid$file else NULL,
+                                    file_hybrid_modis = if (!is.null(clip_hybrid_modis)) clip_hybrid_modis$file else NULL,
                                     dir_ascii    = paths$ecospace,
                                     dir_combined = paths$combined,
                                     file_depth   = paths$file_depth,
@@ -278,7 +317,7 @@ fn.plot_redtide_stack(file_stack = combined_path, dir_plots = paths$plots_out)
 # Flagged hulls (largest footprint > hull_warn_span_km), reported only for
 # the months the hull path actually serves (use == "pred" in
 # clipping_source.csv; VIIRS and MODIS months never use the hull, and the
-# hybrid months use it only inside the nearshore set). A flag is a prompt
+# hybrid months, VIIRS or MODIS, use it only inside the nearshore set). A flag is a prompt
 # for a human look at the panel, not a failure: a real coast-wide bloom can
 # exceed the threshold.
 hull_diag <- read.csv(file.path(paths$sdm_out, "hull_diagnostics.csv"),
