@@ -82,3 +82,50 @@ Sketch, to size the follow-up: `fn.nearshore_mask()` gains `rule = "adjacent"` (
 
 - `"C:/Program Files/R/R-4.5.1/bin/x64/Rscript.exe" docs/issue15_adjacent-land-hybrid/check_adjacent_hybrid_issue15.R` from the repo root; close any output PDF or PNG in a viewer before a rerun (an open file makes `pdf()` / `png()` fail).
 - Memory: the 504-layer raw stack is 21 MB in memory; the stage reads three 504-layer stacks and two short ones, well under the machine's limits; nothing else running.
+
+## Part 2 (22 October 2026): the union set against mask5, hull fill
+
+After checkpoint 1 Holden kept the hull fill and narrowed the question to the set. The sections below are the approved follow-up plan; section numbers restart.
+
+Follow-up on branch `15-test-adjacent-land-cells-hybrid` (draft PR #16, checkpoint 1 posted 22 Oct 2026). Holden's reading of the checkpoint: keep the hull fill (the sample-supported footprint of #8 / #11 / #10), not the raw sdmTMB fill. The only comparison of interest now is the set: `mask5` (VIIRS mask or centre within 5 km of the coastline) against the union of `mask5` and the land-adjacent cells, which captures every VIIRS-masked cell and every cell near the shore by distance or by grid proximity.
+
+### 1. Context: what the data say (read-only checks, 22 Oct 2026)
+
+- `mask5` is exactly "in the static VIIRS mask OR centre within 5 km of the Natural Earth coastline", 136 cells, 10,227 km2 (recomposed from the #15 set table, equal to the pipeline raster). The land-adjacent set (edge or corner with a NODATA cell of the basemap, Gulf domain) is 177 cells. Their **union is 189 cells, 14,205 km2** = `mask5` + 53 adjacent-only cells; it covers the 84 mask cells, the 132 within-5-km cells and the 177 adjacent cells by construction, and is `mask5` plus one `raster::adjacent()` call on the depth template (no new input).
+- **Why the two parts differ (Holden's questions).** They see different land. Adjacency reaches further than 5 km on the open coast: the 53 adjacent-only cells have centres 5.0 to 12.1 km (median 6.6) from the coastline, because a cell is 8 to 9 km wide and a corner-touching neighbour's centre lies well away from the land cell and further from the coastline inside it (Big Bend, Panhandle bays, south-west coast). Adjacency fails only where the basemap has no land cell: the 12 `mask5`-only cells (median 3.6 km from the coastline) all sit two cells from the nearest basemap land cell, with the coastline within 5 km of their centre. Two are Choctawhatchee Bay cells cut by the map edge (13, 14; treating the northern grid edge as land catches exactly these two and nothing else). Nine are Gulf-side cells against barrier islands or thin peninsulas that the 5-arcmin ETOPO grid draws as water while the Natural Earth coastline draws them as land: 91 and 92 against Okaloosa Island at Destin, 333 off Shell Island (Panama City), 413 off Crooked Island, 649 west of St Joseph Peninsula, 736 and 812 off St George Island (Apalachicola), 2710 off Anna Maria Island at the Tampa Bay mouth, 3573 in Pine Island Sound behind Captiva; 3651 (Sanibel, 5.3 km, in the mask) is the twelfth. All are 4 to 18 m deep and hull-positive in 13 to 157 months. Median distance to the coastline: adjacent cells 3.1 km (max 12.1), `mask5` cells 2.1 km (max 6.3).
+- **With the hull fill, over the 278 satellite months:** `mask5` includes 93.0% of the water samples >= 10k cells/L (12,351 of 13,280), 97.1% of those > 1M, 85.5% in the 58 zeroed months, adds 7.3% exposure, 29,962 cell-months >= 10k, changes 208 months (121 VIIRS + 87 MODIS). The **union: 94.2% (12,515), 97.7%, 88.5%, +8.4%, 30,474 cell-months, 210 months (121 + 89)**. The gain is 164 samples and 1.1 points of exposure, all from the 53 adjacent-only cells. The set is a second-order choice once the fill is the hull.
+
+### 2. Step 1: add the union with the hull fill to the examine stage (in PR #16)
+
+`docs/issue15_adjacent-land-hybrid/check_adjacent_hybrid_issue15.R`, stage `examine`, same inputs. The three committed variants of the fill question (`adj8_sdm`, `adj8m_sdm`, `adj8_hull`) stay as the record; nothing else is added.
+
+- Sets: `near5 <- dist_w <= 5 & domain` (the distances are already computed); assert `set5 == domain & (in_mask | near5)` (the recomposition); `union <- set5 | adj8`, asserted 189 cells, 14,205 km2, covering 84 / 132 / 177; `set_coverage` gains the row `union` and the columns `within5km_cells_covered` (of 132) and `adjacent_cells_covered` (of 177); `set_cells` gains the `within5km` and `union` flags and `nearest_land_cells` (Chebyshev distance to the nearest NODATA cell, 1 or 2 in every set cell).
+- Variant: `union_hull` (189, hull fill) added to `Ms` / `set_of` / `variants`; every table takes it through the existing loops over `keys`. Freeze its headline numbers in `expected` after the first run (12,515 samples included; exposure 7,041,xxx,xxx; 210 months changed).
+- Fig 1 panel 2 becomes the union: `mask5` cells in one colour, the 53 adjacent-only cells in another, the 12 `mask5`-only cells marked, the coastline drawn, the barrier-island cells readable. Fig 2 to 4 unchanged.
+- `comments/examine_summary.md`: a "mask5 vs union, hull fill" table (cells, km2, coverage, exposure ratio, cell-months >= 10k / 100k / 1M, samples included overall, > 1M and in the zeroed months).
+- README results: subsection "Question 3: mask5 or the union, with the hull fill" with that table, the explanation of why the two parts differ (barrier islands, the map edge, the reach of adjacency on the open coast), and the per-era numbers; the docs index row and the #5 summary line updated to say the fill question is settled (hull) and the set is the open choice. The repo copy of the plan gains this part as a section.
+- Rerun twice (byte-identical); spot-check the union in 2017-01 by hand (samples included >= the 113 of `mask5`).
+- Commits: `qa:` (script and outputs), `docs:` (README, index, summary, plan). Follow-up comment on #15 (draft `comments/issue15-union-comment.md`, gitignored): the answer to the set question and the table; PR #16 body updated. Then Holden picks `mask5` or the union.
+
+### 3. Step 2, if the pick is the union: the rule in the pipeline (in PR #16, as #10 carried examine and implementation together)
+
+Rule name `"mask5adj"` (mask5 plus adjacency; the name carries the lineage).
+
+- **`feat:`** `fn.nearshore_mask()` in `scripts/process_hybrid.R`: `rule <- match.arg(rule, c("mask5", "mask5adj"))`; a third part, `adjacent`, from the depth template with `raster::adjacent(depth, cells = which(!land), directions = 8, pairs = TRUE)` keeping the water cell of each pair whose neighbour is land, computed only for `"mask5adj"`; `set <- domain & (in_mask | near_coast | adjacent)`; the message and the returned list gain `n_adjacent_cells`; the file is `nearshore_mask_<rule>.grd` as now. `fn.clip_2_hybrid()` unchanged (the fill stays the hull). The `"mask5"` path is untouched by construction.
+- **`config:`** `run_redtide_maps.R` validation (L103-115) accepts `"mask5adj"` for both keys (same-set check unchanged); the log line already names the rule and the set size; `config.local.example.R` lists the value; root README config table and cascade bullet mention it.
+- **`test:`** stage `rule` in the #15 script, after a run with both keys `"mask5adj"` and `fwc_refresh = FALSE`: use counts 155 hybrid / 123 hybrid_modis / 226 pred; the set raster has 189 cells and 14,205 km2; the two hybrid stacks equal the satellite-clipped stacks outside the set and the cell-wise maximum inside it, never below; the per-month metrics equal the `union_hull` prototype in all 278 months (the 11 metrics of the #11 check); the changed ASCII files are exactly the `hybrid_changed` months (210 = 121 VIIRS + 89 MODIS); MD5 table against the 6 Oct baseline. Then run 0 (both `"none"`): the unchanged #11 stage `none` (6 Oct byte for byte). Two runs of about 8 min each, alone on the machine, `git checkout -- out/5min/ecospace_ascii out/5min/plots` after each.
+- **`docs:`** README results for the runs; one line each in the #11 and #10 READMEs (a third rule value exists); the #5 summary section 6 names the chosen rule.
+
+### 4. Then the #5 closure (the existing implementation plan, rule name substituted)
+
+Flip both defaults to the chosen rule in `run_redtide_maps.R`, `config.local.example.R` and the README; regenerate once (decide `fwc_refresh`); commit the 504 ASCII files and the plots; export to Ecospace; closing comment on #5; PR #16 marked ready and merged with a merge commit. Holden's `config.local.R` still has both keys `"none"` and `fwc_refresh = FALSE`.
+
+### 5. Verification
+
+1. Step 1: the stage runs twice with identical MD5s; the recomposition and coverage assertions pass; the union numbers of section 1 (189 cells, 12,515 samples included, +8.4%, 210 months) reappear in the tables; fig 1 panel 2 shows the 53 adjacent-only and 12 `mask5`-only cells.
+2. Step 2: the `rule` stage reports 278 of 278 months equal to the prototype and 210 changed files; the `none` stage passes; `git status` clean apart from the gitignored comment drafts.
+
+### 6. Run notes
+
+- `"C:/Program Files/R/R-4.5.1/bin/x64/Rscript.exe" docs/issue15_adjacent-land-hybrid/check_adjacent_hybrid_issue15.R` from the repo root, about two minutes; close any output PDF or PNG in a viewer first.
+- Wording: `>=10k`, `>=100k`, `>1M cells/L`; the Atlantic-side box is always excluded (asserted).
