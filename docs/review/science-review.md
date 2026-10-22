@@ -11,7 +11,7 @@ Cite as: Harris, H. E. (2026). Science and Objectives Review: RedTideMaps. docs/
 Version history: 2026-10-06 first draft (review-only audit, docs/review/draft-repo-audit-log.md).
 ```
 
-Sources are cited in square brackets: `[file:line]` for code, `[README "section"]`, `[commit sha]`, `[plan §n]` for `docs/issue3-hull-fix-plan.md`, `[run 2026-09-30]` for the intermediates left by the last pipeline run on the reviewer's machine (`out/5min/`), and `[unexplained]` where neither the code nor the documentation gives a reason.
+Sources are cited in square brackets: `[file:line]` for code, `[README "section"]`, `[commit sha]`, `[plan §n]` for `docs/issue_3-hull-polygons/issue3-hull-fix-plan.md`, `[run 2026-09-30]` for the intermediates left by the last pipeline run on the reviewer's machine (`out/5min/`), and `[unexplained]` where neither the code nor the documentation gives a reason.
 
 ## 1. Summary
 
@@ -144,7 +144,7 @@ The product is 504 monthly maps for 1985 to 2026 on the 5-min grid, committed in
 - Anderson, S. C., Ward, E. J., English, P. A., and Barnett, L. A. K. 2022. sdmTMB: an R package for fast, flexible, and user-friendly generalized linear mixed effects models with spatial and spatiotemporal random fields. bioRxiv. https://pbs-assess.github.io/sdmTMB/
 - Park, J.-S. and Oh, S.-J. 2012. A new concave hull algorithm and concaveness measure for n-dimensional datasets. Journal of Information Science and Engineering 28: 587-600. [concaveman]
 - FWC red tide status scale: https://myfwc.com/research/redtide/statewide/
-- Repository history: WFS-FEM/RedTideMaps issues #1, #3; pull requests #2, #4; `docs/issue3-hull-fix-plan.md`.
+- Repository history: WFS-FEM/RedTideMaps issues #1, #3; pull requests #2, #4; `docs/issue_3-hull-polygons/issue3-hull-fix-plan.md`.
 
 ## 9. Appendices
 
@@ -165,7 +165,7 @@ The product is 504 monthly maps for 1985 to 2026 on the 5-min grid, committed in
 | Item | Source |
 |---|---|
 | Example map, September 2018 (`example_201809.png`) | README; committed deliverable `out/5min/ecospace_ascii/sdmTMB_log__201809.asc` |
-| Before/after hull figure (`docs/issue3_hull_before_after.png`) and `out/5min/plots/hull_check_issue3.pdf` | issue #3 QA script, 30 Sept 2026 |
+| Before/after hull figure (`docs/issue_3-hull-polygons/issue3_hull_before_after.png`) and `out/5min/plots/hull_check_issue3.pdf` | issue #3 QA script, 30 Sept 2026 |
 | Monthly panels, `out/5min/plots/sdmTMB_log_stack_198501-202612_clipped_combined.pdf` and `sdmTMB log maps.pdf` | pipeline run of 30 Sept 2026 (regenerated identically on 6 Oct) |
 | Table §4 (data sources) | README "Inputs", the tracked files, Doc C §3 |
 | Table §6 (months by footprint source and fit status) | `clipping_source.csv`, `RT_fit_matrix.RData`, `hull_diagnostics.csv` of the 30 Sept run, cross-tabulated on 6 Oct (Doc C §3) |
