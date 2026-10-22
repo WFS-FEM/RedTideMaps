@@ -18,12 +18,31 @@
 #'               tables/modis_never_positive_bands_issue10.csv,
 #'               figures/fig1_examine_months_issue10.pdf, figures/fig2_examine_series_issue10.png,
 #'               figures/fig3_excluded_samples_issue10.png, comments/examine_summary.md
+#'   regress  after run A (cfg$viirs_nearshore = "mask5", cfg$modis_nearshore = "none",
+#'            fwc_refresh = FALSE): the 504 ASCII files must equal the issue #11 "mask5"
+#'            run byte for byte (the refactor and the cascade change alter nothing)
+#'            -> tables/md5_runA_issue10.csv
+#'   mask5    after run B (both "mask5"): only the MODIS-served months with a nearshore
+#'            hull change, the MODIS hybrid stack equals the examine prototype in every
+#'            month, the VIIRS hybrid and hull months are untouched
+#'            -> tables/md5_runB_issue10.csv, tables/hybrid_modis_vs_prototype_issue10.csv
+#'   compare  the whole record as Ecospace reads it, three variants: the 6 October 2026
+#'            maps (satellite only), the VIIRS hybrid (#11, run A) and both hybrids
+#'            (#10, run B), read from docs/issue11_nearshore-hybrid-pipeline/hoard/before/,
+#'            hoard/before/ and hoard/after/ (combined stacks and clipping_source.csv of
+#'            the runs; hoard/ folders are gitignored)
+#'            -> tables/record_months_issue10.csv, tables/record_annual_issue10.csv,
+#'               tables/record_groups_issue10.csv, tables/cells_modis_issue10.csv,
+#'               figures/fig4_record_1985-2026_issue10.png, figures/fig5_cells_modis_issue10.png,
+#'               comments/compare_summary.md
+#'   (run 0, both "none", is checked by the unchanged issue #11 stage `none`.)
 #'
 #' Run from the repo root:
 #'   RT_QA_STAGE=examine Rscript docs/issue10_modis-nearshore-hybrid/check_modis_hybrid_issue10.R
-#'   RT_QA_PNG_DIR=<folder> adds PNG previews of the fig 1 pages.
-#' Needs out/5min/clipped/nearshore_mask_mask5.grd from a run with
-#' cfg$viirs_nearshore = "mask5" (issue #11) and the 6 October 2026 combined stack in
+#'   RT_QA_STAGE=regress ...   RT_QA_STAGE=mask5 ...   RT_QA_STAGE=compare ...
+#'   RT_QA_PNG_DIR=<folder> adds PNG previews of the fig 1 pages (stage examine).
+#' Needs out/5min/clipped/nearshore_mask_mask5.grd from a run with a nearshore rule on
+#' and the 6 October 2026 combined stack in
 #' docs/issue11_nearshore-hybrid-pipeline/hoard/before/combined/ (the delivered maps).
 
 # Repo root: the working directory if it holds the .Rproj, else two levels above this script.
@@ -37,7 +56,7 @@
   stop("Run from the repo root: Rscript docs/issue10_modis-nearshore-hybrid/check_modis_hybrid_issue10.R", call. = FALSE)
 })
 source(file.path(.root, "scripts", "_setup.R"))   # sf, raster, viridis, ...
-stage <- match.arg(Sys.getenv("RT_QA_STAGE", "examine"), c("examine"))
+stage <- match.arg(Sys.getenv("RT_QA_STAGE", "examine"), c("examine", "regress", "mask5", "compare"))
 message("Issue #10 check, stage: ", stage)
 
 # Parameters ---------------------------------------------------------------------
@@ -58,7 +77,11 @@ expected <- list(n_modis = 123L, n_set = 136L, km2_set = 10227, n_changed = 87L,
                  n_excluded = 799L, excluded_in_set = 301L, excluded_recovered = 299L,
                  set_cells_modis_pos = 132L, exposure_before = 2374510206,
                  n_ge5 = 60L, n_lowinc_before = 10L, n_lowinc_after = 2L,
-                 n_nobloom_before = 8L, n_nobloom_after = 7L, n_allzero = 29L)
+                 n_nobloom_before = 8L, n_nobloom_after = 7L, n_allzero = 29L,
+                 # the runs (issue #11 figures for the VIIRS side)
+                 n_ascii = 504L, n_viirs = 155L, n_changed_viirs = 121L,
+                 use_runA = c(hybrid = 155L, modis = 123L, pred = 226L),
+                 use_runB = c(hybrid = 155L, hybrid_modis = 123L, pred = 226L))
 
 # Paths --------------------------------------------------------------------------
 dir_out      <- file.path(.root, "out", "5min")
@@ -69,6 +92,10 @@ dir_tab      <- file.path(dir_docs, "tables")
 dir_fig      <- file.path(dir_docs, "figures")
 dir_cmt      <- file.path(dir_docs, "comments")
 dir_hoard11  <- file.path(.root, "docs", "issue11_nearshore-hybrid-pipeline", "hoard")
+dir_tab11    <- file.path(.root, "docs", "issue11_nearshore-hybrid-pipeline", "tables")
+dir_hoard    <- file.path(dir_docs, "hoard")
+dir_ascii    <- file.path(dir_out, "ecospace_ascii")
+dir_combined <- file.path(dir_out, "combined")
 for (d in c(dir_tab, dir_fig, dir_cmt)) dir.create(d, recursive = TRUE, showWarnings = FALSE)
 one_file <- function(dir, pattern, what) {
   f <- list.files(dir, pattern = pattern, full.names = TRUE)
@@ -541,5 +568,299 @@ if (stage == "examine") {
   cat(md, sep = "\n")
   message("Stage examine OK: ", sum(em$changed), " of ", nrow(em), " MODIS months change; samples included ",
           round(100 * gall$share_samples_ge1e4_before, 1), "% -> ", round(100 * gall$share_samples_ge1e4_after, 1), "%.")
+}
+# Shared by the stages after a pipeline run ----------------------------------------
+if (stage %in% c("regress", "mask5")) {
+  # The run log: the block of the latest run in the newest run_<date>.log.
+  run_block <- local({
+    lf <- list.files(dir_out, pattern = "^run_[0-9]{8}[.]log$", full.names = TRUE)
+    if (length(lf) == 0) return(character(0))
+    x <- readLines(lf[which.max(file.mtime(lf))], warn = FALSE)
+    s <- grep("Starting run", x); if (length(s) == 0) return(x)
+    x[s[length(s)]:length(x)]
+  })
+  run_minutes <- local({
+    ts <- as.POSIXct(sub("^\\[([^]]+)\\].*", "\\1", run_block[grepl("^\\[", run_block)]), format = "%Y-%m-%d %H:%M:%S")
+    if (length(ts) < 2) NA_real_ else round(as.numeric(difftime(max(ts), min(ts), units = "mins")), 1)
+  })
+  # MD5 of the 504 ASCII files against the 6 Oct 2026 baseline and the issue #11 "mask5"
+  # run (VIIRS hybrid on, no MODIS rule), joined to clipping_source.csv of the run.
+  md5_table <- function() {
+    base <- read.csv(file.path(dir_tab11, "md5_baseline_issue11.csv"), colClasses = "character")
+    m11  <- read.csv(file.path(dir_tab11, "md5_mask5_issue11.csv"), colClasses = "character")
+    stopifnot(nrow(base) == expected$n_ascii, identical(sort(base$yrmo), sort(m11$yrmo)))
+    f <- file.path(dir_ascii, base$file); stopifnot(all(file.exists(f)))
+    extra <- setdiff(list.files(dir_ascii, pattern = "[.]asc$"), base$file)
+    if (length(extra) > 0) stop("Unexpected ASCII files: ", paste(extra, collapse = ", "), call. = FALSE)
+    stopifnot(identical(sort(cs$yrmo), sort(base$yrmo)), all(c("hybrid", "hybrid_modis", "hybrid_changed", "use") %in% names(cs)))
+    m <- match(base$yrmo, cs$yrmo); j <- match(base$yrmo, m11$yrmo)
+    d <- data.frame(yrmo = base$yrmo, file = base$file, use = cs$use[m], hybrid = cs$hybrid[m], hybrid_modis = cs$hybrid_modis[m],
+                    hybrid_changed = cs$hybrid_changed[m], md5_6oct = base$md5, md5_runA_ref = m11$md5_after[j],
+                    md5_now = unname(tools::md5sum(f)), stringsAsFactors = FALSE)
+    d$changed_vs_runA <- d$md5_now != d$md5_runA_ref
+    d$changed_vs_6oct <- d$md5_now != d$md5_6oct
+    d
+  }
+  report_run <- function(d) {
+    use_counts <- table(d$use)
+    cat("clipping_source.csv use:", paste(names(use_counts), as.integer(use_counts), collapse = ", "), "\n")
+    cat("ASCII files changed vs the #11 mask5 run (= run A):", sum(d$changed_vs_runA), "of", nrow(d),
+        "; vs the 6 Oct 2026 baseline:", sum(d$changed_vs_6oct), "\n")
+    cat("Run log:", if (length(run_block)) paste0(length(run_block), " lines, ", run_minutes, " min") else "not found", "\n")
+    cat(grep("Nearshore|Hybrid|Step 1|Hulls:|Run complete", run_block, value = TRUE), sep = "\n")
+  }
+}
+
+# Stage regress ----------------------------------------------------------------------
+if (stage == "regress") {
+  d <- md5_table()
+  write.csv(d, file.path(dir_tab, "md5_runA_issue10.csv"), row.names = FALSE)
+  report_run(d)
+  use_counts <- table(factor(d$use, levels = names(expected$use_runA)))
+  # clipping_source.csv equals the #11 mask5 run's apart from the new all-FALSE column.
+  cs11 <- read.csv(file.path(dir_hoard11, "after", "clipping_source.csv"), stringsAsFactors = FALSE)
+  cs11$yrmo <- sub("^X", "", cs11$yrmo)
+  cols <- c("yrmo", "pred", "viirs", "modis", "hybrid", "hybrid_changed", "use")
+  norm_df <- function(x) { x <- x[order(x$yrmo), cols]; rownames(x) <- NULL; x }
+  stopifnot(sum(d$changed_vs_runA) == 0, all(as.integer(use_counts) == expected$use_runA),
+            !any(d$hybrid_modis %in% TRUE), sum(d$hybrid_changed %in% TRUE) == expected$n_changed_viirs,
+            identical(norm_df(cs), norm_df(cs11)),
+            any(grepl("Nearshore rule mask5", run_block)), any(grepl("Nearshore rule \\(MODIS\\): none", run_block)),
+            any(grepl("fwc_refresh = FALSE", run_block)))
+  message("Stage regress OK: 0 of ", nrow(d), " ASCII files differ from the #11 mask5 run; use counts ",
+          paste(names(use_counts), as.integer(use_counts), collapse = ", "), ".")
+}
+
+# Stage mask5 ------------------------------------------------------------------------
+if (stage == "mask5") {
+  d <- md5_table()
+  write.csv(d, file.path(dir_tab, "md5_runB_issue10.csv"), row.names = FALSE)
+  report_run(d)
+  use_counts <- table(factor(d$use, levels = names(expected$use_runB)))
+  chg <- d$changed_vs_runA
+  stopifnot(all(as.integer(use_counts) == expected$use_runB),
+            all(d$hybrid == (d$use == "hybrid")), all(d$hybrid_modis == (d$use == "hybrid_modis")),
+            all(d$use[chg] == "hybrid_modis"), identical(chg, d$use == "hybrid_modis" & d$hybrid_changed %in% TRUE),
+            sum(chg) == expected$n_changed, sum(d$hybrid_changed[d$use == "hybrid"] %in% TRUE) == expected$n_changed_viirs,
+            any(grepl("Nearshore rule mask5", run_block)),
+            any(grepl(sprintf("Hybrid \\(MODIS\\): %d of %d MODIS-served months changed", expected$n_changed, expected$n_modis), run_block)),
+            any(grepl(sprintf("Hybrid: %d of %d VIIRS months changed", expected$n_changed_viirs, expected$n_viirs), run_block)),
+            any(grepl("fwc_refresh = FALSE", run_block)))
+
+  # The set, as in #11.
+  mask_r <- raster::raster(file_mask)
+  stopifnot(raster::compareRaster(depth, mask_r))
+  mv <- raster::values(mask_r); set <- mv %in% 1
+  stopifnot(all(is.na(mv) == land), sum(set) == expected$n_set, round(sum(cell_km2[set])) == expected$km2_set)
+
+  # The MODIS hybrid stack against the MODIS- and hull-clipped stacks and the examine prototype.
+  Mc <- read_mat(grd(one_file(dir_clipped, "_clipped_modis[.]grd$", "MODIS-clipped stack")))
+  H  <- read_mat(grd(one_file(dir_clipped, "_clipped_hull[.]grd$", "hull-clipped stack")))
+  Hy <- read_mat(grd(one_file(dir_clipped, "_clipped_hybrid_modis[.]grd$", "MODIS hybrid stack")))
+  stopifnot(identical(colnames(Hy), months), all(months %in% colnames(Mc)), all(months %in% colnames(H)))
+  B <- norm_map(Mc[, months]); Hm <- norm_map(H[, months])
+  stopifnot(all(is.na(Hy) == land), same(Hy[!set, ], B[!set, ]), same(Hy[set, ], pmax(B[set, ], Hm[set, ])), all(Hy[water, ] >= B[water, ]))
+  em <- read.csv(file.path(dir_tab, "examine_months_issue10.csv"), colClasses = c(yrmo = "character"), stringsAsFactors = FALSE)
+  stopifnot(identical(em$yrmo, months))
+  mH <- metrics_of(Hy); eH <- expo_of(Hy)
+  pts <- load_samples(months); pw <- pts[pts$water, ]; sH <- samples_of(Hy, pw, months)
+  cmp <- data.frame(yrmo = months,
+                    fp_km2 = round(mH$fp_km2), fp_km2_proto = em$fp_km2_after,
+                    a1e4_km2 = round(mH$a1e4_km2), a1e4_km2_proto = em$a1e4_km2_after,
+                    a1e5_km2 = round(mH$a1e5_km2), a1e5_km2_proto = em$a1e5_km2_after,
+                    max_cells = signif(mH$max_cells, 10), max_cells_proto = signif(em$max_cells_after, 10),
+                    exposure = round(eH$exposure), exposure_proto = em$exposure_after,
+                    n_ge1e4 = eH$n_ge1e4, n_ge1e4_proto = em$n_ge1e4_after,
+                    n_ge1e5 = eH$n_ge1e5, n_ge1e5_proto = em$n_ge1e5_after,
+                    n_ge1e6 = eH$n_ge1e6, n_ge1e6_proto = em$n_ge1e6_after,
+                    cells_changed = colSums(Hy != B, na.rm = TRUE), cells_changed_proto = em$cells_changed,
+                    in_ge1e4 = sH$in_ge1e4, in_ge1e4_proto = em$samples_ge1e4_in_after,
+                    in_high = sH$in_high, in_high_proto = em$samples_high_in_after,
+                    removed_cells = colSums(Hy == 0 & B > 0, na.rm = TRUE),
+                    ascii_changed = chg[match(months, d$yrmo)], stringsAsFactors = FALSE)
+  pairs <- c("fp_km2", "a1e4_km2", "a1e5_km2", "max_cells", "exposure", "n_ge1e4", "n_ge1e5", "n_ge1e6", "cells_changed", "in_ge1e4", "in_high")
+  cmp$equal <- Reduce(`&`, lapply(pairs, function(k) cmp[[k]] == cmp[[paste0(k, "_proto")]]))
+  write.csv(cmp, file.path(dir_tab, "hybrid_modis_vs_prototype_issue10.csv"), row.names = FALSE)
+  cat("Months equal to the examine prototype on all", length(pairs), "metrics:", sum(cmp$equal), "of", nrow(cmp), "\n")
+  if (any(!cmp$equal)) print(cmp[!cmp$equal, ])
+  stopifnot(all(cmp$equal), all(cmp$removed_cells == 0), identical(cmp$ascii_changed, cmp$cells_changed > 0),
+            sum(cmp$cells_changed > 0) == expected$n_changed)
+
+  # The combined stack of the run: the MODIS-served months are the MODIS hybrid, every
+  # other month equals the #11 mask5 run (VIIRS hybrid and hull months untouched).
+  Cb   <- read_mat(grd(one_file(dir_combined, "_clipped_combined[.]grd$", "combined stack")))
+  Ca11 <- read_mat(grd(one_file(file.path(dir_hoard11, "after", "combined"), "_clipped_combined[.]grd$", "#11 mask5 combined stack")))
+  other <- setdiff(colnames(Cb), months)
+  stopifnot(ncol(Cb) == expected$n_ascii, identical(colnames(Cb), colnames(Ca11)), same(Cb[, other], Ca11[, other]), same(Cb[, months], Hy))
+  message("Stage mask5 OK: ", sum(chg), " ASCII files changed, all MODIS-served months with a nearshore hull; set ", sum(set),
+          " cells; the MODIS hybrid equals the prototype in every month; VIIRS hybrid and hull months untouched.")
+}
+
+# Stage compare ----------------------------------------------------------------------
+if (stage == "compare") {
+  f0 <- one_file(file.path(dir_hoard11, "before", "combined"), "_clipped_combined[.]grd$", "6 Oct 2026 combined stack")
+  fA <- one_file(file.path(dir_hoard, "before", "combined"),   "_clipped_combined[.]grd$", "run A combined stack")
+  fB <- one_file(file.path(dir_hoard, "after", "combined"),    "_clipped_combined[.]grd$", "run B combined stack")
+  M0 <- read_mat(grd(f0)); MA <- read_mat(grd(fA)); MB <- read_mat(grd(fB)); all_yrmo <- colnames(M0)
+  stopifnot(identical(all_yrmo, colnames(MA)), identical(all_yrmo, colnames(MB)), ncol(M0) == expected$n_ascii,
+            all(is.na(M0) == land), all(is.na(MA) == land), all(is.na(MB) == land))
+  csB <- read.csv(file.path(dir_hoard, "after", "clipping_source.csv"), stringsAsFactors = FALSE); csB$yrmo <- sub("^X", "", csB$yrmo)
+  mcs <- match(all_yrmo, csB$yrmo); stopifnot(!anyNA(mcs))
+  use <- csB$use[mcs]; hyb_chg <- csB$hybrid_changed[mcs] %in% TRUE
+  use_counts <- table(factor(use, levels = names(expected$use_runB)))
+  is_modis <- use == "hybrid_modis"; is_viirs <- use == "hybrid"; is_hull <- use == "pred"
+  stopifnot(all(as.integer(use_counts) == expected$use_runB), identical(sort(all_yrmo[is_modis]), months),
+            same(MA[, !is_modis], MB[, !is_modis]), all(MB[water, ] >= MA[water, ]),
+            same(M0[, !is_viirs], MA[, !is_viirs]), all(MA[water, ] >= M0[water, ]),
+            sum(hyb_chg[is_modis]) == expected$n_changed, sum(hyb_chg[is_viirs]) == expected$n_changed_viirs)
+  n_water <- sum(water)
+  variants <- c(v6oct = "6 Oct 2026 (satellite only)", v11 = "VIIRS hybrid (#11)", v10 = "VIIRS + MODIS hybrids (#10)")
+  Ms <- list(v6oct = M0, v11 = MA, v10 = MB)
+  pts <- load_samples(all_yrmo); pw <- pts[pts$water, ]
+  # expo_of() has its own n_ge1e4 (cells), so the sample counts get their own names.
+  per <- lapply(Ms, function(M) { s <- samples_of(M, pw, all_yrmo)
+    cbind(expo_of(M), samples_ge1e4 = s$n_ge1e4, in_ge1e4 = s$in_ge1e4, samples_high = s$n_high, in_high = s$in_high) })
+  stopifnot(identical(per$v6oct$samples_ge1e4, per$v10$samples_ge1e4), all(per$v11$in_ge1e4 >= per$v6oct$in_ge1e4), all(per$v10$in_ge1e4 >= per$v11$in_ge1e4))
+  m6 <- match(all_yrmo, tab6$yrmo); stopifnot(!anyNA(m6))
+  rec <- data.frame(yrmo = all_yrmo, year = as.integer(substr(all_yrmo, 1, 4)), month = as.integer(substr(all_yrmo, 5, 6)),
+                    use = use, hybrid_changed = hyb_chg, fit_status = tab6$fit_status[m6], viirs_status = tab6$viirs_status[m6], stringsAsFactors = FALSE)
+  metrics <- c("exposure", "n_ge1e4", "n_ge1e5", "n_ge1e6", "in_ge1e4", "in_high")
+  rec$samples_ge1e4 <- per$v6oct$samples_ge1e4; rec$samples_high <- per$v6oct$samples_high
+  for (k in names(Ms)) for (mt in metrics) rec[[paste0(mt, "_", k)]] <- per[[k]][[mt]]
+  write.csv(round_cols(rec), file.path(dir_tab, "record_months_issue10.csv"), row.names = FALSE)
+  # The MODIS months of run B equal the examine stage.
+  eg <- read.csv(file.path(dir_tab, "examine_groups_issue10.csv"), stringsAsFactors = FALSE)
+  stopifnot(round(sum(rec$exposure_v10[is_modis])) == eg$exposure_after[1], sum(rec$in_ge1e4_v10[is_modis]) == eg$samples_ge1e4_in_after[1],
+            round(sum(rec$exposure_v11[is_modis])) == eg$exposure_before[1], sum(rec$in_ge1e4_v11[is_modis]) == eg$samples_ge1e4_in_before[1])
+
+  sum_block <- function(d) {
+    r <- data.frame(n_months = nrow(d), months_changed_11 = sum(d$hybrid_changed & d$use == "hybrid"), months_changed_10 = sum(d$hybrid_changed & d$use == "hybrid_modis"))
+    share <- function(num, den) if (den > 0) round(num / den, 3) else NA_real_
+    for (k in names(Ms)) {
+      r[[paste0("exposure_", k)]] <- sum(d[[paste0("exposure_", k)]])
+      for (mt in c("n_ge1e4", "n_ge1e5", "n_ge1e6")) r[[paste0("cellmonths_", sub("^n_", "", mt), "_", k)]] <- sum(d[[paste0(mt, "_", k)]])
+    }
+    r$samples_ge1e4 <- sum(d$samples_ge1e4); r$samples_high <- sum(d$samples_high)
+    for (k in names(Ms)) { r[[paste0("in_ge1e4_", k)]] <- sum(d[[paste0("in_ge1e4_", k)]]); r[[paste0("share_ge1e4_", k)]] <- share(r[[paste0("in_ge1e4_", k)]], r$samples_ge1e4) }
+    for (k in names(Ms)) { r[[paste0("in_high_", k)]] <- sum(d[[paste0("in_high_", k)]]); r[[paste0("share_high_", k)]] <- share(r[[paste0("in_high_", k)]], r$samples_high) }
+    r$exposure_ratio_11 <- if (r$exposure_v6oct > 0) round(r$exposure_v11 / r$exposure_v6oct, 3) else NA_real_
+    r$exposure_ratio_10 <- if (r$exposure_v6oct > 0) round(r$exposure_v10 / r$exposure_v6oct, 3) else NA_real_
+    r
+  }
+  ann <- do.call(rbind, lapply(split(rec, rec$year), function(d) cbind(year = d$year[1], clip_sources = paste(sort(unique(d$use)), collapse = "/"), sum_block(d))))
+  rownames(ann) <- NULL
+  write.csv(round_cols(ann), file.path(dir_tab, "record_annual_issue10.csv"), row.names = FALSE)
+  groups <- list(all_yrmo, all_yrmo[is_hull], all_yrmo[is_viirs], all_yrmo[is_modis], all_yrmo[is_viirs | is_modis])
+  names(groups) <- c(sprintf("all %d months 1985-2026", length(all_yrmo)), sprintf("the %d hull months", sum(is_hull)),
+                     sprintf("the %d VIIRS months", sum(is_viirs)), sprintf("the %d MODIS months", sum(is_modis)),
+                     sprintf("the %d satellite months", sum(is_viirs | is_modis)))
+  grp <- do.call(rbind, lapply(names(groups), function(lab) cbind(group = lab, sum_block(rec[rec$yrmo %in% groups[[lab]], ]), stringsAsFactors = FALSE)))
+  rownames(grp) <- NULL
+  write.csv(round_cols(grp), file.path(dir_tab, "record_groups_issue10.csv"), row.names = FALSE)
+
+  # Per cell over the MODIS months: cumulative exposure and cell-months >= 100,000 and 1,000,000 cells/L, run A vs run B.
+  cum_b <- rowSums(MA[, is_modis]); cum_a <- rowSums(MB[, is_modis])
+  n5_b <- rowSums(MA[, is_modis] >= 1e5); n5_a <- rowSums(MB[, is_modis] >= 1e5); n6_b <- rowSums(MA[, is_modis] >= 1e6); n6_a <- rowSums(MB[, is_modis] >= 1e6)
+  cells <- data.frame(cell = which(water), lon = round(xy5[water, 1], 4), lat = round(xy5[water, 2], 4), depth_m = round(dv[water], 1),
+                      exposure_before = cum_b[water], exposure_after = cum_a[water], exposure_added = (cum_a - cum_b)[water],
+                      cellmonths_ge1e5_before = n5_b[water], cellmonths_ge1e5_after = n5_a[water],
+                      cellmonths_ge1e6_before = n6_b[water], cellmonths_ge1e6_after = n6_a[water])
+  write.csv(round_cols(cells), file.path(dir_tab, "cells_modis_issue10.csv"), row.names = FALSE)
+
+  # Fig 4: the whole record, three variants, the #11 five-panel layout.
+  use_col <- c(pred = grDevices::adjustcolor("gray40", 0.12), hybrid_modis = grDevices::adjustcolor("steelblue", 0.18), hybrid = grDevices::adjustcolor("gold", 0.22))
+  zero_col <- grDevices::adjustcolor("gray40", 0.3); miss_col <- grDevices::adjustcolor("red", 0.25)
+  vcol <- c(v6oct = "black", v11 = "dodgerblue3", v10 = "purple3"); vpch <- c(v6oct = 16, v11 = 2, v10 = 1)
+  min_samples_share <- 5L
+  draw_record <- function(d, title) {
+    n <- nrow(d); x <- seq_len(n); few <- d$samples_ge1e4 < min_samples_share
+    panel_of <- function(mt, lab, main, pts = FALSE, div = 1) list(y = lapply(names(Ms), function(k) { y <- d[[paste0(mt, "_", k)]] / div; if (pts) { y <- y / d$samples_ge1e4; y[few] <- NA }; y }), lab = lab, main = main, pts = pts)
+    panels <- list(panel_of("exposure", "million cells/L (sum over water cells)", sprintf("Total exposure: cells/L summed over the %s water cells", fmt_n(n_water)), div = 1e6),
+                   panel_of("n_ge1e4", "cells", "Grid cells at or above 10,000 cells/L"),
+                   panel_of("n_ge1e5", "cells", "Grid cells at or above 100,000 cells/L"),
+                   panel_of("n_ge1e6", "cells", "Grid cells at or above 1,000,000 cells/L"),
+                   panel_of("in_ge1e4", "share of samples", sprintf("Share of the in-situ samples >= 10,000 cells/L (water cells) that the projection includes, months with at least %d such samples", min_samples_share), pts = TRUE))
+    par(mfrow = c(length(panels), 1), mar = c(2.8, 4.6, 2.2, 0.6), oma = c(0, 0, 1.8, 0), mgp = c(3, 0.6, 0))
+    for (i in seq_along(panels)) {
+      p <- panels[[i]]
+      yl <- if (p$pts) c(0, 1.04) else c(0, max(c(unlist(p$y), 1), na.rm = TRUE) * 1.08)
+      plot(NA, xlim = c(0.5, n + 0.5), ylim = yl, xlab = "", ylab = p$lab, main = p$main, cex.main = 0.95, axes = FALSE, xaxs = "i", yaxs = "i")
+      for (u in names(use_col)) { w <- which(d$use == u); if (length(w)) rect(w - 0.5, yl[1], w + 0.5, yl[2], col = use_col[[u]], border = NA) }
+      zm <- which(d$viirs_status == "zero"); mm2 <- which(d$viirs_status == "missing")
+      rect(zm - 0.5, yl[1], zm + 0.5, yl[2], col = zero_col, border = NA); rect(mm2 - 0.5, yl[1], mm2 + 0.5, yl[2], col = miss_col, border = NA)
+      for (k in rev(seq_along(Ms))) {
+        if (p$pts) points(x, p$y[[k]], col = vcol[[k]], pch = vpch[[k]], cex = if (k == 1) 0.6 else 0.8, lwd = 1.1) else
+          lines(x, p$y[[k]], col = vcol[[k]], lwd = if (k == 1) 1.4 else 1.7)
+      }
+      jan <- which(d$month == 1); axis(1, at = jan, labels = d$year[jan], cex.axis = 0.85)
+      axis(2, las = 1, cex.axis = 0.85); box()
+      if (i == 1) legend("topleft", legend = c(unname(variants), "hull months", "MODIS months", "VIIRS months", "VIIRS layer all zero", "VIIRS tif missing (2022-12)"),
+                         col = c(unname(vcol), rep(NA, 5)), lwd = c(1.4, 1.7, 1.7, rep(NA, 5)),
+                         fill = c(NA, NA, NA, use_col[["pred"]], use_col[["hybrid_modis"]], use_col[["hybrid"]], zero_col, miss_col), border = NA, cex = 0.78, bg = "white", box.col = "gray60", ncol = 2)
+      if (p$pts) legend("bottomleft", legend = unname(variants), col = unname(vcol), pch = unname(vpch), pt.cex = c(0.6, 0.8, 0.8), cex = 0.78, bg = "white", box.col = "gray60", ncol = 3)
+    }
+    mtext(title, outer = TRUE, cex = 0.95, font = 2, line = 0.4)
+  }
+  png(file.path(dir_fig, "fig4_record_1985-2026_issue10.png"), width = 15, height = 13.5, units = "in", res = 150)
+  draw_record(rec, "Red tide exposure per monthly map, 1985-2026: the 6 Oct 2026 maps, the VIIRS hybrid (#11) and both hybrids (#10)")
+  invisible(dev.off())
+
+  # Fig 5: per cell over the MODIS months, run A vs run B (the #11 fig 6 layout).
+  png(file.path(dir_fig, "fig5_cells_modis_issue10.png"), width = 15, height = 11.5, units = "in", res = 150)
+  par(mfrow = c(2, 3), mar = c(2.5, 2.8, 2.6, 0.6), oma = c(0, 0, 2.0, 0))
+  lmax <- ceiling(max(log10(c(cum_a[which(cum_a > 0)], cum_b[which(cum_b > 0)]))))
+  lbrk <- seq(3, lmax, 0.5); lcol <- viridis::viridis(length(lbrk) - 1, direction = -1)
+  draw_log_map <- function(v, main) {
+    lv <- ifelse(!is.na(v) & v > 0, pmax(log10(v), 3), NA)
+    base_panel(main, axes = TRUE); rect(xlim[1], ylim[1], xlim[2], ylim[2], col = "white", border = NA)
+    image(xs, ys, to_z(lv), breaks = lbrk, col = lcol, add = TRUE, useRaster = TRUE); draw_land(); box()
+    at <- seq(3, lmax, 1); legend("bottomleft", legend = sprintf("1e%d", at), fill = lcol[pmin(match(at, lbrk), length(lcol))], border = "gray40", cex = 0.75, bg = "white", box.col = "gray60", title = "cells/L, summed")
+  }
+  draw_log_map(cum_b, sprintf("before: cumulative exposure per cell over the %d MODIS months (max %s)", sum(is_modis), fmt_n(signif(max(cum_b, na.rm = TRUE), 3))))
+  draw_log_map(cum_a, sprintf("after (MODIS hybrid): max %s", fmt_n(signif(max(cum_a, na.rm = TRUE), 3))))
+  draw_log_map(cum_a - cum_b, sprintf("added by the hybrid: %d cells, max %s", sum(cum_a > cum_b, na.rm = TRUE), fmt_n(signif(max(cum_a - cum_b, na.rm = TRUE), 3))))
+  nmax5 <- max(c(n5_a, n5_b), na.rm = TRUE); cnt_col5 <- c("white", viridis::viridis(nmax5, direction = -1))
+  draw_cnt_map <- function(v, main, vmax, cols) {
+    base_panel(main, axes = TRUE); rect(xlim[1], ylim[1], xlim[2], ylim[2], col = "white", border = NA)
+    image(xs, ys, to_z(v), breaks = seq(-0.5, vmax + 0.5, 1), col = cols, add = TRUE, useRaster = TRUE); draw_land(); box()
+  }
+  draw_cnt_map(n5_b, sprintf("before: cell-months at or above 100,000 cells/L (max %d of %d)", max(n5_b, na.rm = TRUE), sum(is_modis)), nmax5, cnt_col5)
+  draw_cnt_map(n5_a, sprintf("after (MODIS hybrid): max %d", max(n5_a, na.rm = TRUE)), nmax5, cnt_col5)
+  d5 <- n5_a - n5_b; dmax5 <- max(d5, na.rm = TRUE)
+  draw_cnt_map(d5, sprintf("added by the hybrid: %d cells gain 1 to %d months", sum(d5 > 0, na.rm = TRUE), dmax5), dmax5, c("white", viridis::magma(max(dmax5, 1), direction = -1, end = 0.9)))
+  mtext(sprintf("Per-cell exposure over the %d MODIS months: cumulative cells/L (top) and months at or above 100,000 cells/L (bottom); MODIS-only, MODIS hybrid, and the difference", sum(is_modis)), outer = TRUE, cex = 0.95, font = 2, line = 0.5)
+  invisible(dev.off())
+
+  # Markdown summary.
+  gain <- cells$exposure_added > 0
+  g <- grp[1, ]; gs <- grp[grp$group == names(groups)[5], ]
+  line_of <- function(g, lab) sprintf("Over %s: total exposure %s (6 Oct 2026) -> %s (VIIRS hybrid, %+.1f%%) -> %s (both hybrids, %+.1f%%); the share of the in-situ water samples >= 10,000 cells/L the projection includes %.1f%% -> %.1f%% -> %.1f%% (%s, %s and %s of %s); the high samples (> 1,000,000 cells/L) %.1f%% -> %.1f%% -> %.1f%% (of %s).",
+                                      lab, fmt_n(round(g$exposure_v6oct)), fmt_n(round(g$exposure_v11)), 100 * (g$exposure_ratio_11 - 1), fmt_n(round(g$exposure_v10)), 100 * (g$exposure_ratio_10 - 1),
+                                      100 * g$share_ge1e4_v6oct, 100 * g$share_ge1e4_v11, 100 * g$share_ge1e4_v10, fmt_n(g$in_ge1e4_v6oct), fmt_n(g$in_ge1e4_v11), fmt_n(g$in_ge1e4_v10), fmt_n(g$samples_ge1e4),
+                                      100 * g$share_high_v6oct, 100 * g$share_high_v11, 100 * g$share_high_v10, fmt_n(g$samples_high))
+  g_cols <- c("group", "n_months", "months_changed_11", "months_changed_10", "exposure_v6oct", "exposure_v11", "exposure_v10", "exposure_ratio_11", "exposure_ratio_10",
+              "cellmonths_ge1e4_v6oct", "cellmonths_ge1e4_v11", "cellmonths_ge1e4_v10", "cellmonths_ge1e5_v6oct", "cellmonths_ge1e5_v11", "cellmonths_ge1e5_v10",
+              "cellmonths_ge1e6_v6oct", "cellmonths_ge1e6_v11", "cellmonths_ge1e6_v10",
+              "samples_ge1e4", "share_ge1e4_v6oct", "share_ge1e4_v11", "share_ge1e4_v10", "samples_high", "share_high_v6oct", "share_high_v11", "share_high_v10")
+  md <- c("# Issue #10: the whole record with both nearshore hybrids (compare stage)", "",
+          sprintf("Produced by `docs/issue10_modis-nearshore-hybrid/check_modis_hybrid_issue10.R` (stage `compare`) from three combined stacks of %d months: the 6 October 2026 maps (satellite clips only), run A (the VIIRS hybrid of #11, `viirs_nearshore = \"mask5\"`) and run B (both hybrids, `modis_nearshore = \"mask5\"` as well). Total exposure = the plain sum of cells/L over the %s water cells; cell counts at or above 10,000 / 100,000 / 1,000,000 cells/L; samples included = water-cell samples at or above 10,000 cells/L (and the high class) whose cell is non-zero in the map. Yearly and group totals are sums over the months. Run B differs from run A in exactly the %d MODIS months with a nearshore hull, run A from the 6 October maps in exactly the %d VIIRS months with one (checked).",
+                  length(all_yrmo), fmt_n(n_water), expected$n_changed, expected$n_changed_viirs),
+          "", "## Overall", "",
+          paste0("- ", line_of(g, names(groups)[1])),
+          paste0("- ", line_of(gs, names(groups)[5])),
+          "", "## Totals by month group (`tables/record_groups_issue10.csv`)", "",
+          md_table(round_cols(grp[, g_cols]), 3),
+          "", "## By year (`tables/record_annual_issue10.csv`; sums over the months of the year)", "",
+          md_table(round_cols(ann[, c("year", "clip_sources", g_cols[-1])]), 3),
+          "", "## Per cell over the MODIS months (`tables/cells_modis_issue10.csv`)", "",
+          sprintf("- Cumulative exposure: %d of the %d water cells gain (1 to %s cells/L summed over the months, median %s); the cell maximum goes from %s to %s.",
+                  sum(gain), n_water, fmt_n(signif(max(cells$exposure_added), 3)), fmt_n(signif(median(cells$exposure_added[gain]), 3)), fmt_n(signif(max(cum_b, na.rm = TRUE), 3)), fmt_n(signif(max(cum_a, na.rm = TRUE), 3))),
+          sprintf("- Cell-months at or above 100,000 cells/L: %s before, %s after; %d cells gain 1 to %d months. At or above 1,000,000 cells/L: %s before, %s after; %d cells gain.",
+                  fmt_n(sum(n5_b, na.rm = TRUE)), fmt_n(sum(n5_a, na.rm = TRUE)), sum(d5 > 0, na.rm = TRUE), dmax5,
+                  fmt_n(sum(n6_b, na.rm = TRUE)), fmt_n(sum(n6_a, na.rm = TRUE)), sum(n6_a > n6_b, na.rm = TRUE)),
+          "")
+  writeLines(md, file.path(dir_cmt, "compare_summary.md"))
+  cat(md, sep = "\n")
+  message("Stage compare done.")
 }
 cat("\nDone:", stage, "\n")
