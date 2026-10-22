@@ -68,18 +68,18 @@ coast_step_m  <- 200      # coastline densified for distances (as fn.nearshore_m
 # plan section 1), the #6 month groups, and the headline metrics of the first run.
 expected <- list(n_cells = 5148L, n_land = 1310L, n_water = 3838L, n_atl_water = 56L,
                  n_adj8_all = 202L, n_adj8 = 177L, km2_adj8 = 13311, n_adj4 = 128L, n_ring2 = 338L,
-                 n_mask = 84L, n_set5 = 136L, km2_set5 = 10227, n_adj8_mask = 183L,
+                 n_mask = 84L, n_set5 = 136L, km2_set5 = 10227, n_adj8_mask = 183L, n_near5 = 132L, n_union = 189L, km2_union = 14205,
                  adj8_covers_mask = 78L, adj8_covers_set5 = 124L, adj8_not_in_set5 = 53L,
                  n_sat = 278L, n_viirs = 155L, n_modis = 123L, n_hull = 226L,
                  n_zeroed = 58L, n_headline = 16L, n_sel3 = 60L,
                  n_changed_mask5_viirs = 121L, n_changed_mask5_modis = 87L,
                  # the first run (22 Oct 2026), over the 278 satellite months, by variant
                  n_surface = 217L, samples_ge10k = 13280L, samples_gt1M = 1610L, n_excluded = 4889L,
-                 exposure = c(v6oct = 6494237122, mask5 = 6967296294, adj8_sdm = 7654733791, adj8m_sdm = 7678186657, adj8_hull = 7027864825),
-                 in_ge10k = c(v6oct = 8391L, mask5 = 12351L, adj8_sdm = 12408L, adj8m_sdm = 12453L, adj8_hull = 12408L),
-                 in_gt1M  = c(v6oct = 1137L, mask5 = 1563L, adj8_sdm = 1571L, adj8m_sdm = 1572L, adj8_hull = 1571L),
-                 months_changed   = c(v6oct = 0L, mask5 = 208L, adj8_sdm = 215L, adj8m_sdm = 215L, adj8_hull = 210L),
-                 cellmonths_ge10k = c(v6oct = 27970L, mask5 = 29962L, adj8_sdm = 40041L, adj8m_sdm = 40370L, adj8_hull = 30355L))
+                 exposure = c(v6oct = 6494237122, mask5 = 6967296294, adj8_sdm = 7654733791, adj8m_sdm = 7678186657, adj8_hull = 7027864825, union_hull = 7041082852),
+                 in_ge10k = c(v6oct = 8391L, mask5 = 12351L, adj8_sdm = 12408L, adj8m_sdm = 12453L, adj8_hull = 12408L, union_hull = 12515L),
+                 in_gt1M  = c(v6oct = 1137L, mask5 = 1563L, adj8_sdm = 1571L, adj8m_sdm = 1572L, adj8_hull = 1571L, union_hull = 1573L),
+                 months_changed   = c(v6oct = 0L, mask5 = 208L, adj8_sdm = 215L, adj8m_sdm = 215L, adj8_hull = 210L, union_hull = 210L),
+                 cellmonths_ge10k = c(v6oct = 27970L, mask5 = 29962L, adj8_sdm = 40041L, adj8m_sdm = 40370L, adj8_hull = 30355L, union_hull = 30474L))
 
 # Paths --------------------------------------------------------------------------
 dir_out      <- file.path(.root, "out", "5min")
@@ -258,6 +258,22 @@ write_pdf <- function(file_pdf, width, height, draw) {
   }
   file.rename(file_tmp, file_pdf); invisible(TRUE)
 }
+# The same for a PNG: open the device on a temporary file; png_done() closes it and moves
+# it into place, and only warns if the target is held open by a viewer (the run goes on).
+png_open <- function(file_png, width, height, res = 150) {
+  file_tmp <- sub("[.]png$", "_tmp.png", file_png)
+  png(file_tmp, width = width, height = height, units = "in", res = res)
+  file_png
+}
+png_done <- function(file_png) {
+  invisible(dev.off())
+  file_tmp <- sub("[.]png$", "_tmp.png", file_png)
+  if (file.exists(file_png) && !file.remove(file_png)) {
+    warning("Could not replace ", file_png, " (open in a viewer?); the new file is ", file_tmp, call. = FALSE)
+    return(invisible(FALSE))
+  }
+  file.rename(file_tmp, file_png); invisible(TRUE)
+}
 
 # Stage examine --------------------------------------------------------------------
 if (stage == "examine") {
@@ -295,22 +311,34 @@ if (stage == "examine") {
   stopifnot(all(is.na(mv) == land), sum(set5) == expected$n_set5, setequal(which(set5), set11$cell), round(sum(cell_km2[set5])) == expected$km2_set5,
             all(domain[set5]), all(set5[in_mask]))
   adj8_mask <- adj8 | in_mask
-  sets <- list(adj4 = adj4, adj8 = adj8, ring2 = ring2, adj8_mask = adj8_mask, mask5 = set5)
+  # The within-5-km part of mask5 (cell centres, the coastline densified to 200 m, as
+  # fn.nearshore_mask()), and the recomposition mask5 = mask OR within 5 km. The union of
+  # mask5 and the land-adjacent set (Holden, 22 Oct 2026) covers the mask, the 5 km band
+  # and the adjacent cells by construction.
+  row5 <- raster::rowFromCell(depth, seq_len(n5)); col5 <- raster::colFromCell(depth, seq_len(n5))
+  dist_w <- rep(NA_real_, n5); dist_w[water] <- dist_coast_km(xy5[water, 1], xy5[water, 2])
+  near5 <- !is.na(dist_w) & dist_w <= 5 & domain
+  stopifnot(identical(set5, domain & (in_mask | near5)))
+  union_set <- set5 | adj8
+  sets     <- list(adj4 = adj4, adj8 = adj8, ring2 = ring2, adj8_mask = adj8_mask, mask5 = set5, union = union_set)
+  sets_all <- list(adj4 = adj4_all, adj8 = adj8_all, ring2 = ring2_all, adj8_mask = adj8_all | in_mask, mask5 = set5, union = set5 | adj8_all)
   stopifnot(sum(adj8_all) == expected$n_adj8_all, sum(adj8) == expected$n_adj8, round(sum(cell_km2[adj8])) == expected$km2_adj8,
-            sum(adj4) == expected$n_adj4, sum(ring2) == expected$n_ring2, sum(in_mask) == expected$n_mask,
+            sum(adj4) == expected$n_adj4, sum(ring2) == expected$n_ring2, sum(in_mask) == expected$n_mask, sum(near5) == expected$n_near5,
             sum(adj8_mask) == expected$n_adj8_mask, sum(adj8 & in_mask) == expected$adj8_covers_mask,
             sum(adj8 & set5) == expected$adj8_covers_set5, sum(adj8 & !set5) == expected$adj8_not_in_set5,
-            sum(adj8_mask & in_mask) == expected$n_mask, !any(atl[adj8_mask]), !any(atl[set5]))
+            sum(adj8_mask & in_mask) == expected$n_mask, !any(atl[adj8_mask]), !any(atl[set5]),
+            sum(union_set) == expected$n_union, round(sum(cell_km2[union_set])) == expected$km2_union, !any(atl[union_set]),
+            all(union_set[in_mask]), all(union_set[near5]), all(union_set[adj8]), sum(union_set & !set5) == expected$adj8_not_in_set5)
   cov <- data.frame(set = names(sets), cells = sapply(sets, sum), km2 = sapply(sets, function(s) round(sum(cell_km2[s]))),
                     viirs_mask_cells_covered = sapply(sets, function(s) sum(s & in_mask)), viirs_mask_cells = sum(in_mask),
+                    within5km_cells_covered = sapply(sets, function(s) sum(s & near5)), within5km_cells = sum(near5),
+                    adjacent_cells_covered = sapply(sets, function(s) sum(s & adj8)), adjacent_cells = sum(adj8),
                     mask5_cells_covered = sapply(sets, function(s) sum(s & set5)), mask5_cells = sum(set5),
                     cells_not_in_mask5 = sapply(sets, function(s) sum(s & !set5)), mask5_cells_not_in_set = sapply(sets, function(s) sum(set5 & !s)),
-                    atlantic_cells_excluded = c(sum(adj4_all & atl), sum(adj8_all & atl), sum(ring2_all & atl), sum(adj8_all & atl), 0L),
+                    atlantic_cells_excluded = sapply(sets_all, function(s) sum(s & atl)),
                     stringsAsFactors = FALSE)
   rownames(cov) <- NULL
   write.csv(cov, file.path(dir_tab, "set_coverage_issue15.csv"), row.names = FALSE)
-  row5 <- raster::rowFromCell(depth, seq_len(n5)); col5 <- raster::colFromCell(depth, seq_len(n5))
-  dist_w <- rep(NA_real_, n5); dist_w[water] <- dist_coast_km(xy5[water, 1], xy5[water, 2])
   missed <- do.call(rbind, lapply(c("adj4", "adj8", "ring2", "adj8_mask"), function(k) {
     m <- which(in_mask & !sets[[k]])
     if (length(m) == 0) return(NULL)
@@ -358,14 +386,17 @@ if (stage == "examine") {
   A1 <- S; A1[adj8, ] <- pmax(S[adj8, ], Rn[adj8, ])
   A2 <- S; A2[adj8_mask, ] <- pmax(S[adj8_mask, ], Rn[adj8_mask, ])
   A3 <- S; A3[adj8, ] <- pmax(S[adj8, ], H[adj8, ])
+  A4 <- S; A4[union_set, ] <- pmax(S[union_set, ], H[union_set, ])   # the union with the mask5 fill (Holden, 22 Oct 2026)
   stopifnot(same(A1[adj8, ], Rn[adj8, ]), same(A2[adj8_mask, ], Rn[adj8_mask, ]), same(A1[!adj8, ], S[!adj8, ]), same(A3[!adj8, ], S[!adj8, ]),
             all(A1[water, ] >= S[water, ]), all(A2[water, ] >= A1[water, ]), all(A3[water, ] >= S[water, ]), all(A1[water, ] >= A3[water, ]),
-            all(colSums(A1 != S, na.rm = TRUE)[!raw_fitted] == 0), !any(A1[atl, ] != S[atl, ], na.rm = TRUE), !any(A2[atl, ] != S[atl, ], na.rm = TRUE))
-  Ms <- list(v6oct = S, mask5 = M5, adj8_sdm = A1, adj8m_sdm = A2, adj8_hull = A3)
-  set_of <- list(v6oct = rep(FALSE, n5), mask5 = set5, adj8_sdm = adj8, adj8m_sdm = adj8_mask, adj8_hull = adj8)
+            all(colSums(A1 != S, na.rm = TRUE)[!raw_fitted] == 0), !any(A1[atl, ] != S[atl, ], na.rm = TRUE), !any(A2[atl, ] != S[atl, ], na.rm = TRUE),
+            same(A4[!union_set, ], S[!union_set, ]), all(A4[water, ] >= M5[water, ]), all(A4[water, ] >= A3[water, ]), !any(A4[atl, ] != S[atl, ], na.rm = TRUE),
+            same(A4[set5, ], M5[set5, ]), same(A4[adj8, ], A3[adj8, ]))
+  Ms <- list(v6oct = S, mask5 = M5, adj8_sdm = A1, adj8m_sdm = A2, adj8_hull = A3, union_hull = A4)
+  set_of <- list(v6oct = rep(FALSE, n5), mask5 = set5, adj8_sdm = adj8, adj8m_sdm = adj8_mask, adj8_hull = adj8, union_hull = union_set)
   variants <- c(v6oct = "6 Oct 2026 maps (satellite only)", mask5 = "mask5 hybrid, both sensors (#11, #10)",
                 adj8_sdm = "land-adjacent set, raw sdmTMB fill (#15)", adj8m_sdm = "land-adjacent or VIIRS mask, raw sdmTMB fill",
-                adj8_hull = "land-adjacent set, hull fill")
+                adj8_hull = "land-adjacent set, hull fill", union_hull = "union of mask5 and land-adjacent, hull fill")
   keys <- names(Ms)
   cat(sprintf("Satellite months: %d (%d VIIRS, %d MODIS); raw surface present in %d of them; mask5 changes %d VIIRS and %d MODIS months\n",
               length(months), length(months_v), length(months_m), sum(raw_fitted), sum(n_changed5[months_v] > 0), sum(n_changed5[months_m] > 0)))
@@ -423,7 +454,7 @@ if (stage == "examine") {
   write.csv(round_cols(ann), file.path(dir_tab, "examine_annual_issue15.csv"), row.names = FALSE)
   g <- grp[1, ]
   stopifnot(g$months_with_surface == expected$n_surface, g$samples_ge10k == expected$samples_ge10k, g$samples_gt1M == expected$samples_gt1M,
-            all(sapply(keys, function(k) abs(g[[paste0("exposure_", k)]] - expected$exposure[[k]]) <= 1 && g[[paste0("in_ge10k_", k)]] == expected$in_ge10k[[k]] &&
+            all(sapply(names(expected$exposure), function(k) abs(g[[paste0("exposure_", k)]] - expected$exposure[[k]]) <= 1 && g[[paste0("in_ge10k_", k)]] == expected$in_ge10k[[k]] &&
                                           g[[paste0("in_gt1M_", k)]] == expected$in_gt1M[[k]] && g[[paste0("months_changed_", k)]] == expected$months_changed[[k]] &&
                                           g[[paste0("cellmonths_ge10k_", k)]] == expected$cellmonths_ge10k[[k]])))
   for (k in keys) cat(sprintf("  %-10s exposure %s (x %.3f vs 6 Oct), cell-months >= 10k %s / >= 100k %s / >= 1M %s, samples >= 10k included %s of %s (%.1f%%), > 1M %s of %s (%.1f%%), months changed %d\n",
@@ -503,10 +534,13 @@ if (stage == "examine") {
 
   # 8. The set cells: where they are, how often the satellite and the hull are positive there.
   any_set <- adj8_all | adj4_all | ring2_all | in_mask | set5
+  land_rc <- cbind(row5[land], col5[land])
+  nearest_land <- function(i) min(pmax(abs(land_rc[, 1] - row5[i]), abs(land_rc[, 2] - col5[i])))   # Chebyshev distance in cells
   cells_tab <- data.frame(cell = which(any_set), row = row5[any_set], col = col5[any_set], lon = round(xy5[any_set, 1], 4), lat = round(xy5[any_set, 2], 4),
                           depth_m = round(dv[any_set], 1), km2 = round(cell_km2[any_set], 1), dist_coast_km = round(dist_w[any_set], 2),
+                          nearest_land_cells = sapply(which(any_set), nearest_land),
                           atlantic = atl[any_set], adj8 = adj8[any_set], adj4 = adj4[any_set], ring2 = ring2[any_set], viirs_mask = in_mask[any_set],
-                          mask5 = set5[any_set], adj8_mask = adj8_mask[any_set],
+                          within5km = near5[any_set], mask5 = set5[any_set], adj8_mask = adj8_mask[any_set], union = union_set[any_set],
                           months_sat_positive = rowSums(S[any_set, ] > 0, na.rm = TRUE), months_hull_positive = rowSums(H[any_set, ] > 0, na.rm = TRUE),
                           months_raw_ge10k = rowSums(Rn[any_set, ] >= thr_bloom, na.rm = TRUE), stringsAsFactors = FALSE)
   write.csv(cells_tab, file.path(dir_tab, "set_cells_issue15.csv"), row.names = FALSE)
@@ -522,7 +556,7 @@ if (stage == "examine") {
   write.csv(round_cols(cells), file.path(dir_tab, "cells_sat_issue15.csv"), row.names = FALSE)
 
   # Fig 1: the sets on the map.
-  png(file.path(dir_fig, "fig1_sets_issue15.png"), width = 15, height = 7.2, units = "in", res = 150)
+  f_fig1 <- png_open(file.path(dir_fig, "fig1_sets_issue15.png"), width = 15, height = 7.2)
   par(mfrow = c(1, 2), mar = c(2.6, 2.8, 2.6, 0.6), oma = c(0, 0, 2.2, 0))
   set_cols <- c(both = "purple3", only_new = "darkorange2", only_mask5 = "deepskyblue3")
   draw_sets <- function(new, main) {
@@ -541,15 +575,28 @@ if (stage == "examine") {
     box()
   }
   draw_sets(adj8, sprintf("Land-adjacent (edge or corner): %d cells, %s km2; mask5: %d cells, %s km2", sum(adj8), fmt_n(round(sum(cell_km2[adj8]))), sum(set5), fmt_n(round(sum(cell_km2[set5])))))
-  draw_sets(adj8_mask, sprintf("Land-adjacent or in the VIIRS static mask: %d cells, %s km2; mask5 as left", sum(adj8_mask), fmt_n(round(sum(cell_km2[adj8_mask])))))
-  mtext("Issue #15: the nearshore sets on the 5-arcmin Ecospace basemap (land = NODATA of the depth grid; gray = land, black line = Natural Earth coastline, drawn for reference only)", outer = TRUE, cex = 0.95, font = 2, line = 0.5)
-  invisible(dev.off())
+  # Panel 2: the union = mask5 plus the adjacent-only cells; the mask5 cells adjacency
+  # misses (bays cut by the map edge, barrier islands the 5-arcmin grid draws as water) ringed.
+  z <- ifelse(set5, 1, ifelse(adj8, 2, NA))
+  base_panel(sprintf("Union of mask5 and land-adjacent: %d cells, %s km2 (mask5 plus %d adjacent-only cells)", sum(union_set), fmt_n(round(sum(cell_km2[union_set]))), sum(adj8 & !set5)), axes = TRUE, cex_main = 0.9)
+  rect(xlim[1], ylim[1], xlim[2], ylim[2], col = "white", border = NA)
+  image(xs, ys, to_z(z), breaks = c(0.5, 1.5, 2.5), col = c("purple3", "darkorange2"), add = TRUE, useRaster = TRUE)
+  draw_land()
+  mo <- which(set5 & !adj8); points(xy5[mo, 1], xy5[mo, 2], pch = 1, col = "black", lwd = 1.6, cex = 1.4)
+  text(xy5[mo, 1], xy5[mo, 2], labels = mo, pos = 4, offset = 0.45, cex = 0.55)
+  abline(v = -82, h = 28.5, lty = 3, col = "gray40")
+  legend("bottomleft", legend = c(sprintf("mask5: VIIRS mask or within 5 km of the coastline (%d)", sum(set5)), sprintf("added by land adjacency (%d; centres %.1f to %.1f km from the coastline)", sum(adj8 & !set5), min(dist_w[adj8 & !set5]), max(dist_w[adj8 & !set5])),
+                                  sprintf("mask5 cells that touch no land cell (%d, labelled; bays cut by the map edge, barrier islands)", length(mo)), "Atlantic box (excluded)"),
+         fill = c("purple3", "darkorange2", NA, NA), border = NA, pch = c(NA, NA, 1, NA), col = c(NA, NA, "black", "gray40"), lty = c(NA, NA, NA, 3), cex = 0.78, bg = "white", box.col = "gray60")
+  box()
+  mtext("Issue #15: the nearshore sets on the 5-arcmin Ecospace basemap (land = NODATA of the depth grid; gray = land, black line = Natural Earth coastline, the 5 km reference)", outer = TRUE, cex = 0.95, font = 2, line = 0.5)
+  png_done(f_fig1)
 
   # Fig 2: the record from the first satellite month, the #10 fig 4 layout, four variants.
   use_col <- c(pred = grDevices::adjustcolor("gray40", 0.12), modis = grDevices::adjustcolor("steelblue", 0.18), viirs = grDevices::adjustcolor("gold", 0.22))
   zero_col <- grDevices::adjustcolor("gray40", 0.3); miss_col <- grDevices::adjustcolor("red", 0.25)
-  vcol <- c(v6oct = "black", mask5 = "purple3", adj8_sdm = "darkorange2", adj8m_sdm = "darkorange2", adj8_hull = "forestgreen")
-  vlty <- c(v6oct = 1, mask5 = 1, adj8_sdm = 1, adj8m_sdm = 2, adj8_hull = 1); vpch <- c(v6oct = 16, mask5 = 1, adj8_sdm = 2, adj8m_sdm = 6, adj8_hull = 0)
+  vcol <- c(v6oct = "black", mask5 = "purple3", adj8_sdm = "darkorange2", adj8m_sdm = "darkorange2", adj8_hull = "forestgreen", union_hull = "forestgreen")
+  vlty <- c(v6oct = 1, mask5 = 1, adj8_sdm = 1, adj8m_sdm = 2, adj8_hull = 1, union_hull = 2); vpch <- c(v6oct = 16, mask5 = 1, adj8_sdm = 2, adj8m_sdm = 6, adj8_hull = 0, union_hull = 5)
   draw_record <- function(d, title, keys = names(Ms)) {
     n <- nrow(d); x <- seq_len(n); few <- d$samples_ge10k < min_samples_group; nk <- length(keys)
     panel_of <- function(mt, lab, main, pts = FALSE, div = 1) list(y = lapply(keys, function(k) { y <- d[[paste0(mt, "_", k)]] / div; if (pts) { y <- y / d$samples_ge10k; y[few] <- NA }; y }), lab = lab, main = main, pts = pts)
@@ -579,10 +626,10 @@ if (stage == "examine") {
     }
     mtext(title, outer = TRUE, cex = 0.95, font = 2, line = 0.4)
   }
-  png(file.path(dir_fig, "fig2_record_2002-2026_issue15.png"), width = 15, height = 13.5, units = "in", res = 150)
+  f_fig2 <- png_open(file.path(dir_fig, "fig2_record_2002-2026_issue15.png"), width = 15, height = 13.5)
   draw_record(rec[rec$yrmo >= months[1], ], sprintf("Red tide exposure per monthly map from the first satellite month (%s-%s) to %s: the 6 Oct 2026 maps, the mask5 hybrid, and the land-adjacent rule of #15 (plain and with the VIIRS mask added)",
                                                      substr(months[1], 1, 4), substr(months[1], 5, 6), max(rec$year)), keys = c("v6oct", "mask5", "adj8_sdm", "adj8m_sdm"))
-  invisible(dev.off())
+  png_done(f_fig2)
 
   # Fig 3: the headline months of #6, then the months where adj8_sdm and mask5 differ most
   # in exposure: samples | delivered map | mask5 | adj8_sdm | raw sdmTMB (adj8 set shaded).
@@ -637,7 +684,7 @@ if (stage == "examine") {
 
   # Fig 4: per cell over the satellite months (the #10 fig 5 layout and palette).
   pal_fig1 <- colorRampPalette(colv[-1], bias = 2)
-  png(file.path(dir_fig, "fig4_cells_issue15.png"), width = 15, height = 11.5, units = "in", res = 150)
+  f_fig4 <- png_open(file.path(dir_fig, "fig4_cells_issue15.png"), width = 15, height = 11.5)
   par(mfrow = c(2, 3), mar = c(2.5, 2.8, 2.6, 0.6), oma = c(0, 0, 2.0, 0))
   allpos <- unlist(lapply(cum, function(v) v[which(v > 0)]))
   lmax <- ceiling(max(log10(allpos))); lbrk <- seq(3, lmax, 0.5); lcol <- pal_fig1(length(lbrk) - 1)
@@ -660,7 +707,7 @@ if (stage == "examine") {
   image(xs, ys, to_z(d5), breaks = seq(-dmax5 - 0.5, dmax5 + 0.5, 1), col = dpal, add = TRUE, useRaster = TRUE); draw_land(); box()
   legend("bottomleft", legend = c(sprintf("+%d", dmax5), "0", sprintf("-%d", dmax5)), fill = dpal[c(length(dpal), dmax5 + 1, 1)], border = "gray40", cex = 0.75, bg = "white", box.col = "gray60", title = "months")
   mtext(sprintf("Per-cell exposure over the %d satellite months: cumulative cells/L (top: the delivered maps, mask5, the #15 rule) and the differences between the #15 rule and mask5 (bottom)", length(months)), outer = TRUE, cex = 0.95, font = 2, line = 0.5)
-  invisible(dev.off())
+  png_done(f_fig4)
 
   # Markdown summary.
   g_cols <- c("group", "n_months", paste0("months_changed_", keys[-1]), paste0("exposure_", keys), paste0("exposure_ratio_", keys[-1]),
@@ -672,6 +719,22 @@ if (stage == "examine") {
                                        100 * gg$share_ge10k_v6oct, 100 * gg$share_ge10k_mask5, 100 * gg$share_ge10k_adj8_sdm, 100 * gg$share_ge10k_adj8m_sdm, 100 * gg$share_ge10k_adj8_hull, fmt_n(gg$samples_ge10k),
                                        100 * gg$share_gt1M_v6oct, 100 * gg$share_gt1M_mask5, 100 * gg$share_gt1M_adj8_sdm, 100 * gg$share_gt1M_adj8m_sdm, 100 * gg$share_gt1M_adj8_hull, fmt_n(gg$samples_gt1M))
   hm <- em[em$headline, c("yrmo", "samples_ge10k", paste0("in_ge10k_", keys), paste0("km2_ge10k_", keys), paste0("exposure_", keys), paste0("max_cells_", keys))]
+  # mask5 against the union, both with the hull fill (the comparison Holden asked for, 22 Oct 2026).
+  uk <- c(mask5 = "mask5", union_hull = "union"); gz <- grp[4, ]; gv <- grp[2, ]; gm <- grp[3, ]
+  cov_u <- cov[match(uk, cov$set), ]
+  ut <- data.frame(variant = c("mask5 (VIIRS mask or within 5 km), hull fill", "union of mask5 and land-adjacent, hull fill"),
+                   cells = cov_u$cells, km2 = cov_u$km2, viirs_mask_covered = cov_u$viirs_mask_cells_covered, within5km_covered = cov_u$within5km_cells_covered, adjacent_covered = cov_u$adjacent_cells_covered,
+                   exposure = sapply(names(uk), function(k) g[[paste0("exposure_", k)]]), exposure_ratio = sapply(names(uk), function(k) g[[paste0("exposure_ratio_", k)]]),
+                   cellmonths_ge10k = sapply(names(uk), function(k) g[[paste0("cellmonths_ge10k_", k)]]), cellmonths_ge100k = sapply(names(uk), function(k) g[[paste0("cellmonths_ge100k_", k)]]),
+                   cellmonths_ge1M = sapply(names(uk), function(k) g[[paste0("cellmonths_ge1M_", k)]]), months_changed = sapply(names(uk), function(k) g[[paste0("months_changed_", k)]]),
+                   in_ge10k = sapply(names(uk), function(k) g[[paste0("in_ge10k_", k)]]), share_ge10k = sapply(names(uk), function(k) g[[paste0("share_ge10k_", k)]]),
+                   share_gt1M = sapply(names(uk), function(k) g[[paste0("share_gt1M_", k)]]), share_ge10k_zeroed = sapply(names(uk), function(k) gz[[paste0("share_ge10k_", k)]]),
+                   share_ge10k_viirs = sapply(names(uk), function(k) gv[[paste0("share_ge10k_", k)]]), share_ge10k_modis = sapply(names(uk), function(k) gm[[paste0("share_ge10k_", k)]]),
+                   exposure_ratio_viirs = sapply(names(uk), function(k) gv[[paste0("exposure_ratio_", k)]]), exposure_ratio_modis = sapply(names(uk), function(k) gm[[paste0("exposure_ratio_", k)]]),
+                   stringsAsFactors = FALSE)
+  rownames(ut) <- NULL
+  write.csv(round_cols(ut), file.path(dir_tab, "mask5_vs_union_issue15.csv"), row.names = FALSE)
+  mo <- which(set5 & !adj8); ao <- which(adj8 & !set5)
   md <- c("# Issue #15: the land-adjacent nearshore rule against mask5 (examine stage)", "",
           sprintf("Produced by `docs/issue15_adjacent-land-hybrid/check_adjacent_hybrid_issue15.R` from the stacks on disk, no pipeline run. Five variants over the %d satellite months (%d VIIRS, %d MODIS; the %d hull months are identical in every variant): the delivered 6 Oct 2026 maps; the mask5 hybrid for both sensors (run B of #10); the land-adjacent set (%d Gulf-domain cells, %s km2) with the raw sdmTMB projection inside it (the #15 rule); the same with the %d cells of the static VIIRS no-data mask added (%d cells); and the land-adjacent set with the mask5 fill (max of the satellite- and hull-clipped maps). Total exposure = the plain sum of cells/L over the %s water cells; cell-months at or above 10k / 100k / 1M cells/L; samples included = water-cell samples >= 10k cells/L (and > 1M) whose cell is non-zero in the map. The Atlantic-side box is always excluded.",
                   length(months), length(months_v), length(months_m), sum(!is_sat), sum(adj8), fmt_n(round(sum(cell_km2[adj8]))), sum(in_mask), sum(adj8_mask), fmt_n(sum(water))),
@@ -680,6 +743,10 @@ if (stage == "examine") {
                   sum(adj8 & in_mask), sum(in_mask), sum(adj8 & set5), sum(set5), sum(adj8 & !set5), sum(adj8), round(min(dv[adj8 & !set5]), 1), round(max(dv[adj8 & !set5]), 1),
                   sum(in_mask & !adj8), paste(which(in_mask & !adj8), collapse = ", "), sum(in_mask & !adj8 & row5 == 1), sum(adj8_mask), sum(ring2), fmt_n(round(sum(cell_km2[ring2]))), sum(ring2 & in_mask), sum(in_mask)),
           "", md_table(cov), "",
+          "## mask5 against the union, hull fill (`tables/mask5_vs_union_issue15.csv`)", "",
+          sprintf("- mask5 is exactly the VIIRS static mask or a centre within 5 km of the coastline (%d cells, recomposed and checked). The union adds the %d land-adjacent cells mask5 lacks (centres %.1f to %.1f km from the coastline, median %.1f; a cell is 8 to 9 km wide, so a corner-touching neighbour reaches further than 5 km on the open coast) and so covers the %d mask cells, the %d within-5-km cells and the %d adjacent cells by construction. The %d mask5 cells that touch no land cell (%s) all sit two cells from the nearest basemap land cell: bays cut by the map edge and barrier islands the 5-arcmin grid draws as water while the coastline draws them as land.",
+                  sum(set5), length(ao), min(dist_w[ao]), max(dist_w[ao]), median(dist_w[ao]), sum(in_mask), sum(near5), sum(adj8), length(mo), paste(mo, collapse = ", ")),
+          "", md_table(round_cols(ut), 3), "",
           "## Overall", "",
           paste0("- ", line_of(grp[1, ], names(groups)[1])),
           paste0("- ", line_of(grp[2, ], names(groups)[2])),
