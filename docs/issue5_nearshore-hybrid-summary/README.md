@@ -90,7 +90,7 @@ Sources: `docs/issue11_nearshore-hybrid-pipeline/tables/groups_issue11.csv` and 
 
 ## 6. What is pending, and what comes after
 
-**The call in #5**, one decision for both sensors: accept the `mask5` maps, or keep the satellite-only maps. The hybrid maps already exist locally (the run B outputs of #10) and every number above describes them.
+**The call in #5**, one decision for both sensors: accept the `mask5` maps, or keep the satellite-only maps. The hybrid maps already exist locally (the run B outputs of #10) and every number above describes them. Before the call, [#15](https://github.com/WFS-FEM/RedTideMaps/issues/15) (22 Oct 2026) examined an alternative rule, a nearshore set read off the Ecospace basemap (water cells touching a land cell) filled with the unclipped sdmTMB projection: `docs/issue15_adjacent-land-hybrid/README.md` compares it with `mask5` on the same metrics, so the call now has a third option.
 
 **On acceptance** (the next planning session): flip both defaults to `"mask5"`, regenerate the deliverables once (with or without a fresh pull of FWC samples, to be chosen), commit the 504 ASCII files and the plots, export the drop to the Ecospace ST drivers, update the README and close #5 with a closing comment that records the decision.
 

@@ -29,8 +29,61 @@ RT_QA_STAGE=examine Rscript docs/issue15_adjacent-land-hybrid/check_adjacent_hyb
 
 ## Files
 
-(filled in with the results)
+| File | What |
+|---|---|
+| `issue15-adjacent-land-plan.md` | the plan: the review of where things stood, the facts established before the run, the three decisions, the GitHub workflow, the stage, the verification |
+| `check_adjacent_hybrid_issue15.R` | the check script, stage `examine` |
+| `tables/set_coverage_issue15.csv` | one row per candidate set (rook-adjacent, edge-or-corner-adjacent, within 2 cells, adjacent or VIIRS mask, mask5): cells, km2, VIIRS-mask cells covered (of 84), mask5 cells covered (of 136), cells not in mask5, Atlantic-box cells excluded |
+| `tables/set_missed_mask_cells_issue15.csv` | the VIIRS-mask cells each candidate misses: cell, row, column, position, depth, distance to the coast, whether it is in the top grid row |
+| `tables/set_cells_issue15.csv` | every cell in any candidate set or in mask5: position, depth, km2, distance to the coast, the set flags, the Atlantic flag, months the satellite map / the hull map / the raw surface (>= 10k cells/L) is positive there |
+| `tables/examine_months_issue15.csv` | the 278 satellite months, one row each: use, fit status, whether a surface exists, the #6 flags, samples >= 10k and > 1M cells/L, then per variant: exposure, cells and km2 at or above 10k, cells >= 100k and >= 1M, maximum, cells changed against the delivered map, samples included and their share |
+| `tables/examine_groups_issue15.csv`, `tables/examine_annual_issue15.csv` | the same summed by month group (all 278; VIIRS; MODIS; the 58 zeroed, 16 headline and 60 VIIRS-positive fitted months of #6; months with at least 5 such samples; months with and without a surface) and by year; ratios to the delivered maps and to mask5 |
+| `tables/record_months_issue15.csv`, `tables/record_groups_issue15.csv` | all 504 months 1985-2026, the five variants (the hull months identical by construction, asserted), for the #5 call |
+| `tables/fill_values_issue15.csv` | what each fill writes into its set cells: the cell-months changed against the delivered map by class of the value written (<= 1k, 1k to 10k, 10k to 100k, 100k to 1M, > 1M cells/L), the share below 10k, the median, the exposure added; by variant and era |
+| `tables/excluded_samples_issue15.csv`, `tables/excluded_bands_issue15.csv` | the water samples >= 10k cells/L outside the delivered footprint in satellite months (4,889): position, count, cell, set flags, distance to the coast, and which variant includes them; and the same by distance band (0-2, 2-5, 5-10, > 10 km) |
+| `tables/cells_sat_issue15.csv` | per water cell over the 278 satellite months: cumulative exposure and cell-months >= 100k and >= 1M cells/L under the delivered maps, mask5 and the #15 rule, and the differences |
+| `figures/fig1_sets_issue15.png` | the land-adjacent set against mask5 on the map (in both, adjacent only, mask5 only; the VIIRS static mask outlined; the 6 mask cells the adjacent set misses marked), and the same for the adjacent-or-mask set |
+| `figures/fig2_record_2002-2026_issue15.png` | the record from the first satellite month: total exposure, cells >= 10k / 100k / 1M cells/L, share of samples included; the delivered maps (black), mask5 (purple), the #15 rule (orange), the adjacent-or-mask variant (dashed); clip source shaded |
+| `figures/fig3_months_issue15.pdf` | the 16 headline months of #6, then the 12 satellite months where the #15 rule and mask5 differ most in exposure, one row each: samples \| delivered map \| mask5 \| #15 rule \| raw sdmTMB with the adjacent set shaded; 4 pages (`RT_QA_PNG_DIR` writes PNG previews) |
+| `figures/fig4_cells_issue15.png` | per cell over the satellite months: cumulative exposure under the delivered maps, mask5 and the #15 rule; where the #15 rule is above and below mask5; the difference in cell-months >= 100k cells/L |
+| `comments/examine_summary.md` | the coverage, group, fill, distance-band, headline-month, annual and per-cell tables in markdown, as the script writes them |
 
-## Results
+## Results (22 October 2026, checkpoint 1)
 
-(pending: checkpoint 1)
+Frozen FWC samples to 22 September 2026; the stacks of run 0 of #10 (both rules off); the mask5 maps of run B of #10. Two runs of the stage give byte-identical CSVs and PNGs; the recomputation of three months by hand (2017-01, 2003-02, 2018-10) equals the tables.
+
+### Question 1: does the land-adjacent set cover the cells the VIIRS mask hides?
+
+Mostly. The land-adjacent set (edge or corner with a NODATA cell of the basemap, Gulf domain) has 177 cells and 13,311 km2 (202 cells before excluding the 25 land-adjacent cells of the Atlantic-side box). It covers 78 of the 84 template cells in the static VIIRS no-data mask and 124 of the 136 mask5 cells (`fig1`). The 6 mask cells it misses are cells 13 and 14 in the top grid row (30.46 N, 86.4 to 86.5 W, near Destin: the land north of them is outside the grid, so on the grid they have no land neighbour) and four second-row cells (333 near Panama City, 736 off Apalachicola, 3573 and 3651 in Charlotte Harbor) whose 0.1-degree VIIRS cell is masked although the 5-arcmin cell does not touch land. The 53 adjacent cells that are not in mask5 (1.3 to 24.4 m deep) touch land but have their centre more than 5 km from the Natural Earth coastline and a VIIRS cell with data: along the Big Bend, in the Panhandle bays and down the south-west coast (`fig1`).
+
+| set | cells | km2 | VIIRS-mask cells covered (of 84) | mask5 cells covered (of 136) | cells not in mask5 |
+|---|---|---|---|---|---|
+| rook-adjacent (edge only) | 128 | 9,627 | 66 | 105 | 23 |
+| land-adjacent (edge or corner), the #15 rule | 177 | 13,311 | 78 | 124 | 53 |
+| land-adjacent or VIIRS static mask, the adaptation (D2) | 183 | 13,759 | 84 | 130 | 53 |
+| within 2 cells of land | 338 | 25,417 | 84 | 136 | 202 |
+| mask5 (#8 decision D1) | 136 | 10,227 | 84 | 136 | 0 |
+
+Adding the 6 mask cells is the smallest adaptation that covers the mask (183 cells); within 2 cells of land covers everything but is 2.5 times the mask5 area.
+
+### Question 2: what the rule does to the metrics
+
+Over the 278 satellite months (155 VIIRS, 123 MODIS); water samples are FWC samples whose 5-arcmin cell is water; "included" = the map is non-zero in the sample's cell:
+
+| variant | total exposure (cells/L summed over the water cells) | cell-months >= 10k / >= 100k / >= 1M cells/L | samples >= 10k cells/L included (of 13,280) | samples > 1M cells/L included (of 1,610) | months changed |
+|---|---|---|---|---|---|
+| the delivered 6 Oct 2026 maps | 6.49e9 | 27,970 / 10,569 / 1,253 | 63.2% | 70.6% | 0 |
+| mask5, both sensors | 6.97e9 (+7.3%) | 29,962 / 11,297 / 1,336 | 93.0% | 97.1% | 208 |
+| land-adjacent set, raw sdmTMB fill (the #15 rule) | 7.65e9 (+17.9%) | 40,041 / 13,129 / 1,349 | 93.4% | 97.6% | 215 |
+| land-adjacent or VIIRS mask, raw sdmTMB fill | 7.68e9 (+18.2%) | 40,370 / 13,192 / 1,349 | 93.8% | 97.6% | 215 |
+| land-adjacent set, hull fill (the mask5 fill) | 7.03e9 (+8.2%) | 30,355 / 11,430 / 1,345 | 93.4% | 97.6% | 210 |
+
+1. **The set hardly matters for the samples; the fill is what changes the maps.** The land-adjacent set with the mask5 fill includes 93.4% of the samples >= 10k cells/L against 93.0% for mask5 and adds 8.2% to the exposure against 7.3%: the two sets cover the same samples (within 2 km of the coast 99.3% vs 99.7% included, 2 to 5 km 98.3% vs 96.3%, `excluded_bands`). The raw sdmTMB fill on the same set includes exactly the same samples (12,408 of 13,280; a sample >= 10k cells/L inside the set sits in the hull footprint by construction, so either fill reaches it when the month has a surface) but adds 1.16e9 cells/L to the satellite months, 2.5 times the 4.7e8 of mask5 and 2.2 times the hull fill on the same set.
+2. **The raw fill is the model surface, not the samples, so it fills the strip in every fitted month.** It changes 215 of the 217 satellite months that have a surface (mask5 changes 208, the months with a nearshore hull), and 57% of the 27,968 cell-months it changes are below 10k cells/L (8,546 at or below 1k, 7,351 between 1k and 10k; `fill_values`): a background-level strip wherever the fit says so (the hull fill of mask5 is also 53% below 10k cells/L, but over 4,260 changed cell-months, not 27,968). The other 43% are at bloom level: cell-months >= 10k cells/L rise from 29,962 (mask5) to 40,041 (+34%), >= 100k from 11,297 to 13,129 (+16%), >= 1M from 1,336 to 1,349. In the 16 headline months of #6 the raw fill gives 61.3 million cells/L summed and 984 cell-months >= 10k against 29.4 million and 285 for mask5; 2017-01 goes from 2,428 km2 (mask5) to 12,006 km2 at or above 10k cells/L because the raw surface of that month is above 10k over 289,289 km2 and the set takes its coastal strip (`fig3`, page 1).
+3. **In the headline months mask5 includes more samples than the plain adjacent set, and the adaptation restores them.** Over the 58 zeroed months, 85.5% of the samples >= 10k cells/L are included under mask5, 81.9% under the land-adjacent set (either fill) and 85.4% with the VIIRS mask added: the 12 mask5-only cells (the 6 missed mask cells and 6 within-5-km cells) hold samples in those months (2017-01: 113 of 116 included under mask5, 101 under the adjacent set, 103 with the mask added). Over all satellite months the order reverses (93.0% / 93.4% / 93.8%) because the 53 adjacent-only cells hold samples in the VIIRS-positive months.
+4. **The MODIS era is where the two fills differ most in relative terms.** mask5 adds 2.3% to the 123 MODIS months (MODIS looks at the coast, #10); the raw fill adds 14.6%, in 94 months, while the samples included go from 89.0% to 89.5%. By year the ratio of the #15 rule to the delivered maps runs from 1.05 (2020) to 1.92 (2012) in the VIIRS era and from 1.07 (2025) to 1.30 (2003) in the MODIS era, against 1.01 to 1.27 and 1.00 to 1.06 for mask5 (`examine_annual`).
+5. **Per cell** (`fig4`), the #15 rule is above mask5 in all 177 of its cells over the satellite months (up to 9.8 million cells/L summed) and below it in the 12 mask5-only cells (up to 2.8 million); 174 cells gain 1 to 27 cell-months >= 100k cells/L against mask5 and 9 lose up to 8.
+
+### Checks the stage enforces
+
+The basemap grid equals the template cell for cell (1,310 NODATA cells, depths within 0.01 m); the adjacent set has 177 Gulf-domain cells and no Atlantic cell is ever filled; the VIIRS static mask has 84 template cells and the on-disk mask5 raster has the 136 cells of the #11 table; the coverage counts of the plan; the satellite months are the 155 VIIRS and 123 MODIS months of `clipping_source.csv` and their delivered layers equal the 6 Oct 2026 combined stack; the raw layer is all NA on water or has no NA, is at or above the satellite-clipped layer on every water cell and equals it where the satellite is positive; mask5 recomputed equals the run-B combined stack and changes 121 VIIRS and 87 MODIS months; each variant equals the delivered map outside its set and is never below it; the raw fill changes no month without a surface; the per-month sample counts equal the #6 table; the 6 Oct 2026 and mask5 metrics equal `exposure_months_issue11.csv` and `record_months_issue10.csv` month by month; the hull months are identical in every variant; the headline totals of the first run (exposure, samples included, months changed, cell-months >= 10k per variant; 4,889 excluded samples; 217 months with a surface) are frozen in `expected` and asserted.
