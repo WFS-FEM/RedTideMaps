@@ -2,7 +2,7 @@
 
 Implementation and checks for [WFS-FEM/RedTideMaps#11](https://github.com/WFS-FEM/RedTideMaps/issues/11), the sub-issue of [#5](https://github.com/WFS-FEM/RedTideMaps/issues/5) that follows [#8](https://github.com/WFS-FEM/RedTideMaps/issues/8). Issue #8 showed that the high-count FWC samples VIIRS misses sit in the static VIIRS no-data band along the coast, prototyped a hybrid from the on-disk clipped stacks, and settled on the `mask5` set with the cell-wise maximum rule (decision of 20 October 2026). This issue puts that rule into the pipeline behind a config key, checks that the default reproduces the 6 October 2026 deliverables byte for byte and that the new rule reproduces the prototype, and compares the VIIRS-only and hybrid maps. Branch `11-nearshore-hybrid-pipeline`, PR #12, 20 October 2026.
 
-**The tracked deliverables (`out/5min/ecospace_ascii/`, `out/5min/plots/`) are still the 6 October 2026 maps.** The default stays `viirs_nearshore = "none"`; the `mask5` deliverables were produced locally, are described here and in the #11 thread, and will be committed when #5 accepts them (then the default flips).
+**The tracked deliverables (`out/5min/ecospace_ascii/`, `out/5min/plots/`) are still the 6 October 2026 maps.** The default stays `viirs_nearshore = "none"`; the `mask5` deliverables were produced locally, are described here and in the #11 thread, and will be committed when #5 accepts them (then the default flips). The same rule for the MODIS-served months is issue #10 (`docs/issue10_modis-nearshore-hybrid/`), which also moved the two hybrid functions from `scripts/process_VIIRS.R` to `scripts/process_hybrid.R`.
 
 ## What changed in the pipeline
 
