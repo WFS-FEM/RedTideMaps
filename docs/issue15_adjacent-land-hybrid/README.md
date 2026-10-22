@@ -39,7 +39,8 @@ RT_QA_STAGE=examine Rscript docs/issue15_adjacent-land-hybrid/check_adjacent_hyb
 | `tables/set_coverage_issue15.csv` | one row per candidate set (rook-adjacent, edge-or-corner-adjacent, within 2 cells, adjacent or VIIRS mask, mask5, the union): cells, km2, VIIRS-mask cells covered (of 84), within-5-km cells covered (of 132), land-adjacent cells covered (of 177), mask5 cells covered (of 136), cells not in mask5, Atlantic-box cells excluded |
 | `tables/set_missed_mask_cells_issue15.csv` | the VIIRS-mask cells each candidate misses: cell, row, column, position, depth, distance to the coast, whether it is in the top grid row |
 | `tables/set_cells_issue15.csv` | every cell in any candidate set or in mask5: position, depth, km2, distance to the coast, distance to the nearest basemap land cell (in cells), the set flags (adjacent, within 5 km, VIIRS mask, mask5, union), the Atlantic flag, months the satellite map / the hull map / the raw surface (>= 10k cells/L) is positive there |
-| `tables/mask5_vs_union_issue15.csv` | mask5 against the union, both with the hull fill: cells, km2, coverage of the mask / 5 km / adjacent cells, exposure and its ratio to the delivered maps, cell-months at the three thresholds, months changed, samples included overall, > 1M cells/L, in the zeroed months and by era |
+| `tables/mask5_vs_union_issue15.csv` | mask5 against the union, both with the hull fill: cells, km2, coverage of the mask / 5 km / adjacent cells, exposure (all satellite months, VIIRS, MODIS) and its ratio to the delivered maps, cell-months at the three thresholds, months changed, samples included overall, > 1M cells/L, in the zeroed months and by era |
+| `tables/exposure_by_era_issue15.csv` | total exposure by era (all 278 satellite months, the 155 VIIRS months, the 123 MODIS months): the delivered maps, mask5 and the union, the three ratios, cell-months >= 10k cells/L and the share of samples included |
 | `tables/examine_months_issue15.csv` | the 278 satellite months, one row each: use, fit status, whether a surface exists, the #6 flags, samples >= 10k and > 1M cells/L, then per variant: exposure, cells and km2 at or above 10k, cells >= 100k and >= 1M, maximum, cells changed against the delivered map, samples included and their share |
 | `tables/examine_groups_issue15.csv`, `tables/examine_annual_issue15.csv` | the same summed by month group (all 278; VIIRS; MODIS; the 58 zeroed, 16 headline and 60 VIIRS-positive fitted months of #6; months with at least 5 such samples; months with and without a surface) and by year; ratios to the delivered maps and to mask5 |
 | `tables/record_months_issue15.csv`, `tables/record_groups_issue15.csv` | all 504 months 1985-2026, the five variants (the hull months identical by construction, asserted), for the #5 call |
@@ -99,7 +100,15 @@ Holden's reading of checkpoint 1 (22 October 2026): keep the hull fill; compare 
 | `mask5` | 136 | 10,227 | +7.3% | 29,962 / 11,297 / 1,336 | 93.0% (12,351) | 97.1% | 85.5% | 208 (121 VIIRS, 87 MODIS) |
 | union of `mask5` and land-adjacent | 189 | 14,205 | +8.4% | 30,474 / 11,462 / 1,346 | 94.2% (12,515) | 97.7% | 88.5% | 210 (121 VIIRS, 89 MODIS) |
 
-The union includes 164 more samples >= 10k cells/L and adds 1.1 points of exposure (7.4e7 cells/L summed), all from the 53 adjacent-only cells; by era, the VIIRS months go from 95.1% to 96.6% of their samples included (+10.2% to +11.3% exposure) and the MODIS months from 89.0% to 89.6% (+2.3% to +3.5%). By distance to the coast, the 2 to 5 km band goes from 96.3% to 99.2% included and the 5 to 10 km band from 88.7% to 92.8%; within 2 km both sets are at or above 99.7%. With the hull fill the set is a second-order choice: either way the maps gain only where positive samples sit, and the union simply extends that reach to the land-adjacent cells the 5 km rule does not see.
+Total exposure by era (cells/L summed over the 3,838 water cells and the months of the era; `exposure_by_era`):
+
+| era | months | 6 Oct 2026 maps | mask5 | union | mask5 vs 6 Oct | union vs 6 Oct | union vs mask5 | samples >= 10k cells/L included: 6 Oct / mask5 / union |
+|---|---|---|---|---|---|---|---|---|
+| all satellite months | 278 | 6,494,237,122 | 6,967,296,294 | 7,041,082,852 | +7.3% | +8.4% | +1.1% | 63.2% / 93.0% / 94.2% |
+| VIIRS months | 155 | 4,119,726,916 | 4,538,271,356 | 4,583,313,352 | +10.2% | +11.3% | +1.0% | 53.2% / 95.1% / 96.6% |
+| MODIS months | 123 | 2,374,510,206 | 2,429,024,938 | 2,457,769,500 | +2.3% | +3.5% | +1.2% | 82.4% / 89.0% / 89.6% |
+
+The union includes 164 more samples >= 10k cells/L and adds 1.1 points of exposure (7.4e7 cells/L summed, 4.5e7 of it in the VIIRS months and 2.9e7 in the MODIS months), all from the 53 adjacent-only cells. By distance to the coast, the 2 to 5 km band goes from 96.3% to 99.2% included and the 5 to 10 km band from 88.7% to 92.8%; within 2 km both sets are at or above 99.7%. With the hull fill the set is a second-order choice: either way the maps gain only where positive samples sit, and the union simply extends that reach to the land-adjacent cells the 5 km rule does not see.
 
 ### Checks the stage enforces
 
