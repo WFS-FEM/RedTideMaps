@@ -48,8 +48,8 @@ Each step is one function in `scripts/`:
 | Clip predictions to hulls | `fn.clip_2_hulls` | `polygon_clipping_rt.R` |
 | Stack VIIRS tifs | `fn.viirs_tifs2stack` | `process_VIIRS.R` |
 | Clip predictions to VIIRS | `fn.clip_2_viirs` | `process_VIIRS.R` |
-| Nearshore set (VIIRS no-data mask, or within 5 km of the coast) | `fn.nearshore_mask` | `process_VIIRS.R` |
-| Add the hull footprint to the VIIRS clip inside that set (opt-in) | `fn.clip_2_hybrid` | `process_VIIRS.R` |
+| Nearshore set (VIIRS no-data mask, or within 5 km of the coast) | `fn.nearshore_mask` | `process_hybrid.R` |
+| Add the hull footprint to the VIIRS clip inside that set (opt-in) | `fn.clip_2_hybrid` | `process_hybrid.R` |
 | Clip predictions to MODIS nFLH | `fn.clip_2_modis` | `process_MODIS.R` |
 | Combine + write ASCII | `make_redtide_ascii` | `polygon_clipping_rt.R` |
 | Copy to Ecospace drivers (opt-in) | `export_to_ecospace` | `polygon_clipping_rt.R` |

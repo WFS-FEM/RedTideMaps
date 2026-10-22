@@ -125,6 +125,7 @@ source(file.path(cfg$repo_dir, "scripts", "get_HAB_data.R"))
 source(file.path(cfg$repo_dir, "scripts", "sdmTMB_HAB_data.R"))
 source(file.path(cfg$repo_dir, "scripts", "process_VIIRS.R"))
 source(file.path(cfg$repo_dir, "scripts", "process_MODIS.R"))
+source(file.path(cfg$repo_dir, "scripts", "process_hybrid.R"))
 source(file.path(cfg$repo_dir, "scripts", "polygon_clipping_rt.R"))
 
 paths <- rt_paths(res          = cfg$res,
