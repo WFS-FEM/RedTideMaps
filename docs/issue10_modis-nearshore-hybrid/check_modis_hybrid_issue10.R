@@ -33,7 +33,7 @@
 #'            the runs; hoard/ folders are gitignored)
 #'            -> tables/record_months_issue10.csv, tables/record_annual_issue10.csv,
 #'               tables/record_groups_issue10.csv, tables/cells_modis_issue10.csv,
-#'               figures/fig4_record_1985-2026_issue10.png, figures/fig5_cells_modis_issue10.png,
+#'               figures/fig4_record_2002-2026_issue10.png, figures/fig5_cells_modis_issue10.png,
 #'               comments/compare_summary.md
 #'   (run 0, both "none", is checked by the unchanged issue #11 stage `none`.)
 #'
@@ -801,15 +801,20 @@ if (stage == "compare") {
     }
     mtext(title, outer = TRUE, cex = 0.95, font = 2, line = 0.4)
   }
-  png(file.path(dir_fig, "fig4_record_1985-2026_issue10.png"), width = 15, height = 13.5, units = "in", res = 150)
-  draw_record(rec, "Red tide exposure per monthly map, 1985-2026: the 6 Oct 2026 maps, the VIIRS hybrid (#11) and both hybrids (#10)")
+  # From the first satellite month: the hybrids add the nearshore hull to satellite months
+  # only, so the hull months before 2002-07 are identical in every variant.
+  png(file.path(dir_fig, "fig4_record_2002-2026_issue10.png"), width = 15, height = 13.5, units = "in", res = 150)
+  draw_record(rec[rec$yrmo >= months[1], ], sprintf("Red tide exposure per monthly map from the first satellite month (%s-%s) to %s: the 6 Oct 2026 maps, the VIIRS hybrid (#11) and both hybrids (#10)",
+                                                     substr(months[1], 1, 4), substr(months[1], 5, 6), max(rec$year)))
   invisible(dev.off())
 
-  # Fig 5: per cell over the MODIS months, run A vs run B (the #11 fig 6 layout).
+  # Fig 5: per cell over the MODIS months, run A vs run B (the #11 fig 6 layout), in the
+  # map palette of fig 1 (the pipeline's, purple to dark red; white = nothing).
+  pal_fig1 <- colorRampPalette(colv[-1], bias = 2)
   png(file.path(dir_fig, "fig5_cells_modis_issue10.png"), width = 15, height = 11.5, units = "in", res = 150)
   par(mfrow = c(2, 3), mar = c(2.5, 2.8, 2.6, 0.6), oma = c(0, 0, 2.0, 0))
   lmax <- ceiling(max(log10(c(cum_a[which(cum_a > 0)], cum_b[which(cum_b > 0)]))))
-  lbrk <- seq(3, lmax, 0.5); lcol <- viridis::viridis(length(lbrk) - 1, direction = -1)
+  lbrk <- seq(3, lmax, 0.5); lcol <- pal_fig1(length(lbrk) - 1)
   draw_log_map <- function(v, main) {
     lv <- ifelse(!is.na(v) & v > 0, pmax(log10(v), 3), NA)
     base_panel(main, axes = TRUE); rect(xlim[1], ylim[1], xlim[2], ylim[2], col = "white", border = NA)
@@ -819,7 +824,7 @@ if (stage == "compare") {
   draw_log_map(cum_b, sprintf("before: cumulative exposure per cell over the %d MODIS months (max %s)", sum(is_modis), fmt_n(signif(max(cum_b, na.rm = TRUE), 3))))
   draw_log_map(cum_a, sprintf("after (MODIS hybrid): max %s", fmt_n(signif(max(cum_a, na.rm = TRUE), 3))))
   draw_log_map(cum_a - cum_b, sprintf("added by the hybrid: %d cells, max %s", sum(cum_a > cum_b, na.rm = TRUE), fmt_n(signif(max(cum_a - cum_b, na.rm = TRUE), 3))))
-  nmax5 <- max(c(n5_a, n5_b), na.rm = TRUE); cnt_col5 <- c("white", viridis::viridis(nmax5, direction = -1))
+  nmax5 <- max(c(n5_a, n5_b), na.rm = TRUE); cnt_col5 <- c("white", pal_fig1(nmax5))
   draw_cnt_map <- function(v, main, vmax, cols) {
     base_panel(main, axes = TRUE); rect(xlim[1], ylim[1], xlim[2], ylim[2], col = "white", border = NA)
     image(xs, ys, to_z(v), breaks = seq(-0.5, vmax + 0.5, 1), col = cols, add = TRUE, useRaster = TRUE); draw_land(); box()
@@ -827,8 +832,8 @@ if (stage == "compare") {
   draw_cnt_map(n5_b, sprintf("before: cell-months at or above 100,000 cells/L (max %d of %d)", max(n5_b, na.rm = TRUE), sum(is_modis)), nmax5, cnt_col5)
   draw_cnt_map(n5_a, sprintf("after (MODIS hybrid): max %d", max(n5_a, na.rm = TRUE)), nmax5, cnt_col5)
   d5 <- n5_a - n5_b; dmax5 <- max(d5, na.rm = TRUE)
-  draw_cnt_map(d5, sprintf("added by the hybrid: %d cells gain 1 to %d months", sum(d5 > 0, na.rm = TRUE), dmax5), dmax5, c("white", viridis::magma(max(dmax5, 1), direction = -1, end = 0.9)))
-  mtext(sprintf("Per-cell exposure over the %d MODIS months: cumulative cells/L (top) and months at or above 100,000 cells/L (bottom); MODIS-only, MODIS hybrid, and the difference", sum(is_modis)), outer = TRUE, cex = 0.95, font = 2, line = 0.5)
+  draw_cnt_map(d5, sprintf("added by the hybrid: %d cells gain 1 to %d months", sum(d5 > 0, na.rm = TRUE), dmax5), dmax5, c("white", pal_fig1(max(dmax5, 1))))
+  mtext(sprintf("Per-cell exposure over the %d MODIS months: cumulative cells/L (top) and months at or above 100,000 cells/L (bottom); MODIS-only, MODIS hybrid, and the difference (the fig 1 map palette)", sum(is_modis)), outer = TRUE, cex = 0.95, font = 2, line = 0.5)
   invisible(dev.off())
 
   # Markdown summary.

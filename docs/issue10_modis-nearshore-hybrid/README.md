@@ -52,8 +52,8 @@ After each run, `git checkout -- out/5min/ecospace_ascii out/5min/plots` restore
 | `figures/fig1_examine_months_issue10.pdf` | the 12 months with the largest gain in samples included, then the 8 months with such samples but no bloom cell: samples | MODIS-clipped (the delivered map) | hybrid | hull-clipped with the set shaded; count boxes |
 | `figures/fig2_examine_series_issue10.png` | the 123 MODIS months as a series: total exposure, cells at or above 10k / 100k / 1M cells/L, share of samples included; before and after; all-zero MODIS maps shaded (run B reproduces the prototype, so this is also the run-B series) |
 | `figures/fig3_excluded_samples_issue10.png` | the 799 excluded samples on the map (recovered or not) and their distance to the coast (ECDF) |
-| `figures/fig4_record_1985-2026_issue10.png` | the whole record, the three variants, with the clip source of each month shaded |
-| `figures/fig5_cells_modis_issue10.png` | per cell over the MODIS months: cumulative exposure (log colour) and cell-months at or above 100,000 cells/L; MODIS-only, MODIS hybrid, difference |
+| `figures/fig4_record_2002-2026_issue10.png` | the record from the first satellite month (2002-07) to 2026, the three variants, with the clip source of each month shaded; the hull months before 2002-07 are identical in every variant and are left out |
+| `figures/fig5_cells_modis_issue10.png` | per cell over the MODIS months: cumulative exposure (log colour) and cell-months at or above 100,000 cells/L; MODIS-only, MODIS hybrid, difference; the fig 1 map palette |
 | `comments/examine_summary.md`, `comments/compare_summary.md` | the tables above in markdown, as the script writes them |
 | `hoard/` (gitignored) | local copies of the run A (`before/`) and run B (`after/`) outputs the compare stage reads |
 
