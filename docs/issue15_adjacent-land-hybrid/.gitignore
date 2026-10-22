@@ -1,0 +1,4 @@
+# Local copies of pipeline outputs, if any stage ever needs them; never tracked.
+hoard/
+# Drafts of the comments posted to #15
+issue15-*-comment.md

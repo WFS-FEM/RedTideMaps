@@ -1,0 +1,4 @@
+"era","n_months","exposure_v6oct","exposure_mask5","exposure_union","ratio_mask5_vs_v6oct","ratio_union_vs_v6oct","ratio_union_vs_mask5","cellmonths_ge10k_v6oct","cellmonths_ge10k_mask5","cellmonths_ge10k_union","samples_ge10k","share_ge10k_v6oct","share_ge10k_mask5","share_ge10k_union"
+"all 278 satellite months",278,6494237122,6967296294,7041082852,1.073,1.084,1.011,27970,29962,30474,13280,0.632,0.93,0.942
+"the 155 VIIRS months",155,4119726916,4538271356,4583313352,1.102,1.113,1.01,10204,11818,12133,8745,0.532,0.951,0.966
+"the 123 MODIS months",123,2374510206,2429024938,2457769500,1.023,1.035,1.012,17766,18144,18341,4535,0.824,0.89,0.896

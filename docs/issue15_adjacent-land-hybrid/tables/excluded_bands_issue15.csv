@@ -1,0 +1,6 @@
+"band","samples_ge10k","in_adj8","in_mask5","excluded_v6oct","recovered_mask5","recovered_adj8_sdm","recovered_adj8m_sdm","recovered_adj8_hull","recovered_union_hull","share_included_v6oct","share_included_mask5","share_included_adj8_sdm","share_included_adj8m_sdm","share_included_adj8_hull","share_included_union_hull"
+"0-2 km",6936,6572,6880,2820,2802,2774,2800,2774,2812,0.593,0.997,0.993,0.997,0.993,0.999
+"2-5 km",2248,1981,1909,1018,935,980,988,980,1001,0.547,0.963,0.983,0.987,0.983,0.992
+"5-10 km",1741,740,719,420,223,247,258,247,295,0.759,0.887,0.901,0.907,0.901,0.928
+"> 10 km",2355,88,0,631,0,16,16,16,16,0.732,0.732,0.739,0.739,0.739,0.739
+"all",13280,9381,9508,4889,3960,4017,4062,4017,4124,0.632,0.93,0.934,0.938,0.934,0.942
