@@ -107,7 +107,9 @@ Follow-up on branch `15-test-adjacent-land-cells-hybrid` (draft PR #16, checkpoi
 - Rerun twice (byte-identical); spot-check the union in 2017-01 by hand (samples included >= the 113 of `mask5`).
 - Commits: `qa:` (script and outputs), `docs:` (README, index, summary, plan). Follow-up comment on #15 (draft `comments/issue15-union-comment.md`, gitignored): the answer to the set question and the table; PR #16 body updated. Then Holden picks `mask5` or the union.
 
-### 3. Step 2, if the pick is the union: the rule in the pipeline (in PR #16, as #10 carried examine and implementation together)
+### 3. Step 2, if the pick is the union: the rule in the pipeline
+
+Superseded on 22 October 2026: Holden chose the union and moved the implementation and the final projections to a new issue, so PR #16 carries the examination only. The sketch below stands as the specification for that issue.
 
 Rule name `"mask5adj"` (mask5 plus adjacency; the name carries the lineage).
 
