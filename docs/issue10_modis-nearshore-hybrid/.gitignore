@@ -1,0 +1,6 @@
+# Local copies of the before (VIIRS mask5, MODIS none) and after (both mask5)
+# pipeline outputs that the compare and exposure stages of
+# check_modis_hybrid_issue10.R read; never tracked.
+hoard/
+# Drafts of the comments posted to #10
+issue10-*-comment.md
