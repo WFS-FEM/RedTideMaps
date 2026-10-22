@@ -1,5 +1,7 @@
 # RedTideMaps review-only audit: Issues Flagged, Recommended Changes and Decisions
 
+> Status note (22 October 2026): this log stops at the 6 October 2026 review-only audit of commit `a875d64`. The sub-issues of #5 that followed (#6, #8, #11, #10) and the decisions they took are summarised in `docs/issue5_nearshore-hybrid-summary/README.md`; `docs/README.md` indexes the issue folders.
+
 ## 0. Status
 
 ```
