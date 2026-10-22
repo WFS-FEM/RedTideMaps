@@ -714,7 +714,7 @@ if (stage == "compare") {
             same(M0[, !is_viirs], MA[, !is_viirs]), all(MA[water, ] >= M0[water, ]),
             sum(hyb_chg[is_modis]) == expected$n_changed, sum(hyb_chg[is_viirs]) == expected$n_changed_viirs)
   n_water <- sum(water)
-  variants <- c(v6oct = "6 Oct 2026 (satellite only)", v11 = "VIIRS hybrid (#11)", v10 = "VIIRS + MODIS hybrids (#10)")
+  variants <- c(v6oct = "6 Oct 2026 (satellite only)", v11 = "VIIRS hybrid (#11)", v10 = "nearshore hybrid (VIIRS + MODIS)")
   Ms <- list(v6oct = M0, v11 = MA, v10 = MB)
   pts <- load_samples(all_yrmo); pw <- pts[pts$water, ]
   # expo_of() has its own n_ge1e4 (cells), so the sample counts get their own names.
@@ -772,9 +772,9 @@ if (stage == "compare") {
   zero_col <- grDevices::adjustcolor("gray40", 0.3); miss_col <- grDevices::adjustcolor("red", 0.25)
   vcol <- c(v6oct = "black", v11 = "dodgerblue3", v10 = "purple3"); vpch <- c(v6oct = 16, v11 = 2, v10 = 1)
   min_samples_share <- 5L
-  draw_record <- function(d, title) {
-    n <- nrow(d); x <- seq_len(n); few <- d$samples_ge1e4 < min_samples_share
-    panel_of <- function(mt, lab, main, pts = FALSE, div = 1) list(y = lapply(names(Ms), function(k) { y <- d[[paste0(mt, "_", k)]] / div; if (pts) { y <- y / d$samples_ge1e4; y[few] <- NA }; y }), lab = lab, main = main, pts = pts)
+  draw_record <- function(d, title, keys = names(Ms)) {
+    n <- nrow(d); x <- seq_len(n); few <- d$samples_ge1e4 < min_samples_share; nk <- length(keys)
+    panel_of <- function(mt, lab, main, pts = FALSE, div = 1) list(y = lapply(keys, function(k) { y <- d[[paste0(mt, "_", k)]] / div; if (pts) { y <- y / d$samples_ge1e4; y[few] <- NA }; y }), lab = lab, main = main, pts = pts)
     panels <- list(panel_of("exposure", "million cells/L (sum over water cells)", sprintf("Total exposure: cells/L summed over the %s water cells", fmt_n(n_water)), div = 1e6),
                    panel_of("n_ge1e4", "cells", "Grid cells at or above 10,000 cells/L"),
                    panel_of("n_ge1e5", "cells", "Grid cells at or above 100,000 cells/L"),
@@ -788,24 +788,26 @@ if (stage == "compare") {
       for (u in names(use_col)) { w <- which(d$use == u); if (length(w)) rect(w - 0.5, yl[1], w + 0.5, yl[2], col = use_col[[u]], border = NA) }
       zm <- which(d$viirs_status == "zero"); mm2 <- which(d$viirs_status == "missing")
       rect(zm - 0.5, yl[1], zm + 0.5, yl[2], col = zero_col, border = NA); rect(mm2 - 0.5, yl[1], mm2 + 0.5, yl[2], col = miss_col, border = NA)
-      for (k in rev(seq_along(Ms))) {
-        if (p$pts) points(x, p$y[[k]], col = vcol[[k]], pch = vpch[[k]], cex = if (k == 1) 0.6 else 0.8, lwd = 1.1) else
-          lines(x, p$y[[k]], col = vcol[[k]], lwd = if (k == 1) 1.4 else 1.7)
+      for (k in rev(seq_len(nk))) {
+        if (p$pts) points(x, p$y[[k]], col = vcol[[keys[k]]], pch = vpch[[keys[k]]], cex = if (k == 1) 0.6 else 0.8, lwd = 1.1) else
+          lines(x, p$y[[k]], col = vcol[[keys[k]]], lwd = if (k == 1) 1.4 else 1.7)
       }
       jan <- which(d$month == 1); axis(1, at = jan, labels = d$year[jan], cex.axis = 0.85)
       axis(2, las = 1, cex.axis = 0.85); box()
-      if (i == 1) legend("topleft", legend = c(unname(variants), "hull months", "MODIS months", "VIIRS months", "VIIRS layer all zero", "VIIRS tif missing (2022-12)"),
-                         col = c(unname(vcol), rep(NA, 5)), lwd = c(1.4, 1.7, 1.7, rep(NA, 5)),
-                         fill = c(NA, NA, NA, use_col[["pred"]], use_col[["hybrid_modis"]], use_col[["hybrid"]], zero_col, miss_col), border = NA, cex = 0.78, bg = "white", box.col = "gray60", ncol = 2)
-      if (p$pts) legend("bottomleft", legend = unname(variants), col = unname(vcol), pch = unname(vpch), pt.cex = c(0.6, 0.8, 0.8), cex = 0.78, bg = "white", box.col = "gray60", ncol = 3)
+      if (i == 1) legend("topleft", legend = c(unname(variants[keys]), "hull months", "MODIS months", "VIIRS months", "VIIRS layer all zero", "VIIRS tif missing (2022-12)"),
+                         col = c(unname(vcol[keys]), rep(NA, 5)), lwd = c(1.4, rep(1.7, nk - 1), rep(NA, 5)),
+                         fill = c(rep(NA, nk), use_col[["pred"]], use_col[["hybrid_modis"]], use_col[["hybrid"]], zero_col, miss_col), border = NA, cex = 0.78, bg = "white", box.col = "gray60", ncol = 2)
+      if (p$pts) legend("bottomleft", legend = unname(variants[keys]), col = unname(vcol[keys]), pch = unname(vpch[keys]), pt.cex = c(0.6, rep(0.8, nk - 1)), cex = 0.78, bg = "white", box.col = "gray60", ncol = nk)
     }
     mtext(title, outer = TRUE, cex = 0.95, font = 2, line = 0.4)
   }
   # From the first satellite month: the hybrids add the nearshore hull to satellite months
-  # only, so the hull months before 2002-07 are identical in every variant.
+  # only, so the hull months before 2002-07 are identical in every variant. Two series:
+  # the satellite-only baseline and the full hybrid (the VIIRS-only hybrid of #11 lies on
+  # the hybrid line in the VIIRS months and on the baseline elsewhere, so it is left out).
   png(file.path(dir_fig, "fig4_record_2002-2026_issue10.png"), width = 15, height = 13.5, units = "in", res = 150)
-  draw_record(rec[rec$yrmo >= months[1], ], sprintf("Red tide exposure per monthly map from the first satellite month (%s-%s) to %s: the 6 Oct 2026 maps, the VIIRS hybrid (#11) and both hybrids (#10)",
-                                                     substr(months[1], 1, 4), substr(months[1], 5, 6), max(rec$year)))
+  draw_record(rec[rec$yrmo >= months[1], ], sprintf("Red tide exposure per monthly map from the first satellite month (%s-%s) to %s: the 6 Oct 2026 maps (satellite only) and the nearshore hybrid (VIIRS + MODIS)",
+                                                     substr(months[1], 1, 4), substr(months[1], 5, 6), max(rec$year)), keys = c("v6oct", "v10"))
   invisible(dev.off())
 
   # Fig 5: per cell over the MODIS months, run A vs run B (the #11 fig 6 layout), in the
