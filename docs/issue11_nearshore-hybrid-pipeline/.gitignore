@@ -1,0 +1,5 @@
+# Local copies of the before (6 Oct 2026, "none") and after ("mask5") pipeline
+# outputs that the compare stage of check_hybrid_issue11.R reads; never tracked.
+hoard/
+# Drafts of the comments posted to #11
+issue11-*-comment.md

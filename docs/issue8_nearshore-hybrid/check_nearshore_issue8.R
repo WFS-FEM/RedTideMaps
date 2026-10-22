@@ -10,8 +10,8 @@
 #'
 #' Needs a 5-min pipeline run (out/5min/sdm, clipped, combined),
 #' VIIRS/VIIRS_*.grd and the issue-6 tables (docs/issue6_VIIRS-zeros/tables/).
-#' The Natural Earth 1:10m coastline is downloaded once into docs/issue8_nearshore-hybrid/coastline/
-#' (internet on the first run only).
+#' The Natural Earth 1:10m coastline is kept in data/coastline/ (a tracked pipeline input since issue #11; downloaded once
+#' if missing, internet on that run only).
 #'
 #' Run from the repo root:  Rscript docs/issue8_nearshore-hybrid/check_nearshore_issue8.R
 #'
@@ -83,7 +83,7 @@ dir_docs  <- file.path(.root, "docs", "issue8_nearshore-hybrid")
 dir_fig   <- file.path(dir_docs, "figures")
 dir_tab   <- file.path(dir_docs, "tables")
 dir_cmt   <- file.path(dir_docs, "comments")
-dir_coast <- file.path(dir_docs, "coastline")
+dir_coast <- file.path(.root, "data", "coastline")   # the pipeline input since issue #11
 for (d in c(dir_fig, dir_tab, dir_cmt)) dir.create(d, recursive = TRUE, showWarnings = FALSE)
 
 one_file <- function(dir, pattern, what) {
@@ -111,7 +111,7 @@ for (f in c(file_tab6, file_cls6, file_hullpolys))
   if (!file.exists(f)) stop("Missing ", f, "; run the pipeline and scripts/qa/check_clipping_issue6.R first.", call. = FALSE)
 message("Samples: ", basename(file_filtered))
 
-# Coastline (Natural Earth 1:10m, cropped to the grid box, cached in docs/issue8_nearshore-hybrid/coastline/) ------
+# Coastline (Natural Earth 1:10m, cropped to the grid box, kept in data/coastline/, recreated here only if missing) ------
 if (!file.exists(file_coast)) {
   dir.create(dir_coast, recursive = TRUE, showWarnings = FALSE)
   message("Downloading the Natural Earth 1:10m coastline (first run only) ...")
@@ -130,7 +130,7 @@ if (!file.exists(file_coast)) {
                       "https://www.naturalearthdata.com/downloads/10m-physical-vectors/), downloaded with ",
                       "`rnaturalearth::ne_download(scale = 10, type = \"coastline\", category = \"physical\")` on ",
                       format(Sys.Date(), "%d %B %Y"), " and cropped to the WFS grid box (-87.5 to -81 E, 25 to 30.5 N) by ",
-                      "`docs/issue8_nearshore-hybrid/check_nearshore_issue8.R`, which recreates it when it is missing."),
+                      "`docs/issue8_nearshore-hybrid/check_nearshore_issue8.R`, which recreates it when it is missing. Since issue #11 it is a pipeline input (fn.nearshore_mask() in scripts/process_VIIRS.R)."),
                "",
                "At 1:10m the coastline resolves the large bays (Tampa Bay, Charlotte Harbor, Apalachicola Bay) ",
                "but not every small inlet, so a distance to coast from it is good to about 1 to 2 km."),

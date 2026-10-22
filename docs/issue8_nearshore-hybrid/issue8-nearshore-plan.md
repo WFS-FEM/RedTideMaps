@@ -132,6 +132,8 @@ Outputs:
 
 ## 6. Step 3: pipeline implementation (after checkpoint 2)
 
+**Implemented in issue #11 (branch `11-nearshore-hybrid-pipeline`, PR #12, 20 October 2026)** with the decided rule, not the draft below: the set is `mask5` (so no `nearshore_km` / `nearshore_min_cells` keys), inside the set the rule is the cell-wise maximum, not a replacement, and the only key is `cfg$viirs_nearshore = "none" | "mask5"` (plus `cfg$fwc_refresh` for the byte-for-byte check). Signatures as built: `fn.nearshore_mask(file_viirs, file_depth, file_coast, rule, coast_km, mask_share, coast_step_m, dir_out)` and `fn.clip_2_hybrid(file_viirs_clipped, file_hull_clipped, file_mask, file_depth, dir_out)` in `scripts/process_VIIRS.R`; the coastline lives in `data/coastline/`. Results and checks: `docs/issue11_nearshore-hybrid-pipeline/README.md`.
+
 Behind a config key, default = today's behaviour, so an unchanged config reproduces the 6 October deliverables byte for byte.
 
 - **Config** (`run_redtide_maps.R`, documented in `config.local.example.R`): `cfg$viirs_nearshore` = `"none"` (default) | `"mask"` | `"coast"`; `cfg$nearshore_km` (used by `"coast"`, default 5); `cfg$nearshore_min_cells` (sample threshold for the nearshore hulls, default 0 = every positive, as the hull path does now).
