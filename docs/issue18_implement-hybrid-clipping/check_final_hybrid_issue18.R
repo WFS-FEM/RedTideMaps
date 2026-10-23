@@ -164,12 +164,18 @@ md_table <- function(df, digits = 3) {
     apply(body, 1, function(r) paste0("| ", paste(r, collapse = " | "), " |")))
 }
 read_cs <- function(f) { cs <- read.csv(f, stringsAsFactors = FALSE); cs$yrmo <- sub("^X", "", cs$yrmo); cs[order(cs$yrmo), ] }
-# MD5 of the monthly ASCII files in a folder, keyed by month.
-md5_dir <- function(dir) {
+# MD5 of the monthly ASCII files in a folder, keyed by month. In the pipeline folders
+# every .asc file must be a monthly file (strict); in the Ecospace export folder other
+# .asc files may sit beside them (a sync service's conflict copies, for one), so they
+# are left out and reported as the "extra" attribute.
+md5_dir <- function(dir, strict = TRUE) {
   f <- sort(list.files(dir, pattern = "[.]asc$"))
   if (length(f) == 0) stop("No ASCII files in ", dir, call. = FALSE)
-  stopifnot(all(grepl("^sdmTMB_log__[0-9]{6}[.]asc$", f)))
-  data.frame(yrmo = substr(f, 13, 18), file = f, md5 = unname(tools::md5sum(file.path(dir, f))), stringsAsFactors = FALSE)
+  ok <- grepl("^sdmTMB_log__[0-9]{6}[.]asc$", f)
+  if (strict) stopifnot(all(ok))
+  d <- data.frame(yrmo = substr(f[ok], 13, 18), file = f[ok], md5 = unname(tools::md5sum(file.path(dir, f[ok]))), stringsAsFactors = FALSE)
+  attr(d, "extra") <- f[!ok]
+  d
 }
 # The local overrides, as the driver reads them (the export destination lives there).
 local_cfg <- local({ cfg <- list(); if (file.exists(file_local)) source(file_local, local = TRUE); cfg })
@@ -302,8 +308,8 @@ use_counts_of <- function(d) { u <- table(factor(d$use, levels = names(expected$
 check_export <- function(now) {
   if (!isTRUE(local_cfg$export_ecospace)) stop("config.local.R has export_ecospace FALSE: the final runs export to the Ecospace ST drivers (decision D12).", call. = FALSE)
   if (is.na(export_dir) || !dir.exists(export_dir)) stop("Export folder not found: ", export_dir, call. = FALSE)
-  ex <- md5_dir(export_dir)
-  extra <- setdiff(ex$file, now$file)
+  ex <- md5_dir(export_dir, strict = FALSE)
+  extra <- c(setdiff(ex$file, now$file), attr(ex, "extra"))
   j <- match(now$file, ex$file)
   stopifnot(!anyNA(j), all(ex$md5[j] == now$md5))
   cat(sprintf("Export: %d of %d files in %s equal ecospace_ascii/ byte for byte%s\n", sum(ex$md5[j] == now$md5), nrow(now), export_dir,
