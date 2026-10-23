@@ -1,10 +1,10 @@
 # Issue #5: Are the satellites missing nearshore blooms? 
 
-This markdown provides a summary of [WFS-FEM/RedTideMaps#5](https://github.com/WFS-FEM/RedTideMaps/issues/5). The work done is performed in a series of sub-issues [#6](https://github.com/WFS-FEM/RedTideMaps/issues/6), [#8](https://github.com/WFS-FEM/RedTideMaps/issues/8), [#11](https://github.com/WFS-FEM/RedTideMaps/issues/11), [#10](https://github.com/WFS-FEM/RedTideMaps/issues/10) and [#15](https://github.com/WFS-FEM/RedTideMaps/issues/15). A related issue is the hull method of [#3](https://github.com/WFS-FEM/RedTideMaps/issues/3).  
+This markdown provides a summary of [WFS-FEM/RedTideMaps#5](https://github.com/WFS-FEM/RedTideMaps/issues/5). The work done is performed in a series of sub-issues [#6](https://github.com/WFS-FEM/RedTideMaps/issues/6), [#8](https://github.com/WFS-FEM/RedTideMaps/issues/8), [#11](https://github.com/WFS-FEM/RedTideMaps/issues/11), [#10](https://github.com/WFS-FEM/RedTideMaps/issues/10), [#15](https://github.com/WFS-FEM/RedTideMaps/issues/15) and [#18](https://github.com/WFS-FEM/RedTideMaps/issues/18). A related issue is the hull method of [#3](https://github.com/WFS-FEM/RedTideMaps/issues/3).  
 
 In this summary, we first explain the methods and reasoning. The appendix includes the exact numbers, parameters, files, and reproduction steps. Every number comes from a table in one of the issue folders under `docs/`, named where it is used.
 
-**Where things stand:** the pipeline on `main` can apply the nearshore hybrid rule described below to both satellite eras with the set of #8 (`mask5`), switched off by default, so the delivered maps (`out/5min/ecospace_ascii/`) are still the ones of 6 October 2026. Issue #15 settled the final definition of "nearshore" (section 3): the `mask5` set plus the cells that touch a land cell of the Ecospace basemap, 189 cells, with the hull fill kept. What remains is one new issue: put that set into the pipeline as rule `"mask5adj"`, verify it against the #15 prototype month by month, record the final decisions, switch the rule on for both sensors and regenerate the maps.
+**Where things stand (23 October 2026, issue #18, closed):** the nearshore hybrid rule described below, with the set settled in #15 (the `mask5` set plus the cells that touch a land cell of the Ecospace basemap, 189 cells, hull fill), is in the pipeline as rule `"mask5adj"` and is the default for both satellite eras. The delivered maps (`out/5min/ecospace_ascii/`, and the 15-arcmin set in `out/15min/ecospace_ascii/`) are the hybrid maps: regenerated first with the FWC samples frozen at the 22 September 2026 pull and verified against the #15 prototype month by month, then with the new FWC samples pulled, to 21 October 2026, which changed only September and October 2026, both hull-served months, and copied to the Ecospace ST drivers folder. With both keys at `"none"` the pipeline still reproduces the 6 October 2026 maps byte for byte. The follow-ups are in section 6.
 
 ## 1. Context
 
@@ -37,6 +37,8 @@ Of the high-count samples VIIRS misses in months where it does see the bloom, 79
 Two findings. First, the set: the land-adjacent cells (177) cover 78 of the 84 cells in the VIIRS no-data band and 124 of the 136 `mask5` cells; they miss two bay cells cut by the northern map edge and nine cells that sit against barrier islands the grid draws as water, and they add 53 cells that touch land but whose centres lie 5 to 12 km from the coastline (a cell is 8 to 9 km wide, so a corner neighbour reaches further than 5 km). *Decision: use a union of the methods: i.e., within the VIIRS mask, within 5 km of the coast, or touching land*. The rule is described immediately below in the methods and written out in full in `docs/issue15_adjacent-land-hybrid/nearshore-set-method.md`.
 
 Second, the fill: on the same set, the raw projection includes the same samples as the hull fill (93.4% of the water samples >= 10,000 cells/L in the satellite months) but adds 2.5 times as much exposure (+17.9% against +8.2%), because it lays the model surface along the whole strip in every fitted month, 57% of it below 10,000 cells/L; the hull fill adds only where positive samples sit. *Decision: do not use the raw fill and continue to use the hull fill.*
+
+**Issue #18 (23 October): the rule in the pipeline and the final maps.** The decided set went into the pipeline as rule `"mask5adj"` (the `mask5` code path untouched, the touching-land criterion added), behind the same two configuration keys. A run with both keys set to the new rule changed exactly the 210 months the hybrid changes (121 VIIRS, 89 MODIS) and equalled the #15 prototype in all 278 satellite months on 9 metrics; a run with both keys at `"none"` reproduced the 6 October maps byte for byte. Both defaults were then flipped and the deliverables regenerated with the FWC samples frozen at the 22 September 2026 pull, at 5 arcmin (the committed maps equal the verified run byte for byte) and at 15 arcmin (where the set has 53 of the 428 water cells and 205 months change; the tracked 15-arcmin maps dated from 22 May 2026, before the hull fix of #3, so 323 of the 504 files differ), and copied to the Ecospace ST drivers folder. A last rerun pulled the new FWC samples, to 21 October 2026: at either resolution only the two latest months, served by the hulls, changed, and every satellite month stayed byte-identical to the verified run. Checks and tables: `docs/issue18_implement-hybrid-clipping/`.
 
 ![The land-adjacent set against mask5 (left) and the decided union (right), on the Ecospace basemap (issue #15, fig 1)](../issue15_adjacent-land-hybrid/figures/fig1_sets_issue15.png)
 
@@ -75,7 +77,7 @@ In other words: for all cells except the nearshore set, we believe the satellite
 
 ## 4. Results from the rule change
 
-The 6 October 2026 maps against the hybrid with the decided set (the union of #15) and the hull fill, prototyped in #15 from the stacks on disk; the `mask5` figures of #11 and #10 are given in brackets where they differ.
+The 6 October 2026 maps against the delivered maps: the hybrid with the decided set (the union of #15) and the hull fill, from the final 5-arcmin pipeline run of #18 (frozen samples), which equals the #15 prototype month by month in all 504 months. `mask5` (#11, #10) is given in brackets where it differs.
 
 | | VIIRS months (155, 2012 to 2024) | MODIS months (123, 2002 to 2011, 2022-12, 2025) | whole record (504 months, 1985 to 2026) |
 |---|---|---|---|
@@ -85,7 +87,7 @@ The 6 October 2026 maps against the hybrid with the decided set (the union of #1
 | cell-months at or above 10,000 cells/L | 10,204 -> 12,133, +19% | 17,766 -> 18,341, +3% | 35,606 -> 38,110, +7% |
 | total exposure (cells/L summed over all water cells and months) | +11% | +3.5% | +6% |
 
-Sources: `docs/issue15_adjacent-land-hybrid/tables/exposure_by_era_issue15.csv`, `examine_groups_issue15.csv`, `mask5_vs_union_issue15.csv` and `record_groups_issue15.csv` (the `union_hull` and `mask5` variants). 
+Sources: `docs/issue18_implement-hybrid-clipping/tables/record_groups_issue18.csv` (the `v6oct`, `mask5` and `final` variants, from the delivered maps), which equals `docs/issue15_adjacent-land-hybrid/tables/record_groups_issue15.csv`, `exposure_by_era_issue15.csv`, `examine_groups_issue15.csv` and `mask5_vs_union_issue15.csv` (the `union_hull` and `mask5` variants of the prototype). 
 
 "Samples included" counts the in-situ water-cell samples whose grid cell is non-zero in the map, the converse of the samples the footprint cuts. 
 
@@ -104,7 +106,9 @@ Sources: `docs/issue15_adjacent-land-hybrid/tables/exposure_by_era_issue15.csv`,
   
 - **Nothing moves anywhere else:** the 226 hull months are byte-identical, and with both keys at `"none"` the whole run reproduces the 6 October maps byte for byte.
 
-![Exposure per monthly map from the first satellite month to 2026: the 6 October maps and the nearshore hybrid with the decided set (drawn from the #15 per-month table by plot_summary_issue5.R)](figures/fig1_record_2002-2026_issue5.png)
+![Exposure per monthly map from the first satellite month to 2026: the 6 October maps and the delivered maps, the nearshore hybrid with the decided set (drawn from the #18 per-month table by plot_summary_issue5.R)](figures/fig1_record_2002-2026_issue5.png)
+
+![The 16 headline months of #6 in the delivered maps: samples, the 6 October map, the delivered map with the nearshore set shaded (issue #18, fig 1, page 1 of 2)](../issue18_implement-hybrid-clipping/figures/fig1_headline_months_issue18.pdf)
 
 ## 5. Decisions taken
 
@@ -119,12 +123,16 @@ Sources: `docs/issue15_adjacent-land-hybrid/tables/exposure_by_era_issue15.csv`,
 | D7 | Both switches default to `"none"` until #5 decides; the delivered maps stay at 6 Oct 2026 and the implementation PRs carry code, checks and docs only | Holden, 20 Oct 2026 (#11 planning) | `docs/issue11_nearshore-hybrid-pipeline/README.md`, PR #12 and PR #13 bodies |
 | D8 | The in-situ samples are the FWC counts as filtered today (positive = any count above zero); the definition of a positive sample is a separate follow-up | carried from #3 and the audit (M3) | `docs/review/draft-repo-audit-log.md` |
 | D9 | The nearshore set is the union of `mask5` and the land-adjacent cells: in the static VIIRS no-data mask, or centre within 5 km of the Natural Earth coastline, or sharing an edge or a corner with a land cell of the Ecospace basemap (189 cells, 14,205 km2; Gulf domain, the Atlantic cells always excluded). The fill stays the hull (D2, D4); the raw sdmTMB fill tested in #15 was not adopted | Holden, 22 Oct 2026 | #15 thread; `docs/issue15_adjacent-land-hybrid/nearshore-set-method.md` |
+| D10 | The hybrid maps with the decided set are the deliverables: rule `"mask5adj"` is the default for both sensors (D7 ends); #5 closes with #18 | Holden, 23 Oct 2026 (#18 planning) | `docs/issue18_implement-hybrid-clipping/issue18-implement-hybrid-plan.md`; PR #19 |
+| D11 | The deliverables are regenerated twice: first with the FWC samples frozen at the 22 September 2026 pull (the committed maps equal the verified run byte for byte and the #15 prototype month by month), then with the new FWC samples pulled | same | same |
+| D12 | The final runs copy the ASCII files to the Ecospace ST drivers folder (`export_ecospace = TRUE`) | same | same |
+| D13 | The 15-arcmin deliverables are regenerated as well (they dated from 22 May 2026, before the hull fix of #3) | same | same |
 
-## 6. What is pending, and what comes after
+## 6. The call, what was done, and what comes after
 
-**The call in #5**: one decision for both sensors: accept the hybrid maps with the decided set, or keep the satellite-only maps. The `mask5` hybrid maps already exist locally (the run B outputs of #10); the maps with the decided set exist as the #15 prototype and will exist as a pipeline run once the rule is implemented. Before the call, [#15](https://github.com/WFS-FEM/RedTideMaps/issues/15) (22 Oct 2026) examined an alternative rule, a nearshore set read off the Ecospace basemap (water cells touching a land cell) filled with the unclipped sdmTMB projection: `docs/issue15_adjacent-land-hybrid/README.md` compares it with `mask5` on the same metrics. Holden kept the hull fill after seeing the results (the raw fill adds a model strip in every fitted month) and chose the set on 22 October 2026 (D9): the union of `mask5` and the land-adjacent cells (189 cells), which covers the VIIRS mask, the 5 km band and the cells touching land by construction and includes 94.2% of the samples >= 10k cells/L against 93.0%; the rule is written out in `docs/issue15_adjacent-land-hybrid/nearshore-set-method.md`. What remains is a new issue (Holden, 22 Oct 2026) that puts the rule into the pipeline as `"mask5adj"`, verifies it against the #15 prototype, records the final decisions, and regenerates the projections: the closure below with that rule as the default.
+**The call in #5** was one decision for both sensors: accept the hybrid maps with the decided set, or keep the satellite-only maps. Holden took it on 23 October 2026 (D10): the hybrid maps are the deliverables. Before the call, [#15](https://github.com/WFS-FEM/RedTideMaps/issues/15) (22 Oct 2026) examined an alternative rule, a nearshore set read off the Ecospace basemap (water cells touching a land cell) filled with the unclipped sdmTMB projection: `docs/issue15_adjacent-land-hybrid/README.md` compares it with `mask5` on the same metrics. Holden kept the hull fill after seeing the results (the raw fill adds a model strip in every fitted month) and chose the set on 22 October 2026 (D9): the union of `mask5` and the land-adjacent cells (189 cells), which covers the VIIRS mask, the 5 km band and the cells touching land by construction and includes 94.2% of the samples >= 10k cells/L against 93.0%; the rule is written out in `docs/issue15_adjacent-land-hybrid/nearshore-set-method.md`. The implementation, the final decisions and the regenerated projections followed in #18 (below).
 
-**On acceptance** (the next planning session): implement the decided set as `"mask5adj"` and make it the default for both sensors, regenerate the deliverables once (with or without a fresh pull of FWC samples, to be chosen), commit the 504 ASCII files and the plots, export the drop to the Ecospace ST drivers, update the README and close #5 with a closing comment that records the decision.
+**Done in #18 (23 October 2026):** the decided set implemented as `"mask5adj"` and made the default for both sensors; the deliverables regenerated at 5 and 15 arcmin, first with the frozen samples and then with the new FWC samples (D11), committed and copied to the Ecospace ST drivers (D12, D13); the README and this summary updated; #5 closed by PR #19 with the closing record posted on the issue.
 
 **Follow-ups noted on the way, not needed for the call:**
 
@@ -135,7 +143,7 @@ Sources: `docs/issue15_adjacent-land-hybrid/tables/exposure_by_era_issue15.csv`,
 
 ## Appendix: the technical record
 
-**How it is switched on.** Two configuration keys in `run_redtide_maps.R`, one per sensor: `cfg$viirs_nearshore` and `cfg$modis_nearshore`, each `"none"` (default, today's maps) or `"mask5"` (criteria 1 and 2, implemented in #11 and #10). The decided set, all three criteria, follows as the value `"mask5adj"` in the next issue: the same function with the adjacency criterion added, the `"mask5"` path untouched. The run log names the rule, the size of the set, and the months the rule changed; `clipping_source.csv` records, for every month, which source served it and whether the hybrid changed it.
+**How it is switched on.** Two configuration keys in `run_redtide_maps.R`, one per sensor: `cfg$viirs_nearshore` and `cfg$modis_nearshore`, each `"mask5adj"` (the default since #18: all three criteria), `"mask5"` (criteria 1 and 2, implemented in #11 and #10) or `"none"` (the satellite-only maps delivered before #18). The run log names the rule, the size of the set, and the months the rule changed; `clipping_source.csv` records, for every month, which source served it and whether the hybrid changed it.
 
 ### A1. The rule as implemented
 
@@ -152,11 +160,11 @@ The cascade per month is hybrid > VIIRS > hybrid_modis > MODIS > hull, where the
 
 | What | Where |
 |---|---|
-| nearshore set | `fn.nearshore_mask()` in `scripts/process_hybrid.R` (in `scripts/process_VIIRS.R` until #10); rule `"mask5"` implemented, writes `out/<res>min/clipped/nearshore_mask_mask5.grd`; rule `"mask5adj"` (criterion 3 added) follows in the next issue, prototyped by `docs/issue15_adjacent-land-hybrid/check_adjacent_hybrid_issue15.R` |
+| nearshore set | `fn.nearshore_mask()` in `scripts/process_hybrid.R` (in `scripts/process_VIIRS.R` until #10); rules `"mask5"` (#11) and `"mask5adj"` (criterion 3 added, #18; prototyped by `docs/issue15_adjacent-land-hybrid/check_adjacent_hybrid_issue15.R`), writes `out/<res>min/clipped/nearshore_mask_<rule>.grd` |
 | hybrid clip | `fn.clip_2_hybrid(file_sat_clipped, file_hull_clipped, file_mask, file_depth, dir_out, source = "viirs" / "modis", months = NULL)` in `scripts/process_hybrid.R`; writes `*_clipped_hybrid.grd` (VIIRS) and `*_clipped_hybrid_modis.grd` (MODIS) |
 | cascade and ASCII | `make_redtide_ascii(file_hull, file_viirs, file_modis, file_hybrid, file_hybrid_modis, ...)` in `scripts/polygon_clipping_rt.R`; `clipping_source.csv` columns `pred, viirs, modis, hybrid, hybrid_modis, hybrid_changed, use` |
 | hulls | `fn.buffered_hulls()` and `fn.clip_2_hulls()` in `scripts/polygon_clipping_rt.R`; `hull_link_km = 75`, `hull_buffer_km = 10`, `hull_min_pts = 4`, `hull_concavity = 2`, `hull_warn_span_km = 300`; diagnostics in `out/<res>min/sdm/hull_diagnostics.csv` |
-| configuration | `cfg$viirs_nearshore`, `cfg$modis_nearshore` (`"none"` default, `"mask5"`; `"mask5adj"` to come), validated after `config.local.R`; `cfg$fwc_refresh = FALSE` reuses the local FWC CSV for reproducibility runs; documented in `config.local.example.R` and the README configuration table |
+| configuration | `cfg$viirs_nearshore`, `cfg$modis_nearshore` (`"mask5adj"` default since #18, `"mask5"`, `"none"`), validated after `config.local.R`; `cfg$fwc_refresh = FALSE` reuses the local FWC CSV for reproducibility runs; `cfg$export_ecospace = TRUE` copies the drop to the Ecospace ST drivers; documented in `config.local.example.R` and the README configuration table |
 | coastline | `data/coastline/ne_10m_coastline_wfs.gpkg` (`paths$file_coast`), README beside it |
 | run log | lines `Nearshore rule mask5: 136 cells, 10,227 km2 ...`, `Hybrid: 121 of 155 VIIRS months changed ...`, `Hybrid (MODIS): 87 of 123 MODIS-served months changed ...` |
 
@@ -171,6 +179,11 @@ The cascade per month is hybrid > VIIRS > hybrid_modis > MODIS > hull, where the
 | #10 run B | both mask5 | 87 files differ from run A, all MODIS months with a nearshore hull; equals the #10 examine prototype in all 123 months on 11 metrics; VIIRS hybrid and hull months byte-identical | stage `mask5` |
 | #10 run 0 | both none | 0 of 504 files differ from the baseline | the #11 stage `none`, unchanged |
 | #15 examine | no run; prototype on the on-disk stacks and the #10 and #11 run copies | the decided set changes 210 months (121 VIIRS, 89 MODIS); the per-month `union_hull` columns of `examine_months_issue15.csv` are what the `"mask5adj"` run must match month by month, and the set itself is `nearshore_set_issue15.csv` | `check_adjacent_hybrid_issue15.R`, stage `examine` (36 assertion blocks) |
+| #18 run A | both `mask5adj` (local override, defaults still none) | 210 files differ from the baseline, exactly the `hybrid_changed` months; the set raster = the #15 table cell for cell; all 278 satellite months equal the prototype on 9 metrics; hull months byte-identical | `check_final_hybrid_issue18.R`, stage `rule` |
+| #18 run 0 | both none (after the code change) | 0 of 504 files differ from the baseline | the #11 stage `none`, unchanged |
+| #18 final 5 | the defaults (`mask5adj`), frozen samples, export on | 0 of 504 files differ from run A; the Ecospace ST drivers copy equals `ecospace_ascii/`; the record metrics equal the #15 prototype in all 504 months | stages `final` and `record` |
+| #18 final 15 | the same at 15 arcmin | set 53 cells, 35,890 km2 (13 in the VIIRS mask, 20 within 5 km, 48 touching land); 205 months changed (118 VIIRS, 87 MODIS); the hybrid relations hold; 323 of 504 files differ from the tracked May 2026 files; the Ecospace copy equals `ecospace_ascii/` | stage `final`, `RT_QA_RES=15` |
+| #18 refresh | the defaults, the FWC samples to 21 Oct 2026, both resolutions | 2 of 504 files changed at each resolution (2026-09 and 2026-10, hull-served); the satellite months byte-identical to the frozen runs; the Ecospace copies equal `ecospace_ascii/` | stage `refresh` |
 
 Every check script reads only what the last pipeline run left on disk and the tracked tables, uses no random numbers, asserts the numbers it reports, and writes byte-identical CSVs and PNGs on rerun. Each run takes 7 to 15 minutes alone on the machine; the FWC samples were frozen at 22 September 2026 for all of them. The figure in section 4 is drawn from the #15 per-month table by `plot_summary_issue5.R` in this folder (no computation, byte-identical on rerun).
 
@@ -196,7 +209,8 @@ Every check script reads only what the last pipeline run left on disk and the tr
 | #11, PR #12 (22 Oct 2026) | `docs/issue11_nearshore-hybrid-pipeline/` | `check_hybrid_issue11.R` | `tables/md5_*`, `tables/hybrid_vs_prototype_issue11.csv`, `tables/groups_issue11.csv`, `tables/exposure_*_issue11.csv`, `figures/fig1` to `fig6`, `comments/compare_summary.md`, `comments/exposure_summary.md` |
 | #10, PR #13 (22 Oct 2026) | `docs/issue10_modis-nearshore-hybrid/` | `check_modis_hybrid_issue10.R` | `tables/examine_*_issue10.csv`, `tables/excluded_*_issue10.csv`, `tables/md5_run{A,B}_issue10.csv`, `tables/hybrid_modis_vs_prototype_issue10.csv`, `tables/record_*_issue10.csv`, `figures/fig1` to `fig5`, `comments/examine_summary.md`, `comments/compare_summary.md` |
 | #15, PR #16 (22 Oct 2026) | `docs/issue15_adjacent-land-hybrid/` | `check_adjacent_hybrid_issue15.R` | `nearshore-set-method.md` (the rule in full), `tables/nearshore_set_issue15.csv` (the 189 cells), `tables/set_coverage_issue15.csv`, `tables/mask5_vs_union_issue15.csv`, `tables/exposure_by_era_issue15.csv`, `tables/examine_*_issue15.csv`, `tables/record_*_issue15.csv`, `tables/fill_values_issue15.csv`, `figures/fig1_sets`, `fig2_record`, `fig3_months.pdf`, `fig4_cells`, `fig5_nearshore_set`, `comments/examine_summary.md` |
-| #5, PR #14 and this update | `docs/issue5_nearshore-hybrid-summary/` | `plot_summary_issue5.R` | this document; `figures/fig1_record_2002-2026_issue5.png` |
+| #18, PR #19 (23 Oct 2026) | `docs/issue18_implement-hybrid-clipping/` | `check_final_hybrid_issue18.R` | `issue18-implement-hybrid-plan.md` (the decisions D10 to D13), `tables/md5_runA_issue18.csv`, `tables/hybrid_vs_prototype_issue18.csv`, `tables/nearshore_set5_issue18.csv`, `tables/md5_final5_issue18.csv`, `tables/md5_final15_issue18.csv`, `tables/record_*_issue18.csv`, `tables/md5_refresh*_issue18.csv`, `figures/fig1_headline_months_issue18.pdf`, `figures/fig2_record_2002-2026_issue18.png`, `comments/record_summary.md` |
+| #5, PR #14, PR #17 and PR #19 | `docs/issue5_nearshore-hybrid-summary/` | `plot_summary_issue5.R` | this document; `figures/fig1_record_2002-2026_issue5.png` |
 
 ### A6. Timeline
 
@@ -214,4 +228,5 @@ Every check script reads only what the last pipeline run left on disk and the tr
 | 20 to 22 Oct | #10: the MODIS months examined and the rule applied; PR #13 merged 22 Oct |
 | 22 Oct | this summary written (PR #14 merged) |
 | 22 Oct | #15: the land-adjacent set and the raw sdmTMB fill tested against `mask5`; the hull fill kept and the set decided as the union (D9); PR #16 merged |
-| 22 Oct | this summary updated for #15; next: a new issue implements `"mask5adj"`, records the final decisions and regenerates the maps |
+| 22 Oct | this summary updated for #15 (PR #17 merged 23 Oct) |
+| 23 Oct | #18: rule `"mask5adj"` in the pipeline, verified (run A = the prototype, run 0 = 6 Oct); the defaults flipped; the deliverables regenerated at 5 and 15 arcmin with the frozen samples, then with the new FWC samples; exported to Ecospace; #5 closed by PR #19 |
