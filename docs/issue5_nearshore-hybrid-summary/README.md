@@ -73,27 +73,35 @@ In other words: for all cells except the nearshore set, we believe the satellite
 
 ![The 16 headline months of #6: samples, the VIIRS layer, the hull-clipped map, and the part of it inside the mask (issue #8, fig 3)](../issue8_nearshore-hybrid/figures/fig3_headline_months.png)
 
-## 4. What changes in the maps
+## 4. Results from the rule change
 
 The 6 October 2026 maps against the hybrid with the decided set (the union of #15) and the hull fill, prototyped in #15 from the stacks on disk; the `mask5` figures of #11 and #10 are given in brackets where they differ.
 
 | | VIIRS months (155, 2012 to 2024) | MODIS months (123, 2002 to 2011, 2022-12, 2025) | whole record (504 months, 1985 to 2026) |
 |---|---|---|---|
-| months whose map changes | 121 | 89 (`mask5`: 87) | 210 (208) |
-| water samples >= 10,000 cells/L that the map includes | 53% -> 97% (95%) | 82% -> 90% (89%) | 72% -> 96% (95%) |
-| samples > 1,000,000 cells/L that the map includes | 64% -> 99% (98.5%) | 89% -> 94% (93%) | 78.5% -> 98% |
-| cell-months at or above 10,000 cells/L | 10,204 -> 12,133, +19% (+16%) | 17,766 -> 18,341, +3% (+2%) | 35,606 -> 38,110, +7% (+6%) |
-| total exposure (cells/L summed over all water cells and months) | +11% (+10%) | +3.5% (+2%) | +6% (+5%) |
+| months whose map changes | 121 | 89 | 210 (208) |
+| water samples >= 10,000 cells/L that the map includes | 53% -> 97% | 82% -> 90% | 72% -> 96% |
+| samples > 1,000,000 cells/L that the map includes | 64% -> 99% | 89% -> 94% | 78.5% -> 98% |
+| cell-months at or above 10,000 cells/L | 10,204 -> 12,133, +19% | 17,766 -> 18,341, +3% | 35,606 -> 38,110, +7% |
+| total exposure (cells/L summed over all water cells and months) | +11% | +3.5% | +6% |
 
 Sources: `docs/issue15_adjacent-land-hybrid/tables/exposure_by_era_issue15.csv`, `examine_groups_issue15.csv`, `mask5_vs_union_issue15.csv` and `record_groups_issue15.csv` (the `union_hull` and `mask5` variants). 
 
 "Samples included" counts the in-situ water-cell samples whose grid cell is non-zero in the map, the converse of the samples the footprint cuts. 
 
-"Exposure" is the simple sum of cells/L over the 3,838 water cells, the quantity Ecospace uses; cell-months count grid cells at or above a level, summed over the months.
+"Total exposure" is the simple sum of cells/L over the 3,838 water cells, the quantity Ecospace uses; cell-months count grid cells at or above a level, summed over the months.
 
-- **Where the change is:** the coastal strip and the bays, in every satellite era. In the VIIRS era, *91% of the added exposure falls in the 60 months where VIIRS also saw the bloom offshore*. The 58 all-zero VIIRS months gain 358 cell-months at or above 10,000 cells/L and 88.5% of their high-count samples, and the 16 headline months go from nothing to a footprint each (2017-01: 3,037 km2 at or above 10,000 cells/L with 113 of its 116 high-count samples inside; 2021-06: 3,568 km2 and 182 of 188; under `mask5` 2,428 and 2,807 km2). Four of the headline months, whose high counts sit well offshore in cells VIIRS evaluated, stay almost unchanged: the satellite saw nothing there, and the rule leaves it alone.
+"Cell months >10,000 cells/L" is a measure of bloom extent integrated over time. For example, a cell that stays at bloom level for four months contributes four; one month with 300 cells at bloom level contributes 300. 
+
+### Notes
+- **Changes are made during bloom months** the coastal strip and the bays, in every satellite era. In the VIIRS era, *91% of the added exposure falls in the 60 months where VIIRS also saw the bloom offshore*.
+
+- **Changes in the all-zero months** The 58 all-zero VIIRS months gain 358 cell-months at or above 10,000 cells/L and 88.5% of their high-count samples. The 16 headline months go from nothing to a footprint each (2017-01: 3,037 km2 at or above 10,000 cells/L with 113 of its 116 high-count samples inside; 2021-06: 3,568 km2 and 182 of 188; under `mask5` 2,428 and 2,807 km2).
+
+> Four of the headline months, whose high counts sit well offshore in cells VIIRS evaluated, stay almost unchanged: the satellite saw nothing there, and the rule leaves it alone.
+  
 - **The MODIS era moves less** because MODIS already covers the coast: the rule recovers 328 of the 799 high-count samples the MODIS footprint excludes, the ones inside the set, and leaves the rest, offshore, as they are.
-- **The 53 cells added by criterion 3** account for the difference from `mask5`: 164 more samples at or above 10,000 cells/L included over the satellite months and 1.1 points of exposure, all in the 2 to 10 km band (included share 2 to 5 km 96% -> 99%, 5 to 10 km 89% -> 93%).
+  
 - **Nothing moves anywhere else:** the 226 hull months are byte-identical, and with both keys at `"none"` the whole run reproduces the 6 October maps byte for byte.
 
 ![Exposure per monthly map from the first satellite month to 2026: the 6 October maps and the nearshore hybrid with the decided set (drawn from the #15 per-month table by plot_summary_issue5.R)](figures/fig1_record_2002-2026_issue5.png)
