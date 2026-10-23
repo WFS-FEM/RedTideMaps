@@ -1,9 +1,10 @@
 #' Nearshore set and the satellite + hull hybrid clip.
 #'
 #' Two functions used by the main workflow (issue #8 decision, #11 for the
-#' VIIRS months, #10 for the MODIS months):
-#'   - fn.nearshore_mask(): the static nearshore set (VIIRS no-data mask
-#'                           or within 5 km of the coast) as a raster.
+#' VIIRS months, #10 for the MODIS months, #15 and #18 for the final set):
+#'   - fn.nearshore_mask(): the static nearshore set (VIIRS no-data mask,
+#'                           within 5 km of the coast, or touching a land
+#'                           cell) as a raster.
 #'   - fn.clip_2_hybrid():  the satellite-clipped layer outside that set,
 #'                           the cell-wise maximum of the satellite- and
 #'                           hull-clipped layers inside it.
@@ -20,19 +21,28 @@
 #' (issue #8). Rule `"mask5"` (issue #8, decision D1): a template water
 #' cell of the Gulf domain is nearshore if its 0.1-degree VIIRS cell is in
 #' that static mask (NA in at least `mask_share` of the VIIRS layers), or
-#' if its centre lies within `coast_km` of the coastline. The Gulf domain
-#' is every template water cell outside the Atlantic-side box that
+#' if its centre lies within `coast_km` of the coastline. Rule `"mask5adj"`
+#' (issue #15, decision D9; the default since issue #18) adds a third
+#' criterion: the cell shares an edge or a corner with a land cell of the
+#' template (a NODATA cell of the depth grid, the land of the Ecospace
+#' basemap; the grid borders are not land). The Gulf domain is every
+#' template water cell outside the Atlantic-side box that
 #' fn.filter_hab_data() drops samples from (east of -82 E, north of
 #' 28.5 N), which the VIIRS product does not cover. The set is static: one
-#' raster for every month. On the 5-arcmin template it has 136 cells
-#' (10,227 km2): 84 in the VIIRS mask, 132 within 5 km, 80 in both.
+#' raster for every month. On the 5-arcmin template `"mask5"` has 136 cells
+#' (10,227 km2): 84 in the VIIRS mask, 132 within 5 km, 80 in both;
+#' `"mask5adj"` has 189 cells (14,205 km2): 177 touch land, 53 of them by
+#' that criterion only. The rule is written out in
+#' docs/issue15_adjacent-land-hybrid/nearshore-set-method.md.
 #'
 #' @param file_viirs Path (without extension) to the VIIRS stack written
 #'   by fn.viirs_tifs2stack().
 #' @param file_depth Path to the depth ASCII template.
 #' @param file_coast Path to the Natural Earth 1:10m coastline gpkg
 #'   (`paths$file_coast`, tracked in data/coastline/; never downloaded here).
-#' @param rule Nearshore rule. Only `"mask5"` is implemented.
+#' @param rule Nearshore rule: `"mask5"` (the VIIRS mask or within
+#'   `coast_km` of the coast) or `"mask5adj"` (the same, or touching a land
+#'   cell).
 #' @param coast_km Distance to the coastline (km, inclusive) for the coast
 #'   part of the set.
 #' @param mask_share Share of the VIIRS layers a 0.1-degree cell must be
@@ -44,11 +54,12 @@
 #' @param dir_out Directory to write `nearshore_mask_<rule>.grd` into.
 #' @return List: `file` (path without extension), `raster` (1 = nearshore,
 #'   0 = other water, NA = land), `n_cells`, `km2`, `n_mask_cells` (the
-#'   VIIRS-mask part) and `n_coast_cells` (the within-`coast_km` part).
-fn.nearshore_mask <- function(file_viirs, file_depth, file_coast, rule = "mask5",
+#'   VIIRS-mask part), `n_coast_cells` (the within-`coast_km` part) and
+#'   `n_adjacent_cells` (the touching-land part; NA for `"mask5"`).
+fn.nearshore_mask <- function(file_viirs, file_depth, file_coast, rule = "mask5adj",
                               coast_km = 5, mask_share = 0.9, coast_step_m = 200,
                               dir_out) {
-  rule <- match.arg(rule, "mask5")
+  rule <- match.arg(rule, c("mask5", "mask5adj"))
   if (!file.exists(file_coast))
     stop("Coastline not found: ", file_coast,
          "\nIt is tracked in data/coastline/ (see the README there); ",
@@ -84,18 +95,34 @@ fn.nearshore_mask <- function(file_viirs, file_depth, file_coast, rule = "mask5"
   dist_km[!land] <- as.numeric(st_distance(st_geometry(p), coast_pts[nn], by_element = TRUE)) / 1000
   near_coast <- !is.na(dist_km) & dist_km <= coast_km
 
-  set <- domain & (in_mask | near_coast)
+  # Part 3 (rule "mask5adj", issue #15): water cells sharing an edge or a
+  # corner with a land cell of the template. raster::adjacent() from the
+  # water side, keeping the water cell of every pair whose neighbour is
+  # land: the mirror of fn.build_coastal() in the EcospaceBasemap
+  # repository, which runs the same adjacency from the land side. Cells on
+  # the grid border get no neighbour beyond it, so the border is not land.
+  adj <- rep(FALSE, n5)
+  if (rule == "mask5adj") {
+    pairs <- raster::adjacent(depth, cells = which(!land), directions = 8,
+                              pairs = TRUE, include = FALSE)
+    adj[unique(pairs[land[pairs[, 2]], 1])] <- TRUE
+  }
+
+  set <- domain & (in_mask | near_coast | adj)
   m <- raster(depth)
   m[] <- ifelse(land, NA_real_, as.numeric(set))
   names(m) <- paste0("nearshore_", rule)
   km2 <- values(area(depth))
   file_mask <- file.path(dir_out, paste0("nearshore_mask_", rule))
   writeRaster(m, file_mask, overwrite = TRUE)
-  message(sprintf("Nearshore set %s: %d cells, %s km2 (%d in the VIIRS mask, %d within %g km of the coast)",
+  n_adj <- if (rule == "mask5adj") sum(domain & adj) else NA_integer_
+  message(sprintf("Nearshore set %s: %d cells, %s km2 (%d in the VIIRS mask, %d within %g km of the coast%s)",
                   rule, sum(set), format(round(sum(km2[set])), big.mark = ","),
-                  sum(domain & in_mask), sum(domain & near_coast), coast_km))
+                  sum(domain & in_mask), sum(domain & near_coast), coast_km,
+                  if (rule == "mask5adj") sprintf(", %d adjacent to land", n_adj) else ""))
   list(file = file_mask, raster = m, n_cells = sum(set), km2 = sum(km2[set]),
-       n_mask_cells = sum(domain & in_mask), n_coast_cells = sum(domain & near_coast))
+       n_mask_cells = sum(domain & in_mask), n_coast_cells = sum(domain & near_coast),
+       n_adjacent_cells = n_adj)
 }
 
 # Hybrid clip: satellite outside the nearshore set, satellite or hull inside -----

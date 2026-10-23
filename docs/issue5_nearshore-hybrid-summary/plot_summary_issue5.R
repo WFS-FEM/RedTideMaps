@@ -1,11 +1,12 @@
 #' Figure for the issue #5 summary: exposure per monthly map from the first satellite
-#' month to the end of the record, the delivered 6 October 2026 maps against the
-#' decided nearshore rule (the union set of #15 with the hull fill).
+#' month to the end of the record, the 6 October 2026 maps against the delivered maps
+#' (the nearshore hybrid with the decided set of #15 and the hull fill, rule mask5adj).
 #'
 #' Reads one tracked table and draws it; nothing is computed afresh:
-#'   docs/issue15_adjacent-land-hybrid/tables/record_months_issue15.csv
-#'   (columns *_v6oct and *_union_hull, written and asserted by
-#'   check_adjacent_hybrid_issue15.R, stage examine).
+#'   docs/issue18_implement-hybrid-clipping/tables/record_months_issue18.csv
+#'   (columns *_v6oct and *_final, written and asserted by
+#'   check_final_hybrid_issue18.R, stage record, from the final 5-arcmin run; equal
+#'   month by month to the #15 prototype table it replaced here).
 #' Writes figures/fig1_record_2002-2026_issue5.png (byte-identical on rerun).
 #'
 #' Run from the repo root:
@@ -23,9 +24,9 @@
 dir_docs <- file.path(.root, "docs", "issue5_nearshore-hybrid-summary")
 dir_fig  <- file.path(dir_docs, "figures")
 dir.create(dir_fig, showWarnings = FALSE)
-file_rec <- file.path(.root, "docs", "issue15_adjacent-land-hybrid", "tables", "record_months_issue15.csv")
+file_rec <- file.path(.root, "docs", "issue18_implement-hybrid-clipping", "tables", "record_months_issue18.csv")
 rec <- read.csv(file_rec, colClasses = c(yrmo = "character"), stringsAsFactors = FALSE)
-stopifnot(nrow(rec) == 504, all(c("exposure_v6oct", "exposure_union_hull", "n_ge10k_union_hull", "in_ge10k_union_hull", "samples_ge10k", "use", "viirs_status") %in% names(rec)))
+stopifnot(nrow(rec) == 504, all(c("exposure_v6oct", "exposure_final", "n_ge10k_final", "in_ge10k_final", "samples_ge10k", "use", "viirs_status") %in% names(rec)))
 n_water <- 3838L
 sat <- rec$use %in% c("viirs", "modis", "hybrid", "hybrid_modis")
 d <- rec[rec$yrmo >= min(rec$yrmo[sat]), ]
@@ -34,8 +35,8 @@ fmt_n <- function(x) format(x, big.mark = ",", trim = TRUE, scientific = FALSE)
 
 era_col  <- c(hull = grDevices::adjustcolor("gray40", 0.12), MODIS = grDevices::adjustcolor("steelblue", 0.18), VIIRS = grDevices::adjustcolor("gold", 0.22))
 zero_col <- grDevices::adjustcolor("gray40", 0.3); miss_col <- grDevices::adjustcolor("red", 0.25)
-keys <- c(v6oct = "6 Oct 2026 maps (satellite only)", union_hull = "nearshore hybrid, the decided set (#15) with the hull fill")
-vcol <- c(v6oct = "black", union_hull = "purple3"); vpch <- c(v6oct = 16, union_hull = 1)
+keys <- c(v6oct = "6 Oct 2026 maps (satellite only)", final = "nearshore hybrid, the decided set (#15) with the hull fill")
+vcol <- c(v6oct = "black", final = "purple3"); vpch <- c(v6oct = 16, final = 1)
 min_samples_share <- 5L
 n <- nrow(d); x <- seq_len(n); few <- d$samples_ge10k < min_samples_share
 panel_of <- function(stem, lab, main, pts = FALSE, div = 1) list(
