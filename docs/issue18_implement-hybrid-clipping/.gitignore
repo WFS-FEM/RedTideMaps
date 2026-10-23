@@ -1,0 +1,5 @@
+# Local copies of the pipeline outputs the check stages read (run A, the final runs at
+# 5 and 15 min, the refresh runs); never tracked.
+hoard/
+# Drafts of the comments posted to #18 and #5
+issue18-*-comment.md
