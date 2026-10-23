@@ -82,7 +82,9 @@ expected <- list(n_ascii = 504L, n_viirs = 155L, n_modis = 123L, n_hull = 226L, 
                  n_changed = 210L, n_changed_viirs = 121L, n_changed_modis = 89L,
                  n_zeroed = 58L, n_headline = 16L, n_sel3 = 60L,
                  set5  = c(n_cells = 189L, km2 = 14205, n_mask = 84L, n_coast = 132L, n_adjacent = 177L, n_water = 3838L, n_atl = 56L),
-                 set15 = NULL,   # frozen after the first 15-arcmin run
+                 # the set at 15 arcmin and the months the rule changes there (the first 15-arcmin run, 23 Oct 2026)
+                 set15 = c(n_cells = 53L, km2 = 35890, n_mask = 13L, n_coast = 20L, n_adjacent = 48L, n_water = 428L, n_atl = 5L,
+                           n_changed = 205L, n_changed_viirs = 118L, n_changed_modis = 87L),
                  # the #15 union_hull prototype over the 278 satellite months (its examine stage), and the
                  # 6 Oct 2026 maps and the mask5 run (#10 run B) on the same months
                  proto = list(samples_ge10k = 13280L, samples_gt1M = 1610L,
@@ -471,9 +473,15 @@ if (stage == "final") {
   stopifnot(identical(unname(hy$cells_changed > 0), d$hybrid_changed[match(hy$months, d$yrmo)] %in% TRUE))
   invisible(check_combined(hy))
   if (res == 5L) stopifnot(sum(hy$cells_changed > 0) == expected$n_changed)
-  if (!is.null(expected$set15) && res == 15L)
-    stopifnot(sum(st$set) == expected$set15[["n_cells"]], round(sum(cell_km2[st$set])) == expected$set15[["km2"]],
-              sum(hy$cells_changed > 0) == expected$set15[["n_changed"]])
+  if (!is.null(expected$set15) && res == 15L) {
+    e15 <- expected$set15
+    stopifnot(sum(st$set) == e15[["n_cells"]], round(sum(cell_km2[st$set])) == e15[["km2"]], sum(water) == e15[["n_water"]], sum(water & atl) == e15[["n_atl"]],
+              sum(hy$cells_changed > 0) == e15[["n_changed"]], sum(hy$cells_changed[hy$months_v] > 0) == e15[["n_changed_viirs"]],
+              sum(hy$cells_changed[hy$months_m] > 0) == e15[["n_changed_modis"]],
+              has_log(sprintf("Nearshore rule %s: %d cells, %s km2 (%d in the VIIRS no-data mask, %d within 5 km of the coast, %d adjacent to land)", rule_name,
+                              e15[["n_cells"]], fmt_n(e15[["km2"]]), e15[["n_mask"]], e15[["n_coast"]], e15[["n_adjacent"]])),
+              identical(d$changed_vs_tracked, d$changed_vs_tracked))
+  }
   cat(sprintf("Months changed by the rule at %d arcmin: %d (%d VIIRS, %d MODIS)\n", res, sum(hy$cells_changed > 0),
               sum(hy$cells_changed[hy$months_v] > 0), sum(hy$cells_changed[hy$months_m] > 0)))
   message("Stage final OK at ", res, " arcmin: ", if (res == 5L) "0 of 504 ASCII files differ from run A; " else sprintf("%d of %d ASCII files differ from the tracked (22 May 2026) files; ", sum(chg), nrow(d)),
