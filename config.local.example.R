@@ -39,22 +39,24 @@
 # cfg$hull_warn_span_km <- 300
 
 
-# Nearshore hybrid for the VIIRS months (issue #11). The VIIRS product has no
-# data in a 0 to 5 km band along the coast and in the bays, where most FWC
-# samples are taken. "mask5" adds the buffered-hull footprint to the
-# VIIRS-clipped map inside that set (cells in the VIIRS no-data mask, or
-# within 5 km of the coast; 136 cells at 5 arcmin): inside it a cell takes
+# Nearshore hybrid for the VIIRS months (issues #11, #15, #18). The VIIRS
+# product has no data in a 0 to 5 km band along the coast and in the bays,
+# where most FWC samples are taken. "mask5adj" adds the buffered-hull
+# footprint to the VIIRS-clipped map inside the nearshore set (cells in the
+# VIIRS no-data mask, or within 5 km of the coast, or touching a land cell
+# of the basemap; 189 cells at 5 arcmin): inside it a cell takes
 # max(VIIRS, hull), outside it the VIIRS result stands, zeros included.
-# "none" (default) leaves the VIIRS-clipped map as it is.
-# cfg$viirs_nearshore <- "mask5"
+# "mask5" is the same without the touching-land criterion (136 cells, the
+# set of issue #8); "none" leaves the VIIRS-clipped map as it is.
+# cfg$viirs_nearshore <- "none"
 
 
 # The same rule for the months served from MODIS nFLH polygons (2002-07 to
-# 2011-12, 2022-12, 2025; issue #10): the same 136-cell set, inside it
+# 2011-12, 2022-12, 2025; issue #10): the same set, inside it
 # max(MODIS, hull), outside it the MODIS result stands. Needs use_viirs = TRUE
-# (the set is read from the VIIRS stack). "none" (default) leaves the
-# MODIS-clipped maps as they are.
-# cfg$modis_nearshore <- "mask5"
+# (the set is read from the VIIRS stack); both keys must name the same set
+# when both are on. "none" leaves the MODIS-clipped maps as they are.
+# cfg$modis_nearshore <- "none"
 
 
 # Reuse the local merged FWC CSV in cell_counts/ without querying FWC, so a

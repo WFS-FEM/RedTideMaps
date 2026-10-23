@@ -7,9 +7,9 @@
 #'   4. Predict to the depth-template grid -> monthly raster stack.
 #'   5. Clip the stack to buffered concave hulls; optionally also to
 #'      MODIS nFLH polygons and VIIRS probability rasters. With
-#'      cfg$viirs_nearshore / cfg$modis_nearshore = "mask5" the hull
-#'      footprint is added to the satellite layers inside the nearshore
-#'      set (the hybrids, issues #11 and #10).
+#'      cfg$viirs_nearshore / cfg$modis_nearshore = "mask5adj" (or the
+#'      smaller set "mask5") the hull footprint is added to the satellite
+#'      layers inside the nearshore set (the hybrids, issues #11, #10, #18).
 #'   6. Merge clipped stacks (hybrid > VIIRS > hybrid_modis > MODIS > hulls)
 #'      -> combined stack.
 #'   7. Write per-month ASCII for Ecospace under out/<res>min/ecospace_ascii/.
@@ -70,11 +70,12 @@ cfg <- list(
   hull_concavity    = 2,      # concaveman concavity for every hull (lower = tighter)
   hull_warn_span_km = 300,    # flag months whose largest footprint spans more than this (km) in hull_diagnostics.csv
 
-  # Nearshore hybrid for VIIRS months (fn.nearshore_mask, fn.clip_2_hybrid; issue #11;
-  # see README "Why the clipping cascade"). "none": the VIIRS-clipped layer is used as
-  # it is. "mask5": inside the nearshore set (cells in the VIIRS no-data mask, or within
-  # 5 km of the coast) a cell takes max(VIIRS-clipped, hull-clipped); outside it the
-  # VIIRS result stands, zeros included.
+  # Nearshore hybrid for VIIRS months (fn.nearshore_mask, fn.clip_2_hybrid; issues #11,
+  # #15, #18; see README "Why the clipping cascade"). "none": the VIIRS-clipped layer is
+  # used as it is. "mask5adj": inside the nearshore set (cells in the VIIRS no-data mask,
+  # or within 5 km of the coast, or touching a land cell of the basemap) a cell takes
+  # max(VIIRS-clipped, hull-clipped); outside it the VIIRS result stands, zeros
+  # included. "mask5": the same without the touching-land criterion (issue #8).
   viirs_nearshore  = "none",
   # The same rule for the months served from MODIS nFLH polygons (issue #10): the
   # same set, max(MODIS-clipped, hull-clipped) inside it. Needs use_viirs (the set
@@ -102,8 +103,8 @@ if (file.exists(file.path(cfg$repo_dir, "config.local.R"))) {
 # A mistyped nearshore rule must stop the run here, not in step 5.
 for (.key in c("viirs_nearshore", "modis_nearshore")) {
   if (!is.character(cfg[[.key]]) || length(cfg[[.key]]) != 1 ||
-      !cfg[[.key]] %in% c("none", "mask5"))
-    stop("cfg$", .key, " must be \"none\" or \"mask5\" (got: ",
+      !cfg[[.key]] %in% c("none", "mask5", "mask5adj"))
+    stop("cfg$", .key, " must be \"none\", \"mask5\" or \"mask5adj\" (got: ",
          paste(format(cfg[[.key]]), collapse = ", "), ").", call. = FALSE)
 }
 if (cfg$modis_nearshore != "none" && !(isTRUE(cfg$use_viirs) && isTRUE(cfg$use_modis)))
@@ -263,10 +264,12 @@ if (cfg$use_viirs && (cfg$viirs_nearshore != "none" || cfg$modis_nearshore != "n
                                  file_coast = paths$file_coast,
                                  rule       = rule,
                                  dir_out    = paths$clipped_out)
-  rt_log(paths, sprintf("Nearshore %s %s: %d cells, %s km2 (%d in the VIIRS no-data mask, %d within 5 km of the coast); inside the set max(satellite-clipped, hull-clipped), outside it the satellite result as is",
+  rt_log(paths, sprintf("Nearshore %s %s: %d cells, %s km2 (%d in the VIIRS no-data mask, %d within 5 km of the coast%s); inside the set max(satellite-clipped, hull-clipped), outside it the satellite result as is",
                         if (cfg$viirs_nearshore != "none") "rule" else "set", rule, nearshore$n_cells,
                         format(round(nearshore$km2), big.mark = ","),
-                        nearshore$n_mask_cells, nearshore$n_coast_cells))
+                        nearshore$n_mask_cells, nearshore$n_coast_cells,
+                        if (!is.na(nearshore$n_adjacent_cells))
+                          sprintf(", %d adjacent to land", nearshore$n_adjacent_cells) else ""))
 }
 if (cfg$use_viirs && cfg$viirs_nearshore != "none") {
   clip_hybrid <- fn.clip_2_hybrid(file_sat_clipped  = clip_viirs$file,
