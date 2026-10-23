@@ -71,16 +71,17 @@ cfg <- list(
   hull_warn_span_km = 300,    # flag months whose largest footprint spans more than this (km) in hull_diagnostics.csv
 
   # Nearshore hybrid for VIIRS months (fn.nearshore_mask, fn.clip_2_hybrid; issues #11,
-  # #15, #18; see README "Why the clipping cascade"). "none": the VIIRS-clipped layer is
-  # used as it is. "mask5adj": inside the nearshore set (cells in the VIIRS no-data mask,
-  # or within 5 km of the coast, or touching a land cell of the basemap) a cell takes
-  # max(VIIRS-clipped, hull-clipped); outside it the VIIRS result stands, zeros
-  # included. "mask5": the same without the touching-land criterion (issue #8).
-  viirs_nearshore  = "none",
+  # #15, #18; see README "Why the clipping cascade"). "mask5adj" (default since #18):
+  # inside the nearshore set (cells in the VIIRS no-data mask, or within 5 km of the
+  # coast, or touching a land cell of the basemap) a cell takes max(VIIRS-clipped,
+  # hull-clipped); outside it the VIIRS result stands, zeros included. "mask5": the
+  # same without the touching-land criterion (issue #8). "none": the VIIRS-clipped
+  # layer is used as it is (the maps delivered before #18).
+  viirs_nearshore  = "mask5adj",
   # The same rule for the months served from MODIS nFLH polygons (issue #10): the
   # same set, max(MODIS-clipped, hull-clipped) inside it. Needs use_viirs (the set
   # is read from the VIIRS stack) and use_modis.
-  modis_nearshore  = "none",
+  modis_nearshore  = "mask5adj",
 
   # Toggles
   use_viirs        = TRUE,

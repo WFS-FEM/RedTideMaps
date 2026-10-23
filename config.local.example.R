@@ -41,13 +41,14 @@
 
 # Nearshore hybrid for the VIIRS months (issues #11, #15, #18). The VIIRS
 # product has no data in a 0 to 5 km band along the coast and in the bays,
-# where most FWC samples are taken. "mask5adj" adds the buffered-hull
-# footprint to the VIIRS-clipped map inside the nearshore set (cells in the
-# VIIRS no-data mask, or within 5 km of the coast, or touching a land cell
-# of the basemap; 189 cells at 5 arcmin): inside it a cell takes
+# where most FWC samples are taken. "mask5adj" (the default) adds the
+# buffered-hull footprint to the VIIRS-clipped map inside the nearshore set
+# (cells in the VIIRS no-data mask, or within 5 km of the coast, or touching
+# a land cell of the basemap; 189 cells at 5 arcmin): inside it a cell takes
 # max(VIIRS, hull), outside it the VIIRS result stands, zeros included.
 # "mask5" is the same without the touching-land criterion (136 cells, the
-# set of issue #8); "none" leaves the VIIRS-clipped map as it is.
+# set of issue #8); "none" leaves the VIIRS-clipped map as it is (the maps
+# delivered before #18).
 # cfg$viirs_nearshore <- "none"
 
 
