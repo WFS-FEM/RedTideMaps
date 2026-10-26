@@ -15,7 +15,9 @@
 #' the outline of the framed panel and the nearshore set outlined in black. Every map panel
 #' (B to F) prints its total exposure, the sum of cells/L over the water cells of that map
 #' (as Ecospace integrates it), then the positives and the five FWC classes (samples in A,
-#' grid cells in B to F).
+#' grid cells in B to F). Land is drawn as the land cells of the 5-arcmin template (NA in
+#' the depth grid, NODATA in the ASCII files), what the maps carry and Ecospace sees, not
+#' as a coastline polygon.
 #'
 #' Reads only what the last 5-arcmin pipeline run left on disk (out/5min/) and the tracked
 #' tables, and asserts first that the run on disk is the delivered one (its ASCII files
@@ -24,7 +26,7 @@
 #' PDF carries the two date lines every R pdf() device writes).
 #'
 #' Run from the repo root:
-#'   Rscript docs/issue18_implement-hybrid-clipping/clip_months_hybrid_issue18.R   (about 2 min)
+#'   Rscript docs/issue18_implement-hybrid-clipping/clip_months_hybrid_issue18.R   (3 to 6 min)
 #'   RT_QA_QUICK=1            draw only the pages holding the 16 headline months of #6
 #'   RT_QA_PNG_DIR=<folder>   also render the pages of RT_QA_PNG_YEARS (default
 #'                            1990,2012,2017,2018,2026) as PNG previews (PDFs cannot be read here)
@@ -45,7 +47,7 @@
   }
   stop("Run from the repo root: Rscript docs/issue18_implement-hybrid-clipping/clip_months_hybrid_issue18.R", call. = FALSE)
 })
-source(file.path(.root, "scripts", "_setup.R"))   # sf, raster, maps, viridis, ...
+source(file.path(.root, "scripts", "_setup.R"))   # sf, raster, viridis, ...
 
 # Parameters ---------------------------------------------------------------------
 thr_bloom     <- 1e4        # cells/L: the first coloured bin of the map PDFs
@@ -60,6 +62,7 @@ expected <- list(n_months = 504L,
                  use = c(hybrid = 155L, hybrid_modis = 123L, pred = 226L),
                  n_changed = 210L, n_changed_viirs = 121L, n_changed_modis = 89L,
                  viirs_layers = 155L, viirs_zero = 89L, set_cells = 189L,
+                 n_land = 1310L, n_water = 3838L,   # the 5-arcmin template: land = the NA cells of the depth grid (no zero depth), NODATA in every ASCII file
                  fit = c(fitted = 331L, failed = 5L, none = 168L),   # from the unclipped layers of the refresh run (23 Oct 2026; the #6 run of 6 Oct had 329 / 5 / 170)
                  n_headline = 16L,
                  refreshed = c("202609", "202610"),   # the hull months the refresh run changed against the frozen record table
@@ -228,8 +231,9 @@ stopifnot(all(is.na(Hv) == land), all(is.na(Hm) == land),
           all((tab$final_n_changed > 0) == tab$hybrid_changed))
 cat("final map = the hybrid of the framed clip and the hulls (max inside the set, the clip outside) in the 278 satellite months, = the hull clip in the 226 hull months; cells changed > 0 exactly in the ", sum(tab$hybrid_changed), " hybrid_changed months  OK\n", sep = "")
 # 5. The set raster.
-stopifnot(all(is.na(set_v) == land), all(set_v[water] %in% c(0, 1)), sum(set) == expected$set_cells, !any(atl[set]))
-cat("nearshore set ", rule_name, ": ", sum(set), " cells, ", fmt_n(round(sum(cell_km2[set]))), " km2, none in the Atlantic box  OK\n", sep = "")
+stopifnot(all(is.na(set_v) == land), all(set_v[water] %in% c(0, 1)), sum(set) == expected$set_cells, !any(atl[set]),
+          sum(land) == expected$n_land, sum(water) == expected$n_water, all(dv[water] > 0))
+cat("template: ", sum(land), " land cells (NA), ", sum(water), " water cells; nearshore set ", rule_name, ": ", sum(set), " cells, ", fmt_n(round(sum(cell_km2[set]))), " km2, none in the Atlantic box  OK\n", sep = "")
 # 6. The VIIRS stack, 2022-12, the fit status against RT_fit_matrix, the hull footprints, the image() orientation.
 stopifnot(ncol(Vr) == expected$viirs_layers, sum(viirs_n_pos == 0) == expected$viirs_zero,
           tab$viirs_status[tab$yrmo == "202212"] == "missing", tab$use[tab$yrmo == "202212"] == "hybrid_modis")
@@ -322,10 +326,10 @@ color  <- c(funpal(length(brks) - 2), "darkred")
 brks_img <- brks; brks_img[length(brks_img)] <- 1e12   # base image() needs finite breaks
 xs <- raster::xFromCol(depth, 1:nc); ys <- rev(raster::yFromRow(depth, 1:nr))
 xlim <- c(-87.5, -81); ylim <- c(25, 30.5)
-# The coastline is drawn six times per row: simplified once (invisible at 5-min cells).
-fl_full <- sf::st_as_sf(maps::map("state", region = "Florida", plot = FALSE, fill = TRUE))
+# Land is the template's land cells (NA in the depth grid, NODATA in every ASCII file), drawn
+# as a bitmap in every panel: what the maps carry and Ecospace sees, not a coastline polygon.
+land_z <- to_z(ifelse(land, 1, NA))
 tol_m <- function(m) if (sf::sf_use_s2()) m else m / 1e5   # st_simplify tolerance: metres with s2, degrees without
-fl <- suppressWarnings(sf::st_simplify(fl_full, dTolerance = tol_m(2000)))
 simplify_outline <- function(s) if (is.null(s)) NULL else suppressWarnings(sf::st_simplify(s, dTolerance = tol_m(1000)))
 cells_to_outline <- function(r2) {   # the dissolved outline of the non-NA cells of a raster
   p <- raster::rasterToPolygons(r2, dissolve = TRUE)
@@ -374,14 +378,14 @@ draw_panel <- function(v, main, pts = NULL, all_pts = FALSE, outline = NULL, oco
                        cex_main = 0.75, info = NULL, cex_info = 0.55, cbar = FALSE, cex_pts = 0.5) {
   plot(NA, xlim = xlim, ylim = ylim, xlab = "", ylab = "", asp = 1 / cos(27.5 * pi / 180),
        main = main, cex.main = cex_main, xaxs = "i", yaxs = "i", axes = FALSE)
-  rect(xlim[1], ylim[1], xlim[2], ylim[2], col = if (is.null(v) && is.null(placeholder)) "white" else "darkgray", border = NA)
+  rect(xlim[1], ylim[1], xlim[2], ylim[2], col = if (is.null(placeholder)) "white" else "darkgray", border = NA)
+  image(xs, ys, land_z, col = "wheat", add = TRUE, useRaster = TRUE)   # the land cells; the maps are NA there, so the order does not matter
   if (!is.null(v) && is.null(placeholder)) {
     # useRaster = TRUE embeds the 66 x 78 grid as a bitmap (no interpolation), as the pipeline PDFs do.
     image(xs, ys, to_z(v), breaks = brks_img, col = color, add = TRUE, useRaster = TRUE)
   } else if (!is.null(placeholder)) {
     text(mean(xlim), mean(ylim), placeholder, cex = 0.9 * cex_main / 0.85)
   }
-  plot(sf::st_geometry(fl), add = TRUE, col = "wheat", border = "gray40")
   if (!is.null(outline))  plot(sf::st_geometry(outline),  add = TRUE, border = ocol,  col = NA, lwd = olwd)
   if (!is.null(outline2)) plot(sf::st_geometry(outline2), add = TRUE, border = ocol2, col = NA, lwd = olwd2)
   if (!is.null(pts) && nrow(pts) > 0 && all_pts) {
@@ -441,15 +445,16 @@ page_chunks <- split(key, ceiling(seq_along(key) / rows_per_page))
 page_title <- function(ch) if (length(ch) == 12 && substr(ch[1], 5, 6) == "01") substr(ch[1], 1, 4) else
   paste(paste0(substr(ch[1], 1, 4), "-", substr(ch[1], 5, 6)), "to", paste0(substr(ch[length(ch)], 1, 4), "-", substr(ch[length(ch)], 5, 6)))
 header1 <- "A FWC counts  |  B sdmTMB unclipped  |  C VIIRS clipped  |  D MODIS clipped  |  E hulls  |  F final: the hybrid nearshore map (rule mask5adj)"
-header2 <- paste("Red frame: the clip the final map is built on. F carries the outline of the framed panel (grey) and of the nearshore set (black).",
-                 "Each map panel prints its total exposure (cells/L summed over the water cells), the positive cells and the five FWC classes; panel A counts the samples.")
+header2 <- sprintf("Red frame: the clip the final map is built on. F carries the outline of the framed panel (grey) and of the nearshore set (black). Land (wheat) is the %s land cells of the 5-arcmin template, as the maps carry them.", fmt_n(sum(land)))
+header3 <- "Each map panel prints its total exposure (cells/L summed over the water cells), the positive cells and the five FWC classes; panel A counts the samples."
 draw_month_page <- function(ch) {
-  par(mfrow = c(rows_per_page, 6), mar = c(0.4, 0.5, 1.5, 2.1), oma = c(0.3, 0, 2.8, 0))
+  par(mfrow = c(rows_per_page, 6), mar = c(0.4, 0.5, 1.5, 2.1), oma = c(0.3, 0, 3.4, 0))
   for (ym in ch) draw_row(ym)
-  mtext(sprintf("%s   |   %s", page_title(ch), header1), outer = TRUE, cex = 0.95, font = 2, line = 1.3)
-  mtext(header2, outer = TRUE, cex = 0.62, line = 0.25)
+  mtext(sprintf("%s   |   %s", page_title(ch), header1), outer = TRUE, cex = 0.95, font = 2, line = 2.0)
+  mtext(header2, outer = TRUE, cex = 0.62, line = 0.95)
+  mtext(header3, outer = TRUE, cex = 0.62, line = 0.15)
 }
-page_w <- 11 * 6 / 5; page_h <- 2.35 * rows_per_page + 1.1   # the #6 panel size, one more column, a two-line header
+page_w <- 11 * 6 / 5; page_h <- 2.35 * rows_per_page + 1.3   # the #6 panel size, one more column, a three-line header
 
 # Write a PDF to a temporary file and rename it into place (a copy open in a viewer does not kill the run).
 write_pdf <- function(file_pdf, width, height, draw) {
@@ -481,11 +486,12 @@ if (write_pdf(file_pdf, width = page_w, height = page_h, function() for (ch in c
 # Example rows for the issue (tracked figure): the four months of the #6 example.
 example_rows <- c("201201", "201202", "201203", "201204")
 file_png <- file.path(dir_fig, "fig3_monthly_rows_example_issue18.png")
-invisible(png_open(file_png, width = page_w, height = 2.35 * length(example_rows) + 0.9, units = "in", res = 150))
-par(mfrow = c(length(example_rows), 6), mar = c(0.4, 0.5, 1.5, 2.1), oma = c(0.3, 0, 2.4, 0))
+invisible(png_open(file_png, width = page_w, height = 2.35 * length(example_rows) + 1.1, units = "in", res = 150))
+par(mfrow = c(length(example_rows), 6), mar = c(0.4, 0.5, 1.5, 2.1), oma = c(0.3, 0, 3.0, 0))
 for (ym in example_rows) draw_row(ym)
-mtext(paste("Example rows, 2012-01 to 2012-04   |  ", header1), outer = TRUE, cex = 0.8, font = 2, line = 1.2)
-mtext(header2, outer = TRUE, cex = 0.62, line = 0.15)
+mtext(paste("Example rows, 2012-01 to 2012-04   |  ", header1), outer = TRUE, cex = 0.8, font = 2, line = 1.9)
+mtext(header2, outer = TRUE, cex = 0.62, line = 0.95)
+mtext(header3, outer = TRUE, cex = 0.62, line = 0.15)
 png_done(file_png)
 message("Example rows written: ", file_png)
 
