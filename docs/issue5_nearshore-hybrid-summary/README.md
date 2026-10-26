@@ -24,7 +24,8 @@ The 6 October 2026 audit of the pipeline (`docs/review/`) found that 89 of the 1
 
 ## 2. Work performed (summary of the #5 sub-issues)
 
-**Issue #6 (8 to 13 October): the evidence.** For every month, the script compared the unclipped surface with the VIIRS-, MODIS-, and hull-clipped maps and the samples. The zeros are in the source files and not an artifact of our processing. 
+#### Issue #6 (8 to 13 October): the evidence.
+For every month, the script compared the unclipped surface with the VIIRS-, MODIS-, and hull-clipped maps and the samples. The zeros are in the source files and not an artifact of our processing. 
 
 Of the 58 fitted months written as zero, 16 have a fitted surface that reaches 10,000 cells/L somewhere (the "headline" months). If the hull footprint had been used over those 16 months, it would have retained 59,637 km2 of bloom area. 
 
@@ -32,21 +33,27 @@ The same comparison showed the problem wasn't confined to the zero months: even 
 
 **Exchanges with Yao Yao (14 to 20 October).** Yao explained that in the VIIRS product, white means valid observations with no bloom detected and gray means no valid observations; that is, the nearshore pixels are masked out of the processing because of atmospheric-correction uncertainty and land adjacency, so samples taken close to shore can fall in masked areas; that the VIIRS > MODIS > hulls hierarchy should be kept for continuity; and that where VIIRS has valid observations and detects no bloom, the VIIRS result should stand rather than be replaced by MODIS or hulls. She suggested a split: in-situ data for the nearshore band (2 to 5 km from shore) and satellite data offshore. That suggestion shaped the rule.
 
-**Issue #8 (19 to 20 October):  diagnosis and a prototype.** Step 1 located every sample relative to the VIIRS product. The product carries a static no-data band along the coast and in the bays, 0 to about 5 km wide: 84 of the 3,782 grid cells of the Gulf domain, 2% of the water, at a median depth of about 2 m. That band holds 61 to 66% of all FWC samples in every abundance class, from background to the highest counts. 
+#### Issue #8 (19 to 20 October):  diagnosis and a prototype.
+Step 1 located every sample relative to the VIIRS product. The product carries a static no-data band along the coast and in the bays, 0 to about 5 km wide: 84 of the 3,782 grid cells of the Gulf domain, 2% of the water, at a median depth of about 2 m. That band holds 61 to 66% of all FWC samples in every abundance class, from background to the highest counts. 
 
-Of the high-count samples VIIRS misses in months where it does see the bloom, 79% are in that band, and most of the rest are within 2 km of the coast in cells that straddle the shoreline. The satellite isn't missing the blooms; rather, it appears that it can't see where most samples are taken. Step 2 prototyped a hybrid on the existing clipped layers for five candidate nearshore sets (the mask alone; within 2, 5 or 10 km of the coast; the mask or within 5 km) and tabulated what each would change. The decision, taken by Holden after a meeting with Yao on 20 October, is in section 3.
+Of the high-count samples VIIRS misses in months where it does see the bloom, 79% are in that band, and most of the rest are within 2 km of the coast in cells that straddle the shoreline. The satellite isn't missing the blooms; rather, it appears that it can't see where most samples are taken. Step 2 prototyped a hybrid on the existing clipped layers for five candidate nearshore sets (the mask alone; within 2, 5 or 10 km of the coast; the mask or within 5 km) and tabulated what each would change. The decision, taken by Holden after a meeting with Yao on 20 October, is in section 3. 
 
-**Issue #11 (20 to 22 October): the rule in the pipeline.** The rule was implemented behind a configuration switch, with the default left at today's behavior. Two checks: with the switch off, the pipeline reproduced the 6 October maps byte for byte (all 504 monthly files); with it on, exactly the 121 VIIRS months that have a hull inside the nearshore set change, and every one of the 155 VIIRS months matches the #8 prototype on 11 per-month metrics. Then the VIIRS-only and hybrid maps were compared (Section 4).
+![The static VIIRS no-data mask on the 5-arcmin grid, criterion 1 (issue #8, fig 1)](../issue8_nearshore-hybrid/figures/fig1_viirs_mask.png)
 
-**Issue #10 (20 to 22 October): the MODIS months.** The same question for the 123 months served from MODIS nFLH polygons. MODIS has no coastal no-data band: 132 of the 136 nearshore cells are MODIS-positive in at least one of those months, and the samples MODIS misses are mostly offshore, where it saw nothing. The same rule was still applied, on Holden's decision, so that the coastal strip is treated the same way in every satellite era rather than changing at 2012 and again at 2025; the change is small in the aggregate, but it brings the coastal samples to the same 99% inclusion as in the VIIRS era. Three verification runs showed the change touches exactly the 87 MODIS months with a nearshore hull and nothing else, and that the switched-off pipeline still reproduces the 6 October maps.
+#### Issue #11 (20 to 22 October): the rule in the pipeline.
+The rule was implemented behind a configuration switch, with the default left at today's behavior. Two checks: with the switch off, the pipeline reproduced the 6 October maps byte for byte (all 504 monthly files); with it on, exactly the 121 VIIRS months that have a hull inside the nearshore set change, and every one of the 155 VIIRS months matches the #8 prototype on 11 per-month metrics. Then the VIIRS-only and hybrid maps were compared (Section 4).
 
-**Issue #15 (22 October): a nearshore set read off the Ecospace basemap.** Before the implementation call, an alternative was tested with no pipeline change: call a water cell nearshore when it shares an edge or a corner with a land cell of the Ecospace basemap itself (the same 5-arcmin depth grid the pipeline uses; land is where that grid has no depth), and inside those cells use the raw sdmTMB projection instead of the hull-clipped one. This implemented two changes: changing the "nearshore" set with a different rule and using the raw projection. 
+#### Issue #10 (20 to 22 October): the MODIS months.
+The same question applies to the 123 months served by MODIS nFLH polygons. MODIS has no coastal no-data band: 132 of the 136 nearshore cells are MODIS-positive in at least one of those months, and the samples MODIS misses are mostly offshore, where it saw nothing. The same rule was still applied, on Holden's decision, so that the coastal strip is treated the same way in every satellite era rather than changing at 2012 and again at 2025; the change is small in the aggregate, but it brings the coastal samples to the same 99% inclusion as in the VIIRS era. Three verification runs showed the change touches exactly the 87 MODIS months with a nearshore hull and nothing else, and that the switched-off pipeline still reproduces the 6 October maps.
+
+### Issue #15 (22 October): finalizing the nearshore set 
+Before the implementation call, an alternative was tested with no pipeline change: call a water cell nearshore when it shares an edge or a corner with a land cell of the Ecospace basemap itself (the same 5-arcmin depth grid the pipeline uses; land is where that grid has no depth), and inside those cells use the raw sdmTMB projection instead of the hull-clipped one. This implemented two changes: changing the "nearshore" set with a different rule and using the raw projection. 
 
 Two findings. First, the set: the land-adjacent cells (177) cover 78 of the 84 cells in the VIIRS no-data band and 124 of the 136 `mask5` cells; they miss two bay cells cut by the northern map edge and nine cells that sit against barrier islands the grid draws as water, and they add 53 cells that touch land but whose centres lie 5 to 12 km from the coastline (a cell is 8 to 9 km wide, so a corner neighbour reaches further than 5 km). *Decision: use a union of the methods: i.e., within the VIIRS mask, within 5 km of the coast, or touching land*. The rule is described immediately below in the methods and written out in full in `docs/issue15_adjacent-land-hybrid/nearshore-set-method.md`.
 
 Second, the fill: on the same set, the raw projection includes the same samples as the hull fill (93.4% of the water samples >= 10,000 cells/L in the satellite months) but adds 2.5 times as much exposure (+17.9% against +8.2%), because it lays the model surface along the whole strip in every fitted month, 57% of it below 10,000 cells/L; the hull fill adds only where positive samples sit. *Decision: do not use the raw fill and continue to use the hull fill.*
 
-**Issue #18 (23 October): the rule in the pipeline and the final maps.** The decided set went into the pipeline as rule `"mask5adj"` (the `mask5` code path untouched, the touching-land criterion added), behind the same two configuration keys. A run with both keys set to the new rule changed exactly the 210 months the hybrid changes (121 VIIRS, 89 MODIS) and equalled the #15 prototype in all 278 satellite months on 9 metrics; a run with both keys at `"none"` reproduced the 6 October maps byte for byte. Both defaults were then flipped and the deliverables regenerated with the FWC samples frozen at the 22 September 2026 pull, at 5 arcmin (the committed maps equal the verified run byte for byte) and at 15 arcmin (where the set has 53 of the 428 water cells and 205 months change; the tracked 15-arcmin maps dated from 22 May 2026, before the hull fix of #3, so 323 of the 504 files differ), and copied to the Ecospace ST drivers folder. A last rerun pulled the new FWC samples, to 21 October 2026: at either resolution only the two latest months, served by the hulls, changed, and every satellite month stayed byte-identical to the verified run. Checks and tables: `docs/issue18_implement-hybrid-clipping/`.
+![The nearshore set as decided: 189 cells, coloured by the criteria each cell meets (issue #15, fig 5)](../issue15_adjacent-land-hybrid/figures/fig5_nearshore_set_issue15.png)
 
 **Issue #18, step 6 (24 October, PR #20): the monthly comparison PDF.** The #6 PDF redrawn from the delivered run with a sixth column for the delivered map: for every month from 1985-01 to 2026-12, the FWC samples, the unclipped surface, the VIIRS, MODIS and hull clips (the one the final map is built on framed in red) and the hybrid map, each map panel with its total exposure (cells/L summed over the water cells) and its cell counts by FWC class (`docs/issue18_implement-hybrid-clipping/clip_months_hybrid_issue18.pdf`, 42 pages; the numbers in `tables/clip_class_counts_hybrid_issue18.csv`). The script asserts first that the maps on disk are the delivered ones and that the delivered map is the hybrid of the framed clip and the hulls in every satellite month. Over all 504 months the delivered maps carry 9.42e9 cells/L of exposure against 8.88e9 for the clips they are built on (x 1.062; x 1.084 over the 278 satellite months, as in section 4).
 
@@ -66,10 +73,6 @@ Criteria 1 and 2 are the `mask5` set of #8 (136 cells); criterion 3, from #15, a
 
 It is the same set for every month and both sensors; the full statement of the rule, with every parameter and source, is `docs/issue15_adjacent-land-hybrid/nearshore-set-method.md`, and the cells are listed in `docs/issue15_adjacent-land-hybrid/tables/nearshore_set_issue15.csv`.
 
-![The static VIIRS no-data mask on the 5-arcmin grid, criterion 1 (issue #8, fig 1)](../issue8_nearshore-hybrid/figures/fig1_viirs_mask.png)
-
-![The nearshore set as decided: 189 cells, coloured by the criteria each cell meets (issue #15, fig 5)](../issue15_adjacent-land-hybrid/figures/fig5_nearshore_set_issue15.png)
-
 **The rule.** For a month served by a satellite, the map is built as before and then, inside the nearshore set only, each cell takes the larger of two values: the satellite-clipped map and the hull-clipped map for that month. Outside the set, the satellite result stands, zeros included. 
 
 In other words: for all cells except the nearshore set, we believe the satellites, even when they see nothing. For the one-cell grid band of nearshore cells, where the satellites cannot look and where many in situ samples were taken, we clip red tide blooms with buffered hulls.
@@ -83,8 +86,6 @@ In other words: for all cells except the nearshore set, we believe the satellite
 - Months served by the hulls alone (1985 to 2002-06, and the latest months) are untouched: the hull is already their footprint.
 - Samples in bays and estuaries that the Ecospace basemap grid itself marks as land (24% of all FWC samples) are outside every map and are not changed by this rule.
 
-![The 16 headline months of #6: samples, the VIIRS layer, the hull-clipped map, and the part of it inside the mask (issue #8, fig 3)](../issue8_nearshore-hybrid/figures/fig3_headline_months.png)
-
 ## 4. Results from the rule change
 
 The 6 October 2026 maps against the delivered maps: the hybrid with the decided set (the union of #15) and the hull fill, from the final 5-arcmin pipeline run of #18 (frozen samples), which equals the #15 prototype month by month in all 504 months. `mask5` (#11, #10) is given in brackets where it differs.
@@ -97,20 +98,20 @@ The 6 October 2026 maps against the delivered maps: the hybrid with the decided 
 | cell-months at or above 10,000 cells/L | 10,204 -> 12,133, +19% | 17,766 -> 18,341, +3% | 35,606 -> 38,110, +7% |
 | total exposure (cells/L summed over all water cells and months) | +11% | +3.5% | +6% |
 
-Sources: `docs/issue18_implement-hybrid-clipping/tables/record_groups_issue18.csv` (the `v6oct`, `mask5` and `final` variants, from the delivered maps), which equals `docs/issue15_adjacent-land-hybrid/tables/record_groups_issue15.csv`, `exposure_by_era_issue15.csv`, `examine_groups_issue15.csv` and `mask5_vs_union_issue15.csv` (the `union_hull` and `mask5` variants of the prototype). 
+*Samples included* counts the in-situ water-cell samples whose grid cell is non-zero in the map, the converse of the samples the footprint cuts. 
 
-"Samples included" counts the in-situ water-cell samples whose grid cell is non-zero in the map, the converse of the samples the footprint cuts. 
+*Total exposure* is the simple sum of cells/L over the 3,838 water cells, the quantity Ecospace uses; cell-months count grid cells at or above a level, summed over the months.
 
-"Total exposure" is the simple sum of cells/L over the 3,838 water cells, the quantity Ecospace uses; cell-months count grid cells at or above a level, summed over the months.
+*Cell months >10,000 cells/L* is a measure of bloom extent integrated over time. For example, a cell that stays at bloom level for four months contributes four; one month with 300 cells at bloom level contributes 300. 
 
-"Cell months >10,000 cells/L" is a measure of bloom extent integrated over time. For example, a cell that stays at bloom level for four months contributes four; one month with 300 cells at bloom level contributes 300. 
+> Sources: `docs/issue18_implement-hybrid-clipping/tables/record_groups_issue18.csv` (the `v6oct`, `mask5` and `final` variants, from the delivered maps), which equals `docs/issue15_adjacent-land-hybrid/tables/record_groups_issue15.csv`, `exposure_by_era_issue15.csv`, `examine_groups_issue15.csv` and `mask5_vs_union_issue15.csv` (the `union_hull` and `mask5` variants of the prototype). 
 
 ### Notes
 - **Changes are made during bloom months** the coastal strip and the bays, in every satellite era. In the VIIRS era, *91% of the added exposure falls in the 60 months where VIIRS also saw the bloom offshore*.
 
 - **Changes in the all-zero months** The 58 all-zero VIIRS months gain 358 cell-months at or above 10,000 cells/L and 88.5% of their high-count samples. The 16 headline months go from nothing to a footprint each (2017-01: 3,037 km2 at or above 10,000 cells/L with 113 of its 116 high-count samples inside; 2021-06: 3,568 km2 and 182 of 188; under `mask5` 2,428 and 2,807 km2).
 
-> Four of the headline months, whose high counts sit well offshore in cells VIIRS evaluated, stay almost unchanged: the satellite saw nothing there, and the rule leaves it alone.
+Four of the headline months, whose high counts sit well offshore in cells VIIRS evaluated, stay almost unchanged: the satellite saw nothing there, and the rule leaves it alone.
   
 - **The MODIS era moves less** because MODIS already covers the coast: the rule recovers 328 of the 799 high-count samples the MODIS footprint excludes, the ones inside the set, and leaves the rest, offshore, as they are.
   
