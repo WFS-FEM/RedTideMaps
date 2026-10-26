@@ -26,6 +26,8 @@ Rscript scripts/qa/check_clipping_issue6.R   # ~50 s: table, summary, figures, m
 
 Paths are relative to this folder, `docs/issue6_VIIRS-zeros/`. The `comments/issue6-*-comment.md` files are the drafts of the comments posted to #6 (local, ignored by this folder's `.gitignore`).
 
+Since issue #18 (24 October 2026) the same rows, with the delivered hybrid map as a sixth column and the total exposure printed in every map panel, are in `docs/issue18_implement-hybrid-clipping/clip_months_hybrid_issue18.pdf` (drawn by `clip_months_hybrid_issue18.R` from the current pipeline run); this PDF stays as the record of the 6 October 2026 maps.
+
 ## 1. What was compared
 
 ### 1.1 The four maps of a month
