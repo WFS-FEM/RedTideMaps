@@ -107,7 +107,10 @@ The 6 October 2026 maps against the delivered maps: the hybrid with the decided 
 
 *Cell months >10,000 cells/L* is a measure of bloom extent integrated over time. For example, a cell that stays at bloom level for four months contributes four; one month with 300 cells at bloom level contributes 300. 
 
-> Sources: `docs/issue18_implement-hybrid-clipping/tables/record_groups_issue18.csv` (the `v6oct`, `mask5` and `final` variants, from the delivered maps), which equals `docs/issue15_adjacent-land-hybrid/tables/record_groups_issue15.csv`, `exposure_by_era_issue15.csv`, `examine_groups_issue15.csv` and `mask5_vs_union_issue15.csv` (the `union_hull` and `mask5` variants of the prototype). 
+Sources: `docs/issue18_implement-hybrid-clipping/tables/record_groups_issue18.csv` (the `v6oct`, `mask5` and `final` variants, from the delivered maps), which equals `docs/issue15_adjacent-land-hybrid/tables/record_groups_issue15.csv`, `exposure_by_era_issue15.csv`, `examine_groups_issue15.csv` and `mask5_vs_union_issue15.csv` (the `union_hull` and `mask5` variants of the prototype).
+
+Red tide projections for all months are shown in the following PDF, including plots for A) FWC cell samples, 2) the unclipped sdmTMB projections, 3) VIIRS clipping, 4) MODIS clipping, 4) hull clipping, and 5) the final, nearshore hybrid approach that combines satellite imagery and hull clipping for the 189 nearshore cells: **[Red Tide Projections](../issue18_implement-hybrid-clipping/clip_months_hybrid_issue18.pdf)**
+
 
 ### Notes
 - **Changes are made during bloom months** the coastal strip and the bays, in every satellite era. In the VIIRS era, *91% of the added exposure falls in the 60 months where VIIRS also saw the bloom offshore*.
