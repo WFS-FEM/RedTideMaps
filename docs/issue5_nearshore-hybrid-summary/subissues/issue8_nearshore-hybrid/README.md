@@ -5,7 +5,7 @@ Diagnostics for [WFS-FEM/RedTideMaps#8](https://github.com/WFS-FEM/RedTideMaps/i
 ## Step 1: where are the samples VIIRS does not see?
 
 ```
-Rscript docs/issue8_nearshore-hybrid/check_nearshore_issue8.R   # ~15 s; internet once, for the coastline
+Rscript docs/issue5_nearshore-hybrid-summary/subissues/issue8_nearshore-hybrid/check_nearshore_issue8.R   # ~15 s; internet once, for the coastline
 ```
 
 | File | What |
@@ -47,7 +47,7 @@ Reading for the two hypotheses of the plan: H1 (nearshore mask) accounts for 70 
 ## Step 2: hybrid footprints for five nearshore sets
 
 ```
-Rscript docs/issue8_nearshore-hybrid/hybrid_nearshore_issue8.R   # 1 to 2 min; sources step 1 first
+Rscript docs/issue5_nearshore-hybrid-summary/subissues/issue8_nearshore-hybrid/hybrid_nearshore_issue8.R   # 1 to 2 min; sources step 1 first
 #   RT_QA_MONTHLY_PDF=0   skip the monthly PDF (the slow part)
 ```
 

@@ -2,7 +2,7 @@
 
 Examination, implementation and checks for [WFS-FEM/RedTideMaps#10](https://github.com/WFS-FEM/RedTideMaps/issues/10), the follow-up of [#8](https://github.com/WFS-FEM/RedTideMaps/issues/8) and [#11](https://github.com/WFS-FEM/RedTideMaps/issues/11) under [#5](https://github.com/WFS-FEM/RedTideMaps/issues/5). Issue #11 put the `mask5` nearshore rule into the pipeline for the 155 VIIRS months; this issue asks whether the 123 months served from MODIS nFLH polygons (2002-07 to 2011-12, 2022-12, 2025-01 to 2025-09) need the same, examines it from the stacks on disk (step 1), and applies the same set and rule to them behind `cfg$modis_nearshore` (steps 2 and 3). Branch `10-modis-nearshore-hybrid`, PR #13, 22 October 2026. The plan, with the decisions it rests on, is `issue10-modis-hybrid-plan.md`.
 
-**The tracked deliverables (`out/5min/ecospace_ascii/`, `out/5min/plots/`) were still the 6 October 2026 maps when this issue closed.** Both defaults stayed `"none"`; the hybrid deliverables were produced locally and are described here and in the #10 thread. **Since issue #18 (23 October 2026)** both defaults are `"mask5adj"` (the `mask5` set plus the cells touching a land cell, decided in #15) and the tracked deliverables are the hybrid maps at 5 and 15 arcmin; `"mask5"` and `"none"` remain available for comparison runs, and the checks here still apply to them (`docs/issue18_implement-hybrid-clipping/`).
+**The tracked deliverables (`out/5min/ecospace_ascii/`, `out/5min/plots/`) were still the 6 October 2026 maps when this issue closed.** Both defaults stayed `"none"`; the hybrid deliverables were produced locally and are described here and in the #10 thread. **Since issue #18 (23 October 2026)** both defaults are `"mask5adj"` (the `mask5` set plus the cells touching a land cell, decided in #15) and the tracked deliverables are the hybrid maps at 5 and 15 arcmin; `"mask5"` and `"none"` remain available for comparison runs, and the checks here still apply to them (`docs/issue5_nearshore-hybrid-summary/subissues/issue18_implement-hybrid-clipping/`).
 
 ## What changed in the pipeline
 
@@ -17,17 +17,17 @@ Examination, implementation and checks for [WFS-FEM/RedTideMaps#10](https://gith
 ```
 # step 1, no pipeline run (needs out/5min/clipped/ from the last run, the nearshore_mask_mask5.grd
 # of a run with a nearshore rule on, and the 6 Oct 2026 combined stack in
-# docs/issue11_nearshore-hybrid-pipeline/hoard/before/combined/)
-RT_QA_STAGE=examine Rscript docs/issue10_modis-nearshore-hybrid/check_modis_hybrid_issue10.R   # ~1 min; RT_QA_PNG_DIR=<dir> adds PNG previews of fig 1
+# docs/issue5_nearshore-hybrid-summary/subissues/issue11_nearshore-hybrid-pipeline/hoard/before/combined/)
+RT_QA_STAGE=examine Rscript docs/issue5_nearshore-hybrid-summary/subissues/issue10_modis-nearshore-hybrid/check_modis_hybrid_issue10.R   # ~1 min; RT_QA_PNG_DIR=<dir> adds PNG previews of fig 1
 
 # steps 2 and 3: three pipeline runs (config.local.R: cfg$fwc_refresh <- FALSE), each followed by a stage
 cfg$viirs_nearshore <- "mask5"; cfg$modis_nearshore <- "none"    # run A, then:
-RT_QA_STAGE=regress Rscript docs/issue10_modis-nearshore-hybrid/check_modis_hybrid_issue10.R   # equals the #11 mask5 run byte for byte; copy the outputs to hoard/before/
+RT_QA_STAGE=regress Rscript docs/issue5_nearshore-hybrid-summary/subissues/issue10_modis-nearshore-hybrid/check_modis_hybrid_issue10.R   # equals the #11 mask5 run byte for byte; copy the outputs to hoard/before/
 cfg$viirs_nearshore <- "mask5"; cfg$modis_nearshore <- "mask5"   # run B, then:
-RT_QA_STAGE=mask5   Rscript docs/issue10_modis-nearshore-hybrid/check_modis_hybrid_issue10.R   # only the MODIS months with a nearshore hull change; copy the outputs to hoard/after/
+RT_QA_STAGE=mask5   Rscript docs/issue5_nearshore-hybrid-summary/subissues/issue10_modis-nearshore-hybrid/check_modis_hybrid_issue10.R   # only the MODIS months with a nearshore hull change; copy the outputs to hoard/after/
 cfg$viirs_nearshore <- "none";  cfg$modis_nearshore <- "none"    # run 0, then:
-RT_QA_STAGE=none    Rscript docs/issue11_nearshore-hybrid-pipeline/check_hybrid_issue11.R      # the unchanged #11 check: the 6 Oct 2026 deliverables byte for byte
-RT_QA_STAGE=compare Rscript docs/issue10_modis-nearshore-hybrid/check_modis_hybrid_issue10.R   # the whole record, three variants, from the hoard copies
+RT_QA_STAGE=none    Rscript docs/issue5_nearshore-hybrid-summary/subissues/issue11_nearshore-hybrid-pipeline/check_hybrid_issue11.R      # the unchanged #11 check: the 6 Oct 2026 deliverables byte for byte
+RT_QA_STAGE=compare Rscript docs/issue5_nearshore-hybrid-summary/subissues/issue10_modis-nearshore-hybrid/check_modis_hybrid_issue10.R   # the whole record, three variants, from the hoard copies
 ```
 
 After each run, `git checkout -- out/5min/ecospace_ascii out/5min/plots` restores the tracked deliverables.

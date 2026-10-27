@@ -4,7 +4,7 @@ Code plan for branch `8-explore-nearshore` (WFS-FEM/RedTideMaps, sub-issue of #5
 
 ## 1. Question
 
-Issue #5 found that 58 fitted months are written as all-zero maps because the VIIRS layer of the month has no positive cell, and that even in VIIRS-positive months 41% of the water-cell samples at or above 10,000 cells/L sit outside the satellite footprint (#6, PR #7). FWC bulletins document blooms, fish kills and respiratory irritation in many of the zeroed months (`docs/issue6_VIIRS-zeros/FWC-bulletins/`).
+Issue #5 found that 58 fitted months are written as all-zero maps because the VIIRS layer of the month has no positive cell, and that even in VIIRS-positive months 41% of the water-cell samples at or above 10,000 cells/L sit outside the satellite footprint (#6, PR #7). FWC bulletins document blooms, fish kills and respiratory irritation in many of the zeroed months (`docs/issue5_nearshore-hybrid-summary/subissues/issue6_VIIRS-zeros/FWC-bulletins/`).
 
 Yao Yao (USF Optical Oceanography Lab, replies of 14 and 16 October 2026 in #5):
 
@@ -66,9 +66,9 @@ Consequences for the plan:
 
 The split between H1 and H2 is the result of step 1 and decides whether step 2 is worth doing.
 
-## 4. Step 1: diagnosis (`docs/issue8_nearshore-hybrid/check_nearshore_issue8.R`)
+## 4. Step 1: diagnosis (`docs/issue5_nearshore-hybrid-summary/subissues/issue8_nearshore-hybrid/check_nearshore_issue8.R`)
 
-One deterministic script in the pattern of `check_clipping_issue6.R`: run from the repo root, reads only what the 6 October run left on disk (filtered samples, VIIRS raw stack, VIIRS-, MODIS- and hull-clipped stacks, final stack, depth template, hull polygons, `docs/issue6_VIIRS-zeros/tables/clip_comparison_issue6.csv`), no refits, no RNG, about a minute, CSVs and PNGs byte-identical from run to run. Outputs go to `docs/issue8_nearshore-hybrid/{tables,figures,comments}`.
+One deterministic script in the pattern of `check_clipping_issue6.R`: run from the repo root, reads only what the 6 October run left on disk (filtered samples, VIIRS raw stack, VIIRS-, MODIS- and hull-clipped stacks, final stack, depth template, hull polygons, `docs/issue5_nearshore-hybrid-summary/subissues/issue6_VIIRS-zeros/tables/clip_comparison_issue6.csv`), no refits, no RNG, about a minute, CSVs and PNGs byte-identical from run to run. Outputs go to `docs/issue5_nearshore-hybrid-summary/subissues/issue8_nearshore-hybrid/{tables,figures,comments}`.
 
 ### 4.0 Sample classes
 
@@ -132,16 +132,16 @@ Outputs:
 
 ## 6. Step 3: pipeline implementation (after checkpoint 2)
 
-**Implemented in issue #11 (branch `11-nearshore-hybrid-pipeline`, PR #12, 20 October 2026)** with the decided rule, not the draft below: the set is `mask5` (so no `nearshore_km` / `nearshore_min_cells` keys), inside the set the rule is the cell-wise maximum, not a replacement, and the only key is `cfg$viirs_nearshore = "none" | "mask5"` (plus `cfg$fwc_refresh` for the byte-for-byte check). Signatures as built: `fn.nearshore_mask(file_viirs, file_depth, file_coast, rule, coast_km, mask_share, coast_step_m, dir_out)` and `fn.clip_2_hybrid(file_viirs_clipped, file_hull_clipped, file_mask, file_depth, dir_out)` in `scripts/process_VIIRS.R` (since issue #10 both live in `scripts/process_hybrid.R` and the clip takes any satellite stack: `fn.clip_2_hybrid(file_sat_clipped, file_hull_clipped, file_mask, file_depth, dir_out, source, months)`); the coastline lives in `data/coastline/`. Results and checks: `docs/issue11_nearshore-hybrid-pipeline/README.md`.
+**Implemented in issue #11 (branch `11-nearshore-hybrid-pipeline`, PR #12, 20 October 2026)** with the decided rule, not the draft below: the set is `mask5` (so no `nearshore_km` / `nearshore_min_cells` keys), inside the set the rule is the cell-wise maximum, not a replacement, and the only key is `cfg$viirs_nearshore = "none" | "mask5"` (plus `cfg$fwc_refresh` for the byte-for-byte check). Signatures as built: `fn.nearshore_mask(file_viirs, file_depth, file_coast, rule, coast_km, mask_share, coast_step_m, dir_out)` and `fn.clip_2_hybrid(file_viirs_clipped, file_hull_clipped, file_mask, file_depth, dir_out)` in `scripts/process_VIIRS.R` (since issue #10 both live in `scripts/process_hybrid.R` and the clip takes any satellite stack: `fn.clip_2_hybrid(file_sat_clipped, file_hull_clipped, file_mask, file_depth, dir_out, source, months)`); the coastline lives in `data/coastline/`. Results and checks: `docs/issue5_nearshore-hybrid-summary/subissues/issue11_nearshore-hybrid-pipeline/README.md`.
 
 Behind a config key, default = today's behaviour, so an unchanged config reproduces the 6 October deliverables byte for byte.
 
 - **Config** (`run_redtide_maps.R`, documented in `config.local.example.R`): `cfg$viirs_nearshore` = `"none"` (default) | `"mask"` | `"coast"`; `cfg$nearshore_km` (used by `"coast"`, default 5); `cfg$nearshore_min_cells` (sample threshold for the nearshore hulls, default 0 = every positive, as the hull path does now).
 - **Code** (`scripts/process_VIIRS.R`): `fn.nearshore_mask(file_viirs, file_depth, rule, km, coastline)` returns one 5-arcmin raster per month (or one static raster for `"coast"`) with 1 on nearshore template-water cells; `fn.clip_2_hybrid(file_viirs_clipped, file_hull_clipped, masks, file_depth, dir_out)` writes `*_clipped_hybrid.grd`, taking the VIIRS-clipped layer where the mask is 0 and the hull-clipped layer where it is 1. `fn.clip_2_viirs()` and `fn.clip_2_hulls()` are not touched, so their outputs stay identical. `make_redtide_ascii()` gains `file_hybrid = NULL`, preferred over `file_viirs` when given; `clipping_source.csv` records `use = "hybrid"`; the run log names the rule, the parameters and the number of months whose map changed. `fn.buffered_hulls()` gains `min_cells = 0` (D2).
-- **Coastline** (only if `"coast"` is chosen): the step-1 file (`docs/issue8_nearshore-hybrid/coastline/ne_10m_coastline_wfs.gpkg`, with its source and download date in the README beside it) moves to `data/coastline/` if the pipeline uses it (D6).
-- **Docs:** README cascade section and pipeline table; `config.local.example.R`; `docs/issue8_nearshore-hybrid/README.md` in the #6 style (what was compared, results, how to rerun).
+- **Coastline** (only if `"coast"` is chosen): the step-1 file (`docs/issue5_nearshore-hybrid-summary/subissues/issue8_nearshore-hybrid/coastline/ne_10m_coastline_wfs.gpkg`, with its source and download date in the README beside it) moves to `data/coastline/` if the pipeline uses it (D6).
+- **Docs:** README cascade section and pipeline table; `config.local.example.R`; `docs/issue5_nearshore-hybrid-summary/subissues/issue8_nearshore-hybrid/README.md` in the #6 style (what was compared, results, how to rerun).
 - **Verification:** MD5 of all 504 ASCII files before (the 6 October run) and after, with the expectation that only VIIRS months with a nearshore hull differ (no MODIS or hull month changes; no change at all with `viirs_nearshore = "none"`); before/after panels for the headline months; run time in the log.
-- **Out of scope, noted for follow-up:** the MODIS nFLH months (2002-07 to 2011-12, 2025-01 to 2025-09) presumably have the same nearshore gap; `fn.clip_2_hybrid()` is written so a MODIS-clipped stack can be passed in its place later. **Done in issue #10 (October 2026):** the same set and rule behind `cfg$modis_nearshore`; examination and checks in `docs/issue10_modis-nearshore-hybrid/`.
+- **Out of scope, noted for follow-up:** the MODIS nFLH months (2002-07 to 2011-12, 2025-01 to 2025-09) presumably have the same nearshore gap; `fn.clip_2_hybrid()` is written so a MODIS-clipped stack can be passed in its place later. **Done in issue #10 (October 2026):** the same set and rule behind `cfg$modis_nearshore`; examination and checks in `docs/issue5_nearshore-hybrid-summary/subissues/issue10_modis-nearshore-hybrid/`.
 
 **Checkpoint 3:** regenerated 5-arcmin deliverables, the MD5 table and the panels; PR marked ready with `Closes #8`; the #5 decision recorded in #5.
 
@@ -166,6 +166,6 @@ Behind a config key, default = today's behaviour, so an unchanged config reprodu
 
 ## 9. Run notes
 
-- R 4.5.1: `"C:/Program Files/R/R-4.5.1/bin/x64/Rscript.exe" docs/issue8_nearshore-hybrid/check_nearshore_issue8.R` from the repo root; `RT_QA_HYBRID=1` adds step 2; `RT_QA_PDF=0` skips the PDF.
+- R 4.5.1: `"C:/Program Files/R/R-4.5.1/bin/x64/Rscript.exe" docs/issue5_nearshore-hybrid-summary/subissues/issue8_nearshore-hybrid/check_nearshore_issue8.R` from the repo root; `RT_QA_HYBRID=1` adds step 2; `RT_QA_PDF=0` skips the PDF.
 - Steps 1 and 2 need no pipeline run. Step 3 reruns `run_redtide_maps.R` (about 9 minutes warm, 5-arcmin) alone on the machine; close any output PDF in Acrobat first.
 - The 6 October run is the baseline for every comparison; its MD5 table is written before step 3 starts.

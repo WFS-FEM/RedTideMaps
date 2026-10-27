@@ -26,10 +26,10 @@ After checkpoint 1 Holden kept the hull fill and narrowed the question to the se
 ```
 # no pipeline run; needs out/5min/sdm/, out/5min/clipped/ and VIIRS/ from the last run,
 # the nearshore_mask_mask5.grd of a run with a nearshore rule on, the 6 Oct 2026 combined
-# stack in docs/issue11_nearshore-hybrid-pipeline/hoard/before/combined/, the run-B
-# combined stack in docs/issue10_modis-nearshore-hybrid/hoard/after/combined/, and the
+# stack in docs/issue5_nearshore-hybrid-summary/subissues/issue11_nearshore-hybrid-pipeline/hoard/before/combined/, the run-B
+# combined stack in docs/issue5_nearshore-hybrid-summary/subissues/issue10_modis-nearshore-hybrid/hoard/after/combined/, and the
 # EcospaceBasemap checkout beside this repository (env RT_BASEMAP_DEPTH overrides the path)
-RT_QA_STAGE=examine Rscript docs/issue15_adjacent-land-hybrid/check_adjacent_hybrid_issue15.R   # RT_QA_PNG_DIR=<dir> adds PNG previews of fig 3
+RT_QA_STAGE=examine Rscript docs/issue5_nearshore-hybrid-summary/subissues/issue15_adjacent-land-hybrid/check_adjacent_hybrid_issue15.R   # RT_QA_PNG_DIR=<dir> adds PNG previews of fig 3
 ```
 
 ## Files
