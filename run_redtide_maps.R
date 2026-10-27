@@ -255,8 +255,8 @@ if (cfg$use_modis) {
 
 # 5d) Nearshore hybrids (issues #11 and #10): inside the nearshore set the
 # hull footprint is added to the satellite-clipped layer (cell-wise
-# maximum); outside it the satellite result stands, zeros included. Each
-# rule is off by default. The set is built once, from the VIIRS stack.
+# maximum); outside it the satellite result stands, zeros included. Both
+# keys default to "mask5adj" since #18. The set is built once, from the VIIRS stack.
 clip_hybrid <- NULL; clip_hybrid_modis <- NULL
 if (cfg$use_viirs && (cfg$viirs_nearshore != "none" || cfg$modis_nearshore != "none")) {
   rule <- if (cfg$viirs_nearshore != "none") cfg$viirs_nearshore else cfg$modis_nearshore

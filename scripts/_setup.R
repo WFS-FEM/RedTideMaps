@@ -119,8 +119,8 @@ rt_paths <- function(res,
     file_depth  = depth_glob[1],
     file_excl   = excl_glob[1],
     # Natural Earth 1:10m coastline, cropped to the grid box (tracked; see
-    # data/coastline/README.md). Used by fn.nearshore_mask() when
-    # cfg$viirs_nearshore is not "none".
+    # data/coastline/README.md). Used by fn.nearshore_mask() when cfg$viirs_nearshore
+    # or cfg$modis_nearshore is not "none".
     file_coast  = file.path(repo_dir, "data", "coastline", "ne_10m_coastline_wfs.gpkg"),
 
     # Outputs
