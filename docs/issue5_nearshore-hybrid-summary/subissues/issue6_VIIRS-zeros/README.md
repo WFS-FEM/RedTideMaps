@@ -56,7 +56,7 @@ Flags (thresholds are parameters at the top of the script):
 | `low_vs_hull` | satellite-clipped final map keeps < 25% of the hull-clipped bloom area, with at least 5 samples >= 10,000 cells/L | 2 (plus the zeroed months) |
 | `samples_outside` | fewer than 50% of the water-cell samples >= 10,000 cells/L sit in a non-zero cell of the final map, with at least 5 such samples | 33 (plus the zeroed months) |
 
-A retention flag (final / unclipped bloom area) was tried first and dropped: the unclipped surface exceeds 10,000 cells/L over more than 90% of the 291,361 km2 of water cells in 181 of the 329 fitted months (median unclipped bloom area 281,089 km2), because the intercept-only lognormal is fit to positive samples only. The unclipped map is therefore not a usable fallback on its own; the clip does all the localisation, and the sample-based hull footprint is the natural reference for "how much did the satellite footprint cut away".
+A retention flag (final / unclipped bloom area) was tried first and dropped: the unclipped surface exceeds 10,000 cells/L over more than 90% of the 291,361 km2 of water cells in 181 of the 329 fitted months (median unclipped bloom area 281,089 km2), because the intercept-only lognormal is fit to positive samples only. The unclipped map is therefore not a usable fallback on its own; the clip does all the localization, and the sample-based hull footprint is the natural reference for "how much did the satellite footprint cut away".
 
 ### 1.3 The monthly PDF (`clip_months_issue6.pdf`)
 
