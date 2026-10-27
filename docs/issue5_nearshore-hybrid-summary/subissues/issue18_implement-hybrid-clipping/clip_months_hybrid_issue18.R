@@ -1,7 +1,7 @@
 #' Issue #18, step 6: the monthly comparison PDF with the hybrid column.
 #'
 #' One row per month for all 504 months (1985-01 to 2026-12), twelve rows (one calendar
-#' year) per page, in the layout of the #6 PDF (docs/issue6_VIIRS-zeros/clip_months_issue6.pdf),
+#' year) per page, in the layout of the #6 PDF (docs/issue5_nearshore-hybrid-summary/subissues/issue6_VIIRS-zeros/clip_months_issue6.pdf),
 #' with a sixth column for the delivered map:
 #'   A  the FWC samples of the month, filled by abundance class, with the class counts
 #'   B  the sdmTMB prediction, unclipped
@@ -26,26 +26,26 @@
 #' PDF carries the two date lines every R pdf() device writes).
 #'
 #' Run from the repo root:
-#'   Rscript docs/issue18_implement-hybrid-clipping/clip_months_hybrid_issue18.R   (3 to 6 min)
+#'   Rscript docs/issue5_nearshore-hybrid-summary/subissues/issue18_implement-hybrid-clipping/clip_months_hybrid_issue18.R   (3 to 6 min)
 #'   RT_QA_QUICK=1            draw only the pages holding the 16 headline months of #6
 #'   RT_QA_PNG_DIR=<folder>   also render the pages of RT_QA_PNG_YEARS (default
 #'                            1990,2012,2017,2018,2026) as PNG previews (PDFs cannot be read here)
 #'
-#' Output (docs/issue18_implement-hybrid-clipping/):
+#' Output (docs/issue5_nearshore-hybrid-summary/subissues/issue18_implement-hybrid-clipping/):
 #'   clip_months_hybrid_issue18.pdf                 42 pages, 13.2 x 29.1 in
 #'   tables/clip_class_counts_hybrid_issue18.csv    the count-box numbers and the exposures, one month per row
 #'   figures/fig3_monthly_rows_example_issue18.png  four example rows, 2012-01 to 2012-04 (the #6 example months)
 #'   console: the checks and the summary
 
-# Repo root: the working directory if it holds the .Rproj, else two levels above this script.
+# Repo root: the working directory if it holds the .Rproj, else four levels above this script.
 .root <- local({
   if (file.exists("RedTideMaps.Rproj")) return(normalizePath(getwd(), winslash = "/"))
   f <- sub("^--file=", "", grep("^--file=", commandArgs(FALSE), value = TRUE))
   if (length(f) == 1) {
-    d <- normalizePath(file.path(dirname(f), "..", ".."), winslash = "/", mustWork = FALSE)
+    d <- normalizePath(file.path(dirname(f), "..", "..", "..", ".."), winslash = "/", mustWork = FALSE)
     if (file.exists(file.path(d, "RedTideMaps.Rproj"))) return(d)
   }
-  stop("Run from the repo root: Rscript docs/issue18_implement-hybrid-clipping/clip_months_hybrid_issue18.R", call. = FALSE)
+  stop("Run from the repo root: Rscript docs/issue5_nearshore-hybrid-summary/subissues/issue18_implement-hybrid-clipping/clip_months_hybrid_issue18.R", call. = FALSE)
 })
 source(file.path(.root, "scripts", "_setup.R"))   # sf, raster, viridis, ...
 
@@ -74,7 +74,8 @@ dir_sdm      <- file.path(dir_out, "sdm")
 dir_clipped  <- file.path(dir_out, "clipped")
 dir_combined <- file.path(dir_out, "combined")
 dir_ascii    <- file.path(dir_out, "ecospace_ascii")
-dir_docs     <- file.path(.root, "docs", "issue18_implement-hybrid-clipping")
+dir_sub      <- file.path(.root, "docs", "issue5_nearshore-hybrid-summary", "subissues")
+dir_docs     <- file.path(dir_sub, "issue18_implement-hybrid-clipping")
 dir_tab      <- file.path(dir_docs, "tables")
 dir_fig      <- file.path(dir_docs, "figures")
 for (d in c(dir_tab, dir_fig)) dir.create(d, recursive = TRUE, showWarnings = FALSE)
@@ -101,7 +102,7 @@ file_fitmat    <- file.path(dir_sdm, "RT_fit_matrix.RData")
 file_md5ref    <- file.path(dir_tab, "md5_refresh5_issue18.csv")
 file_rec       <- file.path(dir_tab, "record_months_issue18.csv")
 file_refm      <- file.path(dir_tab, "refresh_months5_issue18.csv")
-file_tab6      <- file.path(.root, "docs", "issue6_VIIRS-zeros", "tables", "clip_comparison_issue6.csv")
+file_tab6      <- file.path(dir_sub, "issue6_VIIRS-zeros", "tables", "clip_comparison_issue6.csv")
 # Several *_filtered.Rdata accumulate (one per FWC cache date); the newest by the end date in its name.
 ff <- list.files(dir_sdm, pattern = "_filtered[.]Rdata$", full.names = TRUE)
 if (length(ff) == 0) stop("No *_filtered.Rdata in ", dir_sdm, "; run the pipeline first.", call. = FALSE)

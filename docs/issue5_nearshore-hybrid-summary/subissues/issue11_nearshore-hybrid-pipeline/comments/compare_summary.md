@@ -1,6 +1,6 @@
 # Issue #11: VIIRS-only vs nearshore-hybrid maps (from the two pipeline runs)
 
-Produced by `docs/issue11_nearshore-hybrid-pipeline/check_hybrid_issue11.R` (stage `compare`) from the combined stacks of the `none` run (the 6 October 2026 maps) and the `mask5` run. Bloom area is km2 of water cells at or above 10,000 (`a1e4`) or 100,000 cells/L (`a1e5`); `mean_cells_water` is the mean of the map over every template water cell (what Ecospace reads); samples are FWC water-cell samples whose 5-arcmin cell is non-zero in the map. MODIS and hull months are identical in the two runs (checked); the 155 VIIRS months are compared.
+Produced by `docs/issue5_nearshore-hybrid-summary/subissues/issue11_nearshore-hybrid-pipeline/check_hybrid_issue11.R` (stage `compare`) from the combined stacks of the `none` run (the 6 October 2026 maps) and the `mask5` run. Bloom area is km2 of water cells at or above 10,000 (`a1e4`) or 100,000 cells/L (`a1e5`); `mean_cells_water` is the mean of the map over every template water cell (what Ecospace reads); samples are FWC water-cell samples whose 5-arcmin cell is non-zero in the map. MODIS and hull months are identical in the two runs (checked); the 155 VIIRS months are compared.
 
 ## Totals by month group (`tables/groups_issue11.csv`)
 

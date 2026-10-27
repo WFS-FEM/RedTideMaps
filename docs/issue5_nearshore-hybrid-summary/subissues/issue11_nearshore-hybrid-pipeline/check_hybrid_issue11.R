@@ -33,20 +33,20 @@
 #'               figures/fig6_exposure_cells_issue11.png, comments/exposure_summary.md
 #'
 #' Run from the repo root:
-#'   RT_QA_STAGE=none    Rscript docs/issue11_nearshore-hybrid-pipeline/check_hybrid_issue11.R
+#'   RT_QA_STAGE=none    Rscript docs/issue5_nearshore-hybrid-summary/subissues/issue11_nearshore-hybrid-pipeline/check_hybrid_issue11.R
 #'   RT_QA_STAGE=mask5   ...   RT_QA_STAGE=compare   ...   RT_QA_STAGE=exposure   ...
 #' Baseline: tables/md5_baseline_issue11.csv, the MD5 of the 504 tracked ASCII files
 #' at main 7f08076 (the 6 October 2026 run), written before any issue-11 run.
 
-# Repo root: the working directory if it holds the .Rproj, else two levels above this script.
+# Repo root: the working directory if it holds the .Rproj, else four levels above this script.
 .root <- local({
   if (file.exists("RedTideMaps.Rproj")) return(normalizePath(getwd(), winslash = "/"))
   f <- sub("^--file=", "", grep("^--file=", commandArgs(FALSE), value = TRUE))
   if (length(f) == 1) {
-    d <- normalizePath(file.path(dirname(f), "..", ".."), winslash = "/", mustWork = FALSE)
+    d <- normalizePath(file.path(dirname(f), "..", "..", "..", ".."), winslash = "/", mustWork = FALSE)
     if (file.exists(file.path(d, "RedTideMaps.Rproj"))) return(d)
   }
-  stop("Run from the repo root: Rscript docs/issue11_nearshore-hybrid-pipeline/check_hybrid_issue11.R", call. = FALSE)
+  stop("Run from the repo root: Rscript docs/issue5_nearshore-hybrid-summary/subissues/issue11_nearshore-hybrid-pipeline/check_hybrid_issue11.R", call. = FALSE)
 })
 source(file.path(.root, "scripts", "_setup.R"))   # sf, raster, viridis, ...
 stage <- match.arg(Sys.getenv("RT_QA_STAGE", "none"), c("none", "mask5", "compare", "exposure"))
@@ -71,7 +71,8 @@ dir_out      <- file.path(.root, "out", "5min")
 dir_sdm      <- file.path(dir_out, "sdm")
 dir_clipped  <- file.path(dir_out, "clipped")
 dir_ascii    <- file.path(dir_out, "ecospace_ascii")
-dir_docs     <- file.path(.root, "docs", "issue11_nearshore-hybrid-pipeline")
+dir_sub      <- file.path(.root, "docs", "issue5_nearshore-hybrid-summary", "subissues")
+dir_docs     <- file.path(dir_sub, "issue11_nearshore-hybrid-pipeline")
 dir_tab      <- file.path(dir_docs, "tables")
 dir_fig      <- file.path(dir_docs, "figures")
 dir_cmt      <- file.path(dir_docs, "comments")
@@ -85,8 +86,8 @@ one_file <- function(dir, pattern, what) {
 grd <- function(f) sub("[.]grd$", "", f)
 file_depth <- one_file(file.path(.root, "template rasters"), "^depth 5min .*[.]asc$", "depth template")
 file_base  <- file.path(dir_tab, "md5_baseline_issue11.csv")
-file_proto <- file.path(.root, "docs", "issue8_nearshore-hybrid", "tables", "hybrid_months_long_issue8.csv")
-file_tab6  <- file.path(.root, "docs", "issue6_VIIRS-zeros", "tables", "clip_comparison_issue6.csv")
+file_proto <- file.path(dir_sub, "issue8_nearshore-hybrid", "tables", "hybrid_months_long_issue8.csv")
+file_tab6  <- file.path(dir_sub, "issue6_VIIRS-zeros", "tables", "clip_comparison_issue6.csv")
 file_coast <- file.path(.root, "data", "coastline", "ne_10m_coastline_wfs.gpkg")
 for (f in c(file_base, file_proto, file_tab6, file_coast))
   if (!file.exists(f)) stop("Missing ", f, call. = FALSE)
@@ -510,7 +511,7 @@ if (stage == "compare") {
   # Markdown summary for #11.
   g <- grp; pick <- function(lab_i, col) g[[col]][lab_i]
   md <- c("# Issue #11: VIIRS-only vs nearshore-hybrid maps (from the two pipeline runs)", "",
-          sprintf("Produced by `docs/issue11_nearshore-hybrid-pipeline/check_hybrid_issue11.R` (stage `compare`) from the combined stacks of the `none` run (the 6 October 2026 maps) and the `mask5` run. Bloom area is km2 of water cells at or above 10,000 (`a1e4`) or 100,000 cells/L (`a1e5`); `mean_cells_water` is the mean of the map over every template water cell (what Ecospace reads); samples are FWC water-cell samples whose 5-arcmin cell is non-zero in the map. MODIS and hull months are identical in the two runs (checked); the %d VIIRS months are compared.", length(months)),
+          sprintf("Produced by `docs/issue5_nearshore-hybrid-summary/subissues/issue11_nearshore-hybrid-pipeline/check_hybrid_issue11.R` (stage `compare`) from the combined stacks of the `none` run (the 6 October 2026 maps) and the `mask5` run. Bloom area is km2 of water cells at or above 10,000 (`a1e4`) or 100,000 cells/L (`a1e5`); `mean_cells_water` is the mean of the map over every template water cell (what Ecospace reads); samples are FWC water-cell samples whose 5-arcmin cell is non-zero in the map. MODIS and hull months are identical in the two runs (checked); the %d VIIRS months are compared.", length(months)),
           "", "## Totals by month group (`tables/groups_issue11.csv`)", "",
           md_table(grp[, c("group", "n_months", "months_changed", "a1e4_km2_before", "a1e4_km2_after", "a1e4_ratio", "a1e5_km2_before", "a1e5_km2_after",
                            "months_with_bloom_before", "months_with_bloom_after", "mean_cells_water_before", "mean_cells_water_after",
@@ -734,7 +735,7 @@ if (stage == "exposure") {
             100 * g$share_samples_high_before, 100 * g$share_samples_high_after, fmt_n(g$samples_high))
   }
   md <- c("# Issue #11: red tide exposure per monthly map, VIIRS-only vs nearshore hybrid", "",
-          sprintf("Produced by `docs/issue11_nearshore-hybrid-pipeline/check_hybrid_issue11.R` (stage `exposure`) from the combined stacks of the `none` run (the 6 October 2026 maps) and the `mask5` run, all %d months 1985-2026. **Total exposure** of a monthly map is the plain sum of cells/L over the %d template water cells (Ecospace works per cell, so no area weighting; the water-cell count is the same in every map). **Cell counts** are the grid cells at or above 10,000, 100,000 and 1,000,000 cells/L. **Samples included** are the in-situ water-cell samples at or above 10,000 cells/L (and the high class) whose 5-arcmin cell is non-zero in the map, the converse of the samples the footprint cuts. Yearly and group totals are sums over the months (cell-months). The two methods are identical outside the %d VIIRS months (checked).",
+          sprintf("Produced by `docs/issue5_nearshore-hybrid-summary/subissues/issue11_nearshore-hybrid-pipeline/check_hybrid_issue11.R` (stage `exposure`) from the combined stacks of the `none` run (the 6 October 2026 maps) and the `mask5` run, all %d months 1985-2026. **Total exposure** of a monthly map is the plain sum of cells/L over the %d template water cells (Ecospace works per cell, so no area weighting; the water-cell count is the same in every map). **Cell counts** are the grid cells at or above 10,000, 100,000 and 1,000,000 cells/L. **Samples included** are the in-situ water-cell samples at or above 10,000 cells/L (and the high class) whose 5-arcmin cell is non-zero in the map, the converse of the samples the footprint cuts. Yearly and group totals are sums over the months (cell-months). The two methods are identical outside the %d VIIRS months (checked).",
                   nrow(ex), n_water, sum(vm)),
           "", "## Overall", "",
           paste0("- ", overall(names(egroups)[4])),

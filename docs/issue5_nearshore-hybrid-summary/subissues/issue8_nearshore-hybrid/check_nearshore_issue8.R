@@ -9,13 +9,13 @@
 #' pipeline run and the #6 tables; nothing is refit or re-clipped.
 #'
 #' Needs a 5-min pipeline run (out/5min/sdm, clipped, combined),
-#' VIIRS/VIIRS_*.grd and the issue-6 tables (docs/issue6_VIIRS-zeros/tables/).
+#' VIIRS/VIIRS_*.grd and the issue-6 tables (docs/issue5_nearshore-hybrid-summary/subissues/issue6_VIIRS-zeros/tables/).
 #' The Natural Earth 1:10m coastline is kept in data/coastline/ (a tracked pipeline input since issue #11; downloaded once
 #' if missing, internet on that run only).
 #'
-#' Run from the repo root:  Rscript docs/issue8_nearshore-hybrid/check_nearshore_issue8.R
+#' Run from the repo root:  Rscript docs/issue5_nearshore-hybrid-summary/subissues/issue8_nearshore-hybrid/check_nearshore_issue8.R
 #'
-#' Output (docs/issue8_nearshore-hybrid/):
+#' Output (docs/issue5_nearshore-hybrid-summary/subissues/issue8_nearshore-hybrid/):
 #'   tables/samples_viirs_status_issue8.csv    one row per sample (gitignored: 98,123 rows)
 #'   tables/mask_cells_issue8.csv              the masked 0.1-degree cells that hold template water
 #'   tables/mask_band_issue8.csv               share of template water cells masked, by region x coast band
@@ -33,16 +33,16 @@
 #'
 #' Deterministic: no RNG, no timestamps in any output.
 
-# Repo root: the working directory if it holds the .Rproj, else two levels
-# above this script (docs/issue8_nearshore-hybrid/).
+# Repo root: the working directory if it holds the .Rproj, else four levels
+# above this script (docs/issue5_nearshore-hybrid-summary/subissues/issue8_nearshore-hybrid/).
 .root <- local({
   if (file.exists("RedTideMaps.Rproj")) return(normalizePath(getwd(), winslash = "/"))
   f <- sub("^--file=", "", grep("^--file=", commandArgs(FALSE), value = TRUE))
   if (length(f) == 1) {
-    d <- normalizePath(file.path(dirname(f), "..", ".."), winslash = "/", mustWork = FALSE)
+    d <- normalizePath(file.path(dirname(f), "..", "..", "..", ".."), winslash = "/", mustWork = FALSE)
     if (file.exists(file.path(d, "RedTideMaps.Rproj"))) return(d)
   }
-  stop("Run from the repo root: Rscript docs/issue8_nearshore-hybrid/check_nearshore_issue8.R", call. = FALSE)
+  stop("Run from the repo root: Rscript docs/issue5_nearshore-hybrid-summary/subissues/issue8_nearshore-hybrid/check_nearshore_issue8.R", call. = FALSE)
 })
 source(file.path(.root, "scripts", "_setup.R"))   # sf, raster, terra, rnaturalearth, viridis, ...
 
@@ -79,7 +79,8 @@ dir_out      <- file.path(.root, "out", "5min")
 dir_sdm      <- file.path(dir_out, "sdm")
 dir_clipped  <- file.path(dir_out, "clipped")
 dir_combined <- file.path(dir_out, "combined")
-dir_docs  <- file.path(.root, "docs", "issue8_nearshore-hybrid")
+dir_sub   <- file.path(.root, "docs", "issue5_nearshore-hybrid-summary", "subissues")
+dir_docs  <- file.path(dir_sub, "issue8_nearshore-hybrid")
 dir_fig   <- file.path(dir_docs, "figures")
 dir_tab   <- file.path(dir_docs, "tables")
 dir_cmt   <- file.path(dir_docs, "comments")
@@ -99,8 +100,8 @@ file_viirs     <- grd(one_file(dir_clipped,  "_clipped_viirs[.]grd$", "VIIRS-cli
 file_modis     <- grd(one_file(dir_clipped,  "_clipped_modis[.]grd$", "MODIS-clipped stack"))
 file_final     <- grd(one_file(dir_combined, "_clipped_combined[.]grd$", "combined stack"))
 file_viirs_raw <- grd(one_file(file.path(.root, "VIIRS"), "^VIIRS_[0-9]{6}-[0-9]{6}[.]grd$", "VIIRS stack"))
-file_tab6      <- file.path(.root, "docs", "issue6_VIIRS-zeros", "tables", "clip_comparison_issue6.csv")
-file_cls6      <- file.path(.root, "docs", "issue6_VIIRS-zeros", "tables", "clip_class_counts_issue6.csv")
+file_tab6      <- file.path(dir_sub, "issue6_VIIRS-zeros", "tables", "clip_comparison_issue6.csv")
+file_cls6      <- file.path(dir_sub, "issue6_VIIRS-zeros", "tables", "clip_class_counts_issue6.csv")
 file_coast     <- file.path(dir_coast, "ne_10m_coastline_wfs.gpkg")
 ff <- list.files(dir_sdm, pattern = "_filtered[.]Rdata$", full.names = TRUE)
 if (length(ff) == 0) stop("No *_filtered.Rdata in ", dir_sdm, "; run the pipeline first.", call. = FALSE)
@@ -130,7 +131,7 @@ if (!file.exists(file_coast)) {
                       "https://www.naturalearthdata.com/downloads/10m-physical-vectors/), downloaded with ",
                       "`rnaturalearth::ne_download(scale = 10, type = \"coastline\", category = \"physical\")` on ",
                       format(Sys.Date(), "%d %B %Y"), " and cropped to the WFS grid box (-87.5 to -81 E, 25 to 30.5 N) by ",
-                      "`docs/issue8_nearshore-hybrid/check_nearshore_issue8.R`, which recreates it when it is missing. Since issue #11 it is a pipeline input (fn.nearshore_mask() in scripts/process_VIIRS.R)."),
+                      "`docs/issue5_nearshore-hybrid-summary/subissues/issue8_nearshore-hybrid/check_nearshore_issue8.R`, which recreates it when it is missing. Since issue #11 it is a pipeline input (fn.nearshore_mask() in scripts/process_VIIRS.R)."),
                "",
                "At 1:10m the coastline resolves the large bays (Tampa Bay, Charlotte Harbor, Apalachicola Bay) ",
                "but not every small inlet, so a distance to coast from it is good to about 1 to 2 km."),
@@ -452,7 +453,7 @@ pct <- function(x) ifelse(is.na(x), NA, round(100 * x))
 hdr <- c(
   "# Issue #8, step 1: where are the samples VIIRS does not see?",
   "",
-  sprintf("Produced by `docs/issue8_nearshore-hybrid/check_nearshore_issue8.R` from the 6 October 2026 run (samples `%s`). Every sample of %d-%d is classified by FWC abundance class and by the VIIRS cell it falls in that month: masked (no data in the tif), valid with no detection (0), or valid with a detection (> 0). The %d samples of 2022-12 (no VIIRS tif) and %d negative samples just outside the grid box (lat >= 30.5) are left out of the tables below.",
+  sprintf("Produced by `docs/issue5_nearshore-hybrid-summary/subissues/issue8_nearshore-hybrid/check_nearshore_issue8.R` from the 6 October 2026 run (samples `%s`). Every sample of %d-%d is classified by FWC abundance class and by the VIIRS cell it falls in that month: masked (no data in the tif), valid with no detection (0), or valid with a detection (> 0). The %d samples of 2022-12 (no VIIRS tif) and %d negative samples just outside the grid box (lat >= 30.5) are left out of the tables below.",
           basename(file_filtered), viirs_era[1], viirs_era[2], sum(pts$viirs_cell == "no_layer"), sum(pts$viirs_cell == "off_grid")),
   "",
   "## The mask",

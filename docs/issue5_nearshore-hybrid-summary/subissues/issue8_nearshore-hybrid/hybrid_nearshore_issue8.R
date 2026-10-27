@@ -20,10 +20,10 @@
 #' Sources check_nearshore_issue8.R (step 1, ~15 s, regenerates its outputs
 #' byte-identically) and reuses its objects and drawing helpers.
 #'
-#' Run from the repo root:  Rscript docs/issue8_nearshore-hybrid/hybrid_nearshore_issue8.R
+#' Run from the repo root:  Rscript docs/issue5_nearshore-hybrid-summary/subissues/issue8_nearshore-hybrid/hybrid_nearshore_issue8.R
 #'   RT_QA_MONTHLY_PDF=0  skip the monthly PDF
 #'
-#' Output (docs/issue8_nearshore-hybrid/):
+#' Output (docs/issue5_nearshore-hybrid-summary/subissues/issue8_nearshore-hybrid/):
 #'   tables/hybrid_sets_issue8.csv          the five N sets: cells, km2, overlaps, depth, distance, region
 #'   tables/hybrid_months_long_issue8.csv   155 months x 6 variants: areas, cells added, samples inside
 #'   tables/hybrid_months_issue8.csv        the same, wide, one row per month
@@ -37,19 +37,20 @@
 #' Deterministic: no RNG, no timestamps in any output (the two PDFs carry the
 #' two date lines every R pdf() device writes).
 
-# Repo root: the working directory if it holds the .Rproj, else two levels
-# above this script (docs/issue8_nearshore-hybrid/).
+# Repo root: the working directory if it holds the .Rproj, else four levels
+# above this script (docs/issue5_nearshore-hybrid-summary/subissues/issue8_nearshore-hybrid/).
 .root <- local({
   if (file.exists("RedTideMaps.Rproj")) return(normalizePath(getwd(), winslash = "/"))
   f <- sub("^--file=", "", grep("^--file=", commandArgs(FALSE), value = TRUE))
   if (length(f) == 1) {
-    d <- normalizePath(file.path(dirname(f), "..", ".."), winslash = "/", mustWork = FALSE)
+    d <- normalizePath(file.path(dirname(f), "..", "..", "..", ".."), winslash = "/", mustWork = FALSE)
     if (file.exists(file.path(d, "RedTideMaps.Rproj"))) return(d)
   }
-  stop("Run from the repo root: Rscript docs/issue8_nearshore-hybrid/hybrid_nearshore_issue8.R", call. = FALSE)
+  stop("Run from the repo root: Rscript docs/issue5_nearshore-hybrid-summary/subissues/issue8_nearshore-hybrid/hybrid_nearshore_issue8.R", call. = FALSE)
 })
 message("Step 2: sourcing step 1 (check_nearshore_issue8.R; regenerates its outputs) ...")
-source(file.path(.root, "docs", "issue8_nearshore-hybrid", "check_nearshore_issue8.R"))
+dir_sub <- file.path(.root, "docs", "issue5_nearshore-hybrid-summary", "subissues")
+source(file.path(dir_sub, "issue8_nearshore-hybrid", "check_nearshore_issue8.R"))
 # Step 1 leaves in the workspace: depth, dv, land, cell_km2, n5, H, Vc, Fm, Vr, cell01_of5,
 # domain, atl5, masked5_static, dist5, region5, region_lv, pts, t5, tab6, sel3, zeroed,
 # headline, months, all_months, vz, class_lv, pos_lv, thr_bloom, thr_high, coast, the
@@ -275,7 +276,7 @@ pick <- function(g, k, col) g[[col]][g$variant == k]
 hdr2 <- c(
   "# Issue #8, step 2: hybrid footprints (VIIRS outside N, VIIRS or hull inside N)",
   "",
-  sprintf("Produced by `docs/issue8_nearshore-hybrid/hybrid_nearshore_issue8.R` from the clipped stacks of the 6 October 2026 run and the step-1 objects. For each of the %d VIIRS months and each nearshore set N, `hybrid_N = max(viirs_clipped, hull_clipped * [cell in N])`: outside N the VIIRS result stands, zeros included; inside N the hull footprint (the pipeline's hull method: every positive sample, 75 km linkage, 10 km buffer) is added and never removes a VIIRS detection. Comparators: `current` (the final map) and `hull` (the hull-clipped map, a full hull fallback). Bloom area is km2 of water cells at or above 10,000 cells/L (`a1e4`) or 100,000 cells/L (`a1e5`); `added` is area the variant adds to the current map, split by whether the 0.1-degree VIIRS cell is masked or valid that month; samples are water-cell samples whose 5-arcmin cell is non-zero in the variant.",
+  sprintf("Produced by `docs/issue5_nearshore-hybrid-summary/subissues/issue8_nearshore-hybrid/hybrid_nearshore_issue8.R` from the clipped stacks of the 6 October 2026 run and the step-1 objects. For each of the %d VIIRS months and each nearshore set N, `hybrid_N = max(viirs_clipped, hull_clipped * [cell in N])`: outside N the VIIRS result stands, zeros included; inside N the hull footprint (the pipeline's hull method: every positive sample, 75 km linkage, 10 km buffer) is added and never removes a VIIRS detection. Comparators: `current` (the final map) and `hull` (the hull-clipped map, a full hull fallback). Bloom area is km2 of water cells at or above 10,000 cells/L (`a1e4`) or 100,000 cells/L (`a1e5`); `added` is area the variant adds to the current map, split by whether the 0.1-degree VIIRS cell is masked or valid that month; samples are water-cell samples whose 5-arcmin cell is non-zero in the variant.",
           length(months)),
   "",
   "## The five nearshore sets (`tables/hybrid_sets_issue8.csv`)",

@@ -31,8 +31,8 @@
 #'            ecospace_ascii/ -> tables/md5_final<res>_issue18.csv,
 #'               tables/nearshore_set<res>_issue18.csv
 #'   record   (5 arcmin) the whole record as Ecospace reads it, from hoard/final5/ against
-#'            the 6 Oct 2026 maps (docs/issue11_.../hoard/before/) and the mask5 run of #10
-#'            (docs/issue10_.../hoard/after/): exposure, cell-months at or above 10k / 100k /
+#'            the 6 Oct 2026 maps (the #11 folder, hoard/before/) and the mask5 run of #10
+#'            (the #10 folder, hoard/after/): exposure, cell-months at or above 10k / 100k /
 #'            1M cells/L, samples >= 10k and > 1M cells/L included, per month and by group;
 #'            equal to the #15 prototype month by month
 #'            -> tables/record_months_issue18.csv, tables/record_groups_issue18.csv,
@@ -46,19 +46,19 @@
 #'   (run 0, both "none", is checked by the unchanged issue #11 stage `none`.)
 #'
 #' Run from the repo root:
-#'   RT_QA_STAGE=rule    Rscript docs/issue18_implement-hybrid-clipping/check_final_hybrid_issue18.R
-#'   RT_QA_STAGE=final   RT_QA_RES=15 Rscript docs/issue18_implement-hybrid-clipping/check_final_hybrid_issue18.R
+#'   RT_QA_STAGE=rule    Rscript docs/issue5_nearshore-hybrid-summary/subissues/issue18_implement-hybrid-clipping/check_final_hybrid_issue18.R
+#'   RT_QA_STAGE=final   RT_QA_RES=15 Rscript docs/issue5_nearshore-hybrid-summary/subissues/issue18_implement-hybrid-clipping/check_final_hybrid_issue18.R
 #'   RT_QA_PNG_DIR=<folder> adds PNG previews of the fig 1 pages (stage record).
 
-# Repo root: the working directory if it holds the .Rproj, else two levels above this script.
+# Repo root: the working directory if it holds the .Rproj, else four levels above this script.
 .root <- local({
   if (file.exists("RedTideMaps.Rproj")) return(normalizePath(getwd(), winslash = "/"))
   f <- sub("^--file=", "", grep("^--file=", commandArgs(FALSE), value = TRUE))
   if (length(f) == 1) {
-    d <- normalizePath(file.path(dirname(f), "..", ".."), winslash = "/", mustWork = FALSE)
+    d <- normalizePath(file.path(dirname(f), "..", "..", "..", ".."), winslash = "/", mustWork = FALSE)
     if (file.exists(file.path(d, "RedTideMaps.Rproj"))) return(d)
   }
-  stop("Run from the repo root: Rscript docs/issue18_implement-hybrid-clipping/check_final_hybrid_issue18.R", call. = FALSE)
+  stop("Run from the repo root: Rscript docs/issue5_nearshore-hybrid-summary/subissues/issue18_implement-hybrid-clipping/check_final_hybrid_issue18.R", call. = FALSE)
 })
 source(file.path(.root, "scripts", "_setup.R"))   # sf, raster, viridis, ...
 stage <- match.arg(Sys.getenv("RT_QA_STAGE", "rule"), c("baseline", "rule", "final", "record", "refresh"))
@@ -100,15 +100,16 @@ dir_sdm      <- file.path(dir_out, "sdm")
 dir_clipped  <- file.path(dir_out, "clipped")
 dir_combined <- file.path(dir_out, "combined")
 dir_ascii    <- file.path(dir_out, "ecospace_ascii")
-dir_docs     <- file.path(.root, "docs", "issue18_implement-hybrid-clipping")
+dir_sub      <- file.path(.root, "docs", "issue5_nearshore-hybrid-summary", "subissues")
+dir_docs     <- file.path(dir_sub, "issue18_implement-hybrid-clipping")
 dir_tab      <- file.path(dir_docs, "tables")
 dir_fig      <- file.path(dir_docs, "figures")
 dir_cmt      <- file.path(dir_docs, "comments")
 dir_hoard    <- file.path(dir_docs, "hoard")
-dir_hoard11  <- file.path(.root, "docs", "issue11_nearshore-hybrid-pipeline", "hoard")
-dir_hoard10  <- file.path(.root, "docs", "issue10_modis-nearshore-hybrid", "hoard")
-dir_tab11    <- file.path(.root, "docs", "issue11_nearshore-hybrid-pipeline", "tables")
-dir_tab15    <- file.path(.root, "docs", "issue15_adjacent-land-hybrid", "tables")
+dir_hoard11  <- file.path(dir_sub, "issue11_nearshore-hybrid-pipeline", "hoard")
+dir_hoard10  <- file.path(dir_sub, "issue10_modis-nearshore-hybrid", "hoard")
+dir_tab11    <- file.path(dir_sub, "issue11_nearshore-hybrid-pipeline", "tables")
+dir_tab15    <- file.path(dir_sub, "issue15_adjacent-land-hybrid", "tables")
 for (d in c(dir_tab, dir_fig, dir_cmt)) dir.create(d, recursive = TRUE, showWarnings = FALSE)
 one_file <- function(dir, pattern, what) {
   f <- list.files(dir, pattern = pattern, full.names = TRUE)
@@ -124,7 +125,7 @@ file_base  <- file.path(dir_tab11, "md5_baseline_issue11.csv")
 file_set15 <- file.path(dir_tab15, "nearshore_set_issue15.csv")
 file_em15  <- file.path(dir_tab15, "examine_months_issue15.csv")
 file_rec15 <- file.path(dir_tab15, "record_months_issue15.csv")
-file_tab6  <- file.path(.root, "docs", "issue6_VIIRS-zeros", "tables", "clip_comparison_issue6.csv")
+file_tab6  <- file.path(dir_sub, "issue6_VIIRS-zeros", "tables", "clip_comparison_issue6.csv")
 file_coast <- file.path(.root, "data", "coastline", "ne_10m_coastline_wfs.gpkg")
 file_local <- file.path(.root, "config.local.R")
 

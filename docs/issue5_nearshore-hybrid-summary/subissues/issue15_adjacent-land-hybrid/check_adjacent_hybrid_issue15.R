@@ -29,24 +29,24 @@
 #'
 #' Outputs -> tables/*_issue15.csv, figures/fig1..fig4, comments/examine_summary.md.
 #' Run from the repo root:
-#'   RT_QA_STAGE=examine Rscript docs/issue15_adjacent-land-hybrid/check_adjacent_hybrid_issue15.R
+#'   RT_QA_STAGE=examine Rscript docs/issue5_nearshore-hybrid-summary/subissues/issue15_adjacent-land-hybrid/check_adjacent_hybrid_issue15.R
 #'   RT_QA_PNG_DIR=<folder> adds PNG previews of the fig 3 pages.
 #'   RT_BASEMAP_DEPTH=<path> names the EcospaceBasemap 5-min depth grid (default:
 #'   ../EcospaceBasemap/output/5min/depth/depth_5min.asc beside this repository).
 #' Needs out/5min/sdm/, out/5min/clipped/ (with nearshore_mask_mask5.grd from a run
 #' with a nearshore rule on) and VIIRS/ from the last run; the 6 Oct 2026 combined
-#' stack in docs/issue11_nearshore-hybrid-pipeline/hoard/before/combined/ and the
-#' run-B combined stack in docs/issue10_modis-nearshore-hybrid/hoard/after/combined/.
+#' stack in docs/issue5_nearshore-hybrid-summary/subissues/issue11_nearshore-hybrid-pipeline/hoard/before/combined/ and the
+#' run-B combined stack in docs/issue5_nearshore-hybrid-summary/subissues/issue10_modis-nearshore-hybrid/hoard/after/combined/.
 
-# Repo root: the working directory if it holds the .Rproj, else two levels above this script.
+# Repo root: the working directory if it holds the .Rproj, else four levels above this script.
 .root <- local({
   if (file.exists("RedTideMaps.Rproj")) return(normalizePath(getwd(), winslash = "/"))
   f <- sub("^--file=", "", grep("^--file=", commandArgs(FALSE), value = TRUE))
   if (length(f) == 1) {
-    d <- normalizePath(file.path(dirname(f), "..", ".."), winslash = "/", mustWork = FALSE)
+    d <- normalizePath(file.path(dirname(f), "..", "..", "..", ".."), winslash = "/", mustWork = FALSE)
     if (file.exists(file.path(d, "RedTideMaps.Rproj"))) return(d)
   }
-  stop("Run from the repo root: Rscript docs/issue15_adjacent-land-hybrid/check_adjacent_hybrid_issue15.R", call. = FALSE)
+  stop("Run from the repo root: Rscript docs/issue5_nearshore-hybrid-summary/subissues/issue15_adjacent-land-hybrid/check_adjacent_hybrid_issue15.R", call. = FALSE)
 })
 source(file.path(.root, "scripts", "_setup.R"))   # sf, raster, viridis, ...
 stage <- match.arg(Sys.getenv("RT_QA_STAGE", "examine"), c("examine"))
@@ -86,14 +86,15 @@ expected <- list(n_cells = 5148L, n_land = 1310L, n_water = 3838L, n_atl_water =
 dir_out      <- file.path(.root, "out", "5min")
 dir_sdm      <- file.path(dir_out, "sdm")
 dir_clipped  <- file.path(dir_out, "clipped")
-dir_docs     <- file.path(.root, "docs", "issue15_adjacent-land-hybrid")
+dir_sub      <- file.path(.root, "docs", "issue5_nearshore-hybrid-summary", "subissues")
+dir_docs     <- file.path(dir_sub, "issue15_adjacent-land-hybrid")
 dir_tab      <- file.path(dir_docs, "tables")
 dir_fig      <- file.path(dir_docs, "figures")
 dir_cmt      <- file.path(dir_docs, "comments")
-dir_hoard11  <- file.path(.root, "docs", "issue11_nearshore-hybrid-pipeline", "hoard")
-dir_hoard10  <- file.path(.root, "docs", "issue10_modis-nearshore-hybrid", "hoard")
-dir_tab11    <- file.path(.root, "docs", "issue11_nearshore-hybrid-pipeline", "tables")
-dir_tab10    <- file.path(.root, "docs", "issue10_modis-nearshore-hybrid", "tables")
+dir_hoard11  <- file.path(dir_sub, "issue11_nearshore-hybrid-pipeline", "hoard")
+dir_hoard10  <- file.path(dir_sub, "issue10_modis-nearshore-hybrid", "hoard")
+dir_tab11    <- file.path(dir_sub, "issue11_nearshore-hybrid-pipeline", "tables")
+dir_tab10    <- file.path(dir_sub, "issue10_modis-nearshore-hybrid", "tables")
 for (d in c(dir_tab, dir_fig, dir_cmt)) dir.create(d, recursive = TRUE, showWarnings = FALSE)
 one_file <- function(dir, pattern, what) {
   f <- list.files(dir, pattern = pattern, full.names = TRUE)
@@ -104,7 +105,7 @@ grd <- function(f) sub("[.]grd$", "", f)
 file_depth   <- one_file(file.path(.root, "template rasters"), "^depth 5min .*[.]asc$", "depth template")
 file_basemap <- Sys.getenv("RT_BASEMAP_DEPTH", file.path(dirname(.root), "EcospaceBasemap", "output", "5min", "depth", "depth_5min.asc"))
 file_viirs   <- grd(one_file(file.path(.root, "VIIRS"), "^VIIRS_.*[.]grd$", "VIIRS stack"))
-file_tab6    <- file.path(.root, "docs", "issue6_VIIRS-zeros", "tables", "clip_comparison_issue6.csv")
+file_tab6    <- file.path(dir_sub, "issue6_VIIRS-zeros", "tables", "clip_comparison_issue6.csv")
 file_coast   <- file.path(.root, "data", "coastline", "ne_10m_coastline_wfs.gpkg")
 file_mask5   <- file.path(dir_clipped, "nearshore_mask_mask5.grd")
 file_cs      <- file.path(dir_clipped, "clipping_source.csv")
@@ -784,7 +785,7 @@ if (stage == "examine") {
   write.csv(round_cols(ue), file.path(dir_tab, "exposure_by_era_issue15.csv"), row.names = FALSE)
   mo <- which(set5 & !adj8); ao <- which(adj8 & !set5)
   md <- c("# Issue #15: the land-adjacent nearshore rule against mask5 (examine stage)", "",
-          sprintf("Produced by `docs/issue15_adjacent-land-hybrid/check_adjacent_hybrid_issue15.R` from the stacks on disk, no pipeline run. Five variants over the %d satellite months (%d VIIRS, %d MODIS; the %d hull months are identical in every variant): the delivered 6 Oct 2026 maps; the mask5 hybrid for both sensors (run B of #10); the land-adjacent set (%d Gulf-domain cells, %s km2) with the raw sdmTMB projection inside it (the #15 rule); the same with the %d cells of the static VIIRS no-data mask added (%d cells); and the land-adjacent set with the mask5 fill (max of the satellite- and hull-clipped maps). Total exposure = the plain sum of cells/L over the %s water cells; cell-months at or above 10k / 100k / 1M cells/L; samples included = water-cell samples >= 10k cells/L (and > 1M) whose cell is non-zero in the map. The Atlantic-side box is always excluded.",
+          sprintf("Produced by `docs/issue5_nearshore-hybrid-summary/subissues/issue15_adjacent-land-hybrid/check_adjacent_hybrid_issue15.R` from the stacks on disk, no pipeline run. Five variants over the %d satellite months (%d VIIRS, %d MODIS; the %d hull months are identical in every variant): the delivered 6 Oct 2026 maps; the mask5 hybrid for both sensors (run B of #10); the land-adjacent set (%d Gulf-domain cells, %s km2) with the raw sdmTMB projection inside it (the #15 rule); the same with the %d cells of the static VIIRS no-data mask added (%d cells); and the land-adjacent set with the mask5 fill (max of the satellite- and hull-clipped maps). Total exposure = the plain sum of cells/L over the %s water cells; cell-months at or above 10k / 100k / 1M cells/L; samples included = water-cell samples >= 10k cells/L (and > 1M) whose cell is non-zero in the map. The Atlantic-side box is always excluded.",
                   length(months), length(months_v), length(months_m), sum(!is_sat), sum(adj8), fmt_n(round(sum(cell_km2[adj8]))), sum(in_mask), sum(adj8_mask), fmt_n(sum(water))),
           "", "## Coverage (`tables/set_coverage_issue15.csv`, `tables/set_missed_mask_cells_issue15.csv`)", "",
           sprintf("- The land-adjacent set (edge or corner) covers %d of the %d template cells in the static VIIRS no-data mask and %d of the %d mask5 cells; %d of its %d cells are not in mask5 (depth %s to %s m). The %d mask cells it misses: %s (%d in the top grid row, where the land to the north is off-grid). Adding the mask gives %d cells. Within 2 cells of land: %d cells (%s km2), covering %d of %d mask cells.",

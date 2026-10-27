@@ -1,6 +1,6 @@
 # Issue #8, step 1: where are the samples VIIRS does not see?
 
-Produced by `docs/issue8_nearshore-hybrid/check_nearshore_issue8.R` from the 6 October 2026 run (samples `FWC HAB data 19800102-20260922_filtered.Rdata`). Every sample of 2012-2024 is classified by FWC abundance class and by the VIIRS cell it falls in that month: masked (no data in the tif), valid with no detection (0), or valid with a detection (> 0). The 609 samples of 2022-12 (no VIIRS tif) and 55 negative samples just outside the grid box (lat >= 30.5) are left out of the tables below.
+Produced by `docs/issue5_nearshore-hybrid-summary/subissues/issue8_nearshore-hybrid/check_nearshore_issue8.R` from the 6 October 2026 run (samples `FWC HAB data 19800102-20260922_filtered.Rdata`). Every sample of 2012-2024 is classified by FWC abundance class and by the VIIRS cell it falls in that month: masked (no data in the tif), valid with no detection (0), or valid with a detection (> 0). The 609 samples of 2022-12 (no VIIRS tif) and 55 negative samples just outside the grid box (lat >= 30.5) are left out of the tables below.
 
 ## The mask
 

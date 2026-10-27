@@ -28,7 +28,7 @@
 #'            -> tables/md5_runB_issue10.csv, tables/hybrid_modis_vs_prototype_issue10.csv
 #'   compare  the whole record as Ecospace reads it, three variants: the 6 October 2026
 #'            maps (satellite only), the VIIRS hybrid (#11, run A) and both hybrids
-#'            (#10, run B), read from docs/issue11_nearshore-hybrid-pipeline/hoard/before/,
+#'            (#10, run B), read from docs/issue5_nearshore-hybrid-summary/subissues/issue11_nearshore-hybrid-pipeline/hoard/before/,
 #'            hoard/before/ and hoard/after/ (combined stacks and clipping_source.csv of
 #'            the runs; hoard/ folders are gitignored)
 #'            -> tables/record_months_issue10.csv, tables/record_annual_issue10.csv,
@@ -38,22 +38,22 @@
 #'   (run 0, both "none", is checked by the unchanged issue #11 stage `none`.)
 #'
 #' Run from the repo root:
-#'   RT_QA_STAGE=examine Rscript docs/issue10_modis-nearshore-hybrid/check_modis_hybrid_issue10.R
+#'   RT_QA_STAGE=examine Rscript docs/issue5_nearshore-hybrid-summary/subissues/issue10_modis-nearshore-hybrid/check_modis_hybrid_issue10.R
 #'   RT_QA_STAGE=regress ...   RT_QA_STAGE=mask5 ...   RT_QA_STAGE=compare ...
 #'   RT_QA_PNG_DIR=<folder> adds PNG previews of the fig 1 pages (stage examine).
 #' Needs out/5min/clipped/nearshore_mask_mask5.grd from a run with a nearshore rule on
 #' and the 6 October 2026 combined stack in
-#' docs/issue11_nearshore-hybrid-pipeline/hoard/before/combined/ (the delivered maps).
+#' docs/issue5_nearshore-hybrid-summary/subissues/issue11_nearshore-hybrid-pipeline/hoard/before/combined/ (the delivered maps).
 
-# Repo root: the working directory if it holds the .Rproj, else two levels above this script.
+# Repo root: the working directory if it holds the .Rproj, else four levels above this script.
 .root <- local({
   if (file.exists("RedTideMaps.Rproj")) return(normalizePath(getwd(), winslash = "/"))
   f <- sub("^--file=", "", grep("^--file=", commandArgs(FALSE), value = TRUE))
   if (length(f) == 1) {
-    d <- normalizePath(file.path(dirname(f), "..", ".."), winslash = "/", mustWork = FALSE)
+    d <- normalizePath(file.path(dirname(f), "..", "..", "..", ".."), winslash = "/", mustWork = FALSE)
     if (file.exists(file.path(d, "RedTideMaps.Rproj"))) return(d)
   }
-  stop("Run from the repo root: Rscript docs/issue10_modis-nearshore-hybrid/check_modis_hybrid_issue10.R", call. = FALSE)
+  stop("Run from the repo root: Rscript docs/issue5_nearshore-hybrid-summary/subissues/issue10_modis-nearshore-hybrid/check_modis_hybrid_issue10.R", call. = FALSE)
 })
 source(file.path(.root, "scripts", "_setup.R"))   # sf, raster, viridis, ...
 stage <- match.arg(Sys.getenv("RT_QA_STAGE", "examine"), c("examine", "regress", "mask5", "compare"))
@@ -87,12 +87,13 @@ expected <- list(n_modis = 123L, n_set = 136L, km2_set = 10227, n_changed = 87L,
 dir_out      <- file.path(.root, "out", "5min")
 dir_sdm      <- file.path(dir_out, "sdm")
 dir_clipped  <- file.path(dir_out, "clipped")
-dir_docs     <- file.path(.root, "docs", "issue10_modis-nearshore-hybrid")
+dir_sub      <- file.path(.root, "docs", "issue5_nearshore-hybrid-summary", "subissues")
+dir_docs     <- file.path(dir_sub, "issue10_modis-nearshore-hybrid")
 dir_tab      <- file.path(dir_docs, "tables")
 dir_fig      <- file.path(dir_docs, "figures")
 dir_cmt      <- file.path(dir_docs, "comments")
-dir_hoard11  <- file.path(.root, "docs", "issue11_nearshore-hybrid-pipeline", "hoard")
-dir_tab11    <- file.path(.root, "docs", "issue11_nearshore-hybrid-pipeline", "tables")
+dir_hoard11  <- file.path(dir_sub, "issue11_nearshore-hybrid-pipeline", "hoard")
+dir_tab11    <- file.path(dir_sub, "issue11_nearshore-hybrid-pipeline", "tables")
 dir_hoard    <- file.path(dir_docs, "hoard")
 dir_ascii    <- file.path(dir_out, "ecospace_ascii")
 dir_combined <- file.path(dir_out, "combined")
@@ -104,7 +105,7 @@ one_file <- function(dir, pattern, what) {
 }
 grd <- function(f) sub("[.]grd$", "", f)
 file_depth <- one_file(file.path(.root, "template rasters"), "^depth 5min .*[.]asc$", "depth template")
-file_tab6  <- file.path(.root, "docs", "issue6_VIIRS-zeros", "tables", "clip_comparison_issue6.csv")
+file_tab6  <- file.path(dir_sub, "issue6_VIIRS-zeros", "tables", "clip_comparison_issue6.csv")
 file_coast <- file.path(.root, "data", "coastline", "ne_10m_coastline_wfs.gpkg")
 file_mask  <- file.path(dir_clipped, "nearshore_mask_mask5.grd")
 file_cs    <- file.path(dir_clipped, "clipping_source.csv")
@@ -538,7 +539,7 @@ if (stage == "examine") {
   top_tab <- em[match(fig1_months, em$yrmo), c("yrmo", "fit_status", "modis_n_polys", "cells_changed", "a1e4_km2_before", "a1e4_km2_after", "exposure_before", "exposure_after",
                                                 "n_ge1e4_before", "n_ge1e4_after", "samples_ge1e4", "samples_ge1e4_in_before", "samples_ge1e4_in_after")]
   md <- c("# Issue #10: the mask5 nearshore rule on the MODIS months (examine stage)", "",
-          sprintf("Produced by `docs/issue10_modis-nearshore-hybrid/check_modis_hybrid_issue10.R` (stage `examine`) from the stacks of the last pipeline run: the MODIS-clipped layers of the %d months the cascade serves from MODIS (equal to the delivered 6 October 2026 maps for those months, checked), the hull-clipped layers of the same months and the `mask5` set (%d cells, %s km2). The hybrid is max(MODIS-clipped, hull-clipped) inside the set and the MODIS-clipped layer outside it. Bloom area = km2 of cells at or above 10,000 cells/L; exposure = the plain sum of cells/L over the %s water cells; samples included = water-cell samples at or above 10,000 cells/L (and the high class, above 1,000,000) whose cell is non-zero in the map. Yearly and group totals are sums over the months.",
+          sprintf("Produced by `docs/issue5_nearshore-hybrid-summary/subissues/issue10_modis-nearshore-hybrid/check_modis_hybrid_issue10.R` (stage `examine`) from the stacks of the last pipeline run: the MODIS-clipped layers of the %d months the cascade serves from MODIS (equal to the delivered 6 October 2026 maps for those months, checked), the hull-clipped layers of the same months and the `mask5` set (%d cells, %s km2). The hybrid is max(MODIS-clipped, hull-clipped) inside the set and the MODIS-clipped layer outside it. Bloom area = km2 of cells at or above 10,000 cells/L; exposure = the plain sum of cells/L over the %s water cells; samples included = water-cell samples at or above 10,000 cells/L (and the high class, above 1,000,000) whose cell is non-zero in the map. Yearly and group totals are sums over the months.",
                   length(months), sum(set), fmt_n(round(sum(cell_km2[set]))), fmt_n(sum(water))),
           "", "## Overall", "",
           sprintf("- Over the %d MODIS months the rule changes %d maps, raises the summed bloom area by %.1f%% (%s to %s km2) and total exposure by %.1f%% (%s to %s cells/L summed), and lifts the share of the in-situ water samples >= 10,000 cells/L that the projection includes from %.1f%% to %.1f%% (%s to %s of %s; +%.1f percentage points); for the high samples (> 1,000,000 cells/L) from %.1f%% to %.1f%% (of %s).",
@@ -850,7 +851,7 @@ if (stage == "compare") {
               "cellmonths_ge1e6_v6oct", "cellmonths_ge1e6_v11", "cellmonths_ge1e6_v10",
               "samples_ge1e4", "share_ge1e4_v6oct", "share_ge1e4_v11", "share_ge1e4_v10", "samples_high", "share_high_v6oct", "share_high_v11", "share_high_v10")
   md <- c("# Issue #10: the whole record with both nearshore hybrids (compare stage)", "",
-          sprintf("Produced by `docs/issue10_modis-nearshore-hybrid/check_modis_hybrid_issue10.R` (stage `compare`) from three combined stacks of %d months: the 6 October 2026 maps (satellite clips only), run A (the VIIRS hybrid of #11, `viirs_nearshore = \"mask5\"`) and run B (both hybrids, `modis_nearshore = \"mask5\"` as well). Total exposure = the plain sum of cells/L over the %s water cells; cell counts at or above 10,000 / 100,000 / 1,000,000 cells/L; samples included = water-cell samples at or above 10,000 cells/L (and the high class) whose cell is non-zero in the map. Yearly and group totals are sums over the months. Run B differs from run A in exactly the %d MODIS months with a nearshore hull, run A from the 6 October maps in exactly the %d VIIRS months with one (checked).",
+          sprintf("Produced by `docs/issue5_nearshore-hybrid-summary/subissues/issue10_modis-nearshore-hybrid/check_modis_hybrid_issue10.R` (stage `compare`) from three combined stacks of %d months: the 6 October 2026 maps (satellite clips only), run A (the VIIRS hybrid of #11, `viirs_nearshore = \"mask5\"`) and run B (both hybrids, `modis_nearshore = \"mask5\"` as well). Total exposure = the plain sum of cells/L over the %s water cells; cell counts at or above 10,000 / 100,000 / 1,000,000 cells/L; samples included = water-cell samples at or above 10,000 cells/L (and the high class) whose cell is non-zero in the map. Yearly and group totals are sums over the months. Run B differs from run A in exactly the %d MODIS months with a nearshore hull, run A from the 6 October maps in exactly the %d VIIRS months with one (checked).",
                   length(all_yrmo), fmt_n(n_water), expected$n_changed, expected$n_changed_viirs),
           "", "## Overall", "",
           paste0("- ", line_of(g, names(groups)[1])),
