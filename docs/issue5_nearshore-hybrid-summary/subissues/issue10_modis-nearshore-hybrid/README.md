@@ -6,7 +6,7 @@ Examination, implementation and checks for [WFS-FEM/RedTideMaps#10](https://gith
 
 ## What changed in the pipeline
 
-- **`scripts/process_hybrid.R`** (new): `fn.nearshore_mask()` and `fn.clip_2_hybrid()` moved here from `scripts/process_VIIRS.R`, unchanged in behaviour (run 0 below proves it), because they are no longer VIIRS-specific.
+- **`scripts/process_hybrid.R`** (new): `fn.nearshore_mask()` and `fn.clip_2_hybrid()` moved here from `scripts/process_VIIRS.R`, unchanged in behavior (run 0 below proves it), because they are no longer VIIRS-specific.
 - **`fn.clip_2_hybrid(file_sat_clipped, file_hull_clipped, file_mask, file_depth, dir_out, source = "viirs" | "modis", months = NULL)`**: takes any satellite-clipped stack; `months` keeps only the layers named (the driver passes the MODIS months that have no VIIRS layer, i.e. the months the cascade serves from MODIS); writes `*_clipped_hybrid` for VIIRS (as in #11) and `*_clipped_hybrid_modis` for MODIS; the `months` table gains `source`.
 - **`make_redtide_ascii(file_hybrid_modis = NULL)`** (`scripts/polygon_clipping_rt.R`): cascade `hybrid > VIIRS > hybrid_modis > MODIS > hull`; `clipping_source.csv` gains `hybrid_modis` and the `use` value `"hybrid_modis"`; `hybrid_changed` is computed for either hybrid against the satellite layer it was built from; a MODIS hybrid month that also has a VIIRS layer stops the run.
 - **Config** (`run_redtide_maps.R`, `config.local.example.R`): `cfg$modis_nearshore = "none"` (default) or `"mask5"`, validated with `viirs_nearshore` right after `config.local.R` (needs `use_viirs` and `use_modis`; both rules name the same set when both are on). Step 5 now clips to VIIRS (5b) and MODIS (5c) first, then builds the nearshore set once and the hybrids (5d). The VIIRS log lines are unchanged, so the #11 checks still read them; new lines name the MODIS rule and the MODIS months changed.
@@ -53,7 +53,7 @@ After each run, `git checkout -- out/5min/ecospace_ascii out/5min/plots` restore
 | `figures/fig2_examine_series_issue10.png` | the 123 MODIS months as a series: total exposure, cells at or above 10k / 100k / 1M cells/L, share of samples included; before and after; all-zero MODIS maps shaded (run B reproduces the prototype, so this is also the run-B series) |
 | `figures/fig3_excluded_samples_issue10.png` | the 799 excluded samples on the map (recovered or not) and their distance to the coast (ECDF) |
 | `figures/fig4_record_2002-2026_issue10.png` | the record from the first satellite month (2002-07) to 2026: the satellite-only maps (black) and the nearshore hybrid, VIIRS + MODIS (purple), with the clip source of each month shaded; the hull months before 2002-07 are identical in every variant and are left out, and so is the VIIRS-only hybrid, which lies on the hybrid line in the VIIRS months and on the baseline elsewhere (its numbers are in the tables) |
-| `figures/fig5_cells_modis_issue10.png` | per cell over the MODIS months: cumulative exposure (log colour) and cell-months at or above 100,000 cells/L; MODIS-only, MODIS hybrid, difference; the fig 1 map palette |
+| `figures/fig5_cells_modis_issue10.png` | per cell over the MODIS months: cumulative exposure (log color) and cell-months at or above 100,000 cells/L; MODIS-only, MODIS hybrid, difference; the fig 1 map palette |
 | `comments/examine_summary.md`, `comments/compare_summary.md` | the tables above in markdown, as the script writes them |
 | `hoard/` (gitignored) | local copies of the run A (`before/`) and run B (`after/`) outputs the compare stage reads |
 
