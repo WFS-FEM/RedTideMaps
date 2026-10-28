@@ -48,9 +48,6 @@ fn.make_input_grid <- function(file_depth, file_excl = NULL) {
 #' files into `dir_om` and an evaluation matrix + prediction array into
 #' `dir_sdmout`.
 #'
-#' Confirmation prompt: if `pred_SDMs_RT.RData` exists in `dir_sdmout`,
-#' the user is asked whether to overwrite.
-#'
 #' @param habdata sf data frame of filtered HAB observations.
 #' @param input_grid Output of fn.make_input_grid().
 #' @param dir_sdmout Directory for stacks, fit_matrix, pred_array, plots.

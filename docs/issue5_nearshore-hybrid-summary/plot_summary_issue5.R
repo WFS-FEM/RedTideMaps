@@ -3,7 +3,7 @@
 #' (the nearshore hybrid with the decided set of #15 and the hull fill, rule mask5adj).
 #'
 #' Reads one tracked table and draws it; nothing is computed afresh:
-#'   docs/issue18_implement-hybrid-clipping/tables/record_months_issue18.csv
+#'   docs/issue5_nearshore-hybrid-summary/subissues/issue18_implement-hybrid-clipping/tables/record_months_issue18.csv
 #'   (columns *_v6oct and *_final, written and asserted by
 #'   check_final_hybrid_issue18.R, stage record, from the final 5-arcmin run; equal
 #'   month by month to the #15 prototype table it replaced here).
@@ -24,7 +24,8 @@
 dir_docs <- file.path(.root, "docs", "issue5_nearshore-hybrid-summary")
 dir_fig  <- file.path(dir_docs, "figures")
 dir.create(dir_fig, showWarnings = FALSE)
-file_rec <- file.path(.root, "docs", "issue18_implement-hybrid-clipping", "tables", "record_months_issue18.csv")
+dir_sub  <- file.path(.root, "docs", "issue5_nearshore-hybrid-summary", "subissues")
+file_rec <- file.path(dir_sub, "issue18_implement-hybrid-clipping", "tables", "record_months_issue18.csv")
 rec <- read.csv(file_rec, colClasses = c(yrmo = "character"), stringsAsFactors = FALSE)
 stopifnot(nrow(rec) == 504, all(c("exposure_v6oct", "exposure_final", "n_ge10k_final", "in_ge10k_final", "samples_ge10k", "use", "viirs_status") %in% names(rec)))
 n_water <- 3838L

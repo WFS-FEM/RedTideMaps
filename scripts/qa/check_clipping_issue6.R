@@ -17,18 +17,18 @@
 #'   RT_QA_QUICK=1        draw only the pages holding headline months
 #'
 #' Output:
-#'   docs/issue6_VIIRS-zeros/tables/clip_comparison_issue6.csv     one row per month (504)
-#'   docs/issue6_VIIRS-zeros/comments/clip_comparison_summary.md     tables for the issues
-#'   docs/issue6_VIIRS-zeros/figures/fig1_viirs_calendar.png        VIIRS status by year x month
-#'   docs/issue6_VIIRS-zeros/figures/fig2_insitu_vs_viirs.png       in-situ positives vs VIIRS cells
-#'   docs/issue6_VIIRS-zeros/figures/fig3_bloom_area_unclipped_vs_final.png
-#'   docs/issue6_VIIRS-zeros/figures/fig4_headline_months.png       the headline months in the monthly-PDF row format
-#'   docs/issue6_VIIRS-zeros/figures/fig5_monthly_rows_example.png  four example rows (2012-01 to 2012-04)
-#'   docs/issue6_VIIRS-zeros/hoard/clip_check_issue6-OLD.pdf      superseded: one page per fitted month (4 panels), opt-in
-#'   docs/issue6_VIIRS-zeros/clip_months_issue6.pdf         one row per month, 12 rows (a year) per
+#'   docs/issue5_nearshore-hybrid-summary/subissues/issue6_VIIRS-zeros/tables/clip_comparison_issue6.csv     one row per month (504)
+#'   docs/issue5_nearshore-hybrid-summary/subissues/issue6_VIIRS-zeros/comments/clip_comparison_summary.md     tables for the issues
+#'   docs/issue5_nearshore-hybrid-summary/subissues/issue6_VIIRS-zeros/figures/fig1_viirs_calendar.png        VIIRS status by year x month
+#'   docs/issue5_nearshore-hybrid-summary/subissues/issue6_VIIRS-zeros/figures/fig2_insitu_vs_viirs.png       in-situ positives vs VIIRS cells
+#'   docs/issue5_nearshore-hybrid-summary/subissues/issue6_VIIRS-zeros/figures/fig3_bloom_area_unclipped_vs_final.png
+#'   docs/issue5_nearshore-hybrid-summary/subissues/issue6_VIIRS-zeros/figures/fig4_headline_months.png       the headline months in the monthly-PDF row format
+#'   docs/issue5_nearshore-hybrid-summary/subissues/issue6_VIIRS-zeros/figures/fig5_monthly_rows_example.png  four example rows (2012-01 to 2012-04)
+#'   docs/issue5_nearshore-hybrid-summary/subissues/issue6_VIIRS-zeros/hoard/clip_check_issue6-OLD.pdf      superseded: one page per fitted month (4 panels), opt-in
+#'   docs/issue5_nearshore-hybrid-summary/subissues/issue6_VIIRS-zeros/clip_months_issue6.pdf         one row per month, 12 rows (a year) per
 #'       page: FWC counts | unclipped | VIIRS | MODIS | hulls, each with its legend
 #'       and a count box; the panel the final map uses is framed in red
-#'   docs/issue6_VIIRS-zeros/tables/clip_class_counts_issue6.csv   the count-box numbers, one month per row
+#'   docs/issue5_nearshore-hybrid-summary/subissues/issue6_VIIRS-zeros/tables/clip_class_counts_issue6.csv   the count-box numbers, one month per row
 #'   console: the summary and the stopifnot() results
 #'
 #' Deterministic: no RNG, no timestamps in any output.
@@ -70,7 +70,8 @@ dir_sdm      <- file.path(dir_out, "sdm")
 dir_clipped  <- file.path(dir_out, "clipped")
 dir_combined <- file.path(dir_out, "combined")
 dir_plots    <- file.path(dir_out, "plots")
-dir_docs  <- file.path(.root, "docs", "issue6_VIIRS-zeros")   # monthly PDF and README
+dir_sub   <- file.path(.root, "docs", "issue5_nearshore-hybrid-summary", "subissues")
+dir_docs  <- file.path(dir_sub, "issue6_VIIRS-zeros")   # monthly PDF and README
 dir_fig   <- file.path(dir_docs, "figures")                     # fig1-fig5
 dir_tab   <- file.path(dir_docs, "tables")                       # the two CSVs
 dir_cmt   <- file.path(dir_docs, "comments")                     # summary tables and comment drafts

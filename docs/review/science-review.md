@@ -4,7 +4,7 @@
 
 ```
 Repository: WFS-FEM/RedTideMaps (main at a875d64). Original authors: Daniel Vilas (sdmTMB
-and clipping code), David Chagaris (PI, workflow design), Holden Harris (operationalisation).
+and clipping code), David Chagaris (PI, workflow design), Holden Harris (operationalization).
 Reviewer: Holden Harris, with Claude Code. Date: 6 Oct 2026.
 Status: draft (review-only audit; Phase 2 orientation, to be corrected in Phase 5).
 Cite as: Harris, H. E. (2026). Science and Objectives Review: RedTideMaps. docs/review/science-review.md, WFS-FEM/RedTideMaps.
@@ -15,11 +15,11 @@ Sources are cited in square brackets: `[file:line]` for code, `[README "section"
 
 ## 1. Summary
 
-RedTideMaps produces one map per month of *Karenia brevis* concentration, in cells per litre, on the West Florida Shelf Ecospace grid (5 arc-minute cells, 66 rows by 78 columns, 87.5°W to 81°W and 25°N to 30.5°N), for every month from January 1985 to December of the current year [`template rasters/depth 5min 66x78.asc`; `run_redtide_maps.R:40-44`]. The maps are written as ESRI ASCII rasters and are the red-tide spatial-temporal driver of the WFS Ecospace model [README "Pipeline"; Vilas et al. 2023].
+RedTideMaps produces one map per month of *Karenia brevis* concentration, in cells per liter, on the West Florida Shelf Ecospace grid (5 arc-minute cells, 66 rows by 78 columns, 87.5°W to 81°W and 25°N to 30.5°N), for every month from January 1985 to December of the current year [`template rasters/depth 5min 66x78.asc`; `run_redtide_maps.R:40-44`]. The maps are written as ESRI ASCII rasters and are the red-tide spatial-temporal driver of the WFS Ecospace model [README "Pipeline"; Vilas et al. 2023].
 
 Each map is built in two parts. A species-distribution model (sdmTMB) is fitted separately for each year and month to the positive in-situ cell counts from FWC's harmful algal bloom monitoring, and predicts an expected concentration at every grid cell [`scripts/sdmTMB_HAB_data.R:61-320`]. That prediction is then masked to the bloom footprint for the month, taken from the best available source: VIIRS satellite red-tide frequency (2012 to 2024), else MODIS fluorescence-line-height polygons (July 2002 to September 2025), else buffered hulls around the positive samples themselves [`scripts/polygon_clipping_rt.R:195-245`; README "Why the clipping cascade"].
 
-Two things a user of the outputs must know. First, the map value is the model's expected concentration *given that the month's bloom footprint covers the cell*, multiplied by a 0/1 footprint; it is not a probability-weighted expectation. Second, a month is modelled only when it has more than five positive samples; months with one to five positives (87 of the 421 months with any positive since 1985) and months whose fit failed (5) are written as all-zero maps [`scripts/sdmTMB_HAB_data.R:118`, `302-306`; run 2026-09-30].
+Two things a user of the outputs must know. First, the map value is the model's expected concentration *given that the month's bloom footprint covers the cell*, multiplied by a 0/1 footprint; it is not a probability-weighted expectation. Second, a month is modeled only when it has more than five positive samples; months with one to five positives (87 of the 421 months with any positive since 1985) and months whose fit failed (5) are written as all-zero maps [`scripts/sdmTMB_HAB_data.R:118`, `302-306`; run 2026-09-30].
 
 ## 2. Objectives
 
@@ -33,7 +33,7 @@ Two things a user of the outputs must know. First, the map value is the model's 
 
 ## 3. Introduction and context
 
-*K. brevis* blooms on the West Florida Shelf cause fish kills and change fish behaviour, and the WFS ecosystem model represents both as functions of cell concentration. The model runs monthly from 1985, so it needs a monthly concentration map for every month since then, including the decades before satellite bloom products exist and the months after the latest satellite product has been published [plan §1, §5].
+*K. brevis* blooms on the West Florida Shelf cause fish kills and change fish behavior, and the WFS ecosystem model represents both as functions of cell concentration. The model runs monthly from 1985, so it needs a monthly concentration map for every month since then, including the decades before satellite bloom products exist and the months after the latest satellite product has been published [plan §1, §5].
 
 The code has three generations [git history]. Monolithic scripts by Daniel Vilas (`archive/make red tide maps *.R`, September 2025 to March 2026) chained MODIS extraction, polygon building, sdmTMB fitting, clipping and ASCII writing with global state. In May 2026 the workflow was refactored into one driver and six function files, the FWC ingest was rewritten to pull from the ArcGIS REST API, and the repository was made standalone [`f6e0cf2`, `d99fe33`]. In September 2026 two fixes landed through pull requests: fresh-clone portability (a tracked project file, a gitignored local config, an up-front package check, an opt-in Ecospace export; PR #2) and a replacement of the k-means hull clustering that was producing spurious coast-long polygons in satellite-free months (issue #3, PR #4) [`69fad70`, `baa7dc8`, `23a5935`].
 
@@ -43,9 +43,9 @@ Related work: the Ecospace model and its red-tide response functions (Vilas et a
 
 | Source | Provider and method | Coverage used | Vintage in the repository | Limitations known to the code | Access |
 |---|---|---|---|---|---|
-| FWC HAB cell counts | Florida Fish and Wildlife Conservation Commission, Fish and Wildlife Research Institute. In-situ water samples, *K. brevis* cells/L, with date, position and depth. Served as six ArcGIS REST layers (1980s, 1990s, 2000-2006, 2007-2014, 2015-2023, 2024-present) | 1980-01-02 to 2026-09-17 in the local cache; modelled from 1985 | Pulled at every run; local merged CSV refreshed incrementally from the "Recent" layer only | Late additions or corrections to older records are not picked up by an incremental pull [README "Known limits"]; counts at or below 1,000 cells/L are "background" in FWC's own scale but count as positive here [plan §3] | Public API; `data/FWC HAB API query urls.txt` |
+| FWC HAB cell counts | Florida Fish and Wildlife Conservation Commission, Fish and Wildlife Research Institute. In-situ water samples, *K. brevis* cells/L, with date, position and depth. Served as six ArcGIS REST layers (1980s, 1990s, 2000-2006, 2007-2014, 2015-2023, 2024-present) | 1980-01-02 to 2026-09-17 in the local cache; modeled from 1985 | Pulled at every run; local merged CSV refreshed incrementally from the "Recent" layer only | Late additions or corrections to older records are not picked up by an incremental pull [README "Known limits"]; counts at or below 1,000 cells/L are "background" in FWC's own scale but count as positive here [plan §3] | Public API; `data/FWC HAB API query urls.txt` |
 | VIIRS monthly red-tide frequency | USF Optical Oceanography Laboratory with NOAA; monthly rasters at 0.1° giving the frequency of red-tide detection (README calls them probability rasters) | 2012-01 to 2024-12; December 2022 is missing (PNG present, TIF absent), so that month falls through to MODIS | Shipped in the repository (155 GeoTIFFs); no download code | The code overwrites each file's georeferencing with the fixed WFS box and flips it vertically [`scripts/process_VIIRS.R:34-36`]; the threshold "any cell > 0 is bloom" is the code's choice [unexplained] | Tracked; original URL not recorded |
-| MODIS nFLH bloom polygons | NASA MODIS Aqua normalised fluorescence line height from NOAA CoastWatch ERDDAP, thresholded at 0.02 mW cm⁻² µm⁻¹ sr⁻¹ and dissolved to polygons per month | 2002-07 to 2025-09 | Pre-built polygon list shipped as one Rdata (built 26 Sept 2025); raw rasters not tracked, rebuildable with `update_modis` | Threshold per Hu et al. 2005 updated to 0.02 by personal communication [`scripts/process_MODIS.R:11-13`]; the ERDDAP dataset discovery is heuristic (string filters on titles) | Tracked polygons; ERDDAP public |
+| MODIS nFLH bloom polygons | NASA MODIS Aqua normalized fluorescence line height from NOAA CoastWatch ERDDAP, thresholded at 0.02 mW cm⁻² µm⁻¹ sr⁻¹ and dissolved to polygons per month | 2002-07 to 2025-09 | Pre-built polygon list shipped as one Rdata (built 26 Sept 2025); raw rasters not tracked, rebuildable with `update_modis` | Threshold per Hu et al. 2005 updated to 0.02 by personal communication [`scripts/process_MODIS.R:11-13`]; the ERDDAP dataset discovery is heuristic (string filters on titles) | Tracked polygons; ERDDAP public |
 | Grid templates | Depth and exclusion ASCII rasters for 4, 5, 6, 10 and 15 arc-minute grids | 5 min used by default; 15 min supported | Tracked | Source and vintage of the templates: unexplained; the exclusion layer is loaded but never used [`scripts/sdmTMB_HAB_data.R:21-24`] | Tracked |
 | Coastline | Natural Earth 1:50m countries via `rnaturalearth` | Plotting only | Package data | None | Package |
 | HABSOS archive (NOAA NCEI) | Historical *K. brevis* observations compiled by NCEI | Not read by the driver; a download helper exists [`scripts/get_HAB_data.R:180-215`] | Two CSVs tracked in `data/` (30 MB), April 2024 vintage; used only by the issue #3 emulation [plan §4] | Not used | Tracked |
@@ -58,7 +58,7 @@ All six FWC layers are paged through the REST API and merged; duplicates are rem
 
 ### 5.2 Prediction grid (stage 3a)
 
-The prediction grid is the set of cell centres of the depth template; a per-cell area in km² is computed with a spherical formula but not used downstream [`scripts/sdmTMB_HAB_data.R:24-40`]. The exclusion template is passed in but unused.
+The prediction grid is the set of cell centers of the depth template; a per-cell area in km² is computed with a spherical formula but not used downstream [`scripts/sdmTMB_HAB_data.R:24-40`]. The exclusion template is passed in but unused.
 
 ### 5.3 Monthly species-distribution models (stage 3b)
 
@@ -70,7 +70,7 @@ Diagnostics saved per fit: relative RMSE and MAE of in-sample predictions, AIC, 
 
 ### 5.4 Prediction to the grid (stage 4)
 
-Each fitted model predicts the response-scale mean at every cell centre, which is rasterised onto the template [`:235-241`, `:343-357`]. Months without a model get an all-zero layer by way of a code path that writes zeros into the longitude and latitude columns of the prediction array and so trips the "insufficient spatial data" branch; verified on the stored array, where every column of January 1985 is zero [`:275-277`, `:362-369`; Doc C B3]. The result is a stack of 504 monthly layers of predicted cells/L, unmasked, extending across the whole shelf wherever a fit exists.
+Each fitted model predicts the response-scale mean at every cell center, which is rasterized onto the template [`:235-241`, `:343-357`]. Months without a model get an all-zero layer by way of a code path that writes zeros into the longitude and latitude columns of the prediction array and so trips the "insufficient spatial data" branch; verified on the stored array, where every column of January 1985 is zero [`:275-277`, `:362-369`; Doc C B3]. The result is a stack of 504 monthly layers of predicted cells/L, unmasked, extending across the whole shelf wherever a fit exists.
 
 ### 5.5 Bloom footprint and clipping cascade (stage 5-6)
 
@@ -78,7 +78,7 @@ The unmasked prediction can cover the entire shelf even when the bloom is local,
 
 1. **Buffered hulls** (every month with at least one positive). Positive samples are grouped by single-linkage clustering cut at 75 km; each cluster with at least four distinct locations gets a concave hull (concavity 2), smaller clusters get the points themselves, and every footprint is buffered by 10 km, all in UTM zone 17N [`scripts/polygon_clipping_rt.R:60-150`]. The 75 km cut, the buffer and the minimum were set in the issue #3 fix with a sensitivity case at 50 km [plan §6.2, §6.5]. A per-month diagnostics file records cluster counts, footprint area and span, and flags spans over 300 km.
 2. **VIIRS** (2012-01 to 2024-12 except 2022-12). Cells with frequency greater than zero are dissolved to a polygon; a month whose VIIRS layer is entirely zero gets an all-zero map even if in-situ positives exist [`scripts/process_VIIRS.R:114-119`]. This is not a corner case: 89 of the 155 VIIRS months have no positive cell, 58 of those had a fitted model, and 14 had a hundred or more positive samples (January to April 2017 with 274, 320, 258 and 168; June 2021 with 376) [Doc C §3, M1]. The product's 0.1° cells may not resolve the nearshore and estuarine samples that dominate those months; whether a satellite non-detection should override them is a methods question (§7).
-3. **MODIS nFLH** (2002-07 to 2025-09). The pre-built polygons are rasterised on the template and used as the mask [`scripts/process_MODIS.R:175-200`].
+3. **MODIS nFLH** (2002-07 to 2025-09). The pre-built polygons are rasterized on the template and used as the mask [`scripts/process_MODIS.R:175-200`].
 
 Preference per month is VIIRS, else MODIS, else hull [`scripts/polygon_clipping_rt.R:215-218`]. On the last run this gave 155 VIIRS, 123 MODIS and 226 hull months out of 504 [run 2026-09-30]. Inside the footprint the cell keeps the model's value; outside it the cell is zero; land cells are no-data. So the final map is E[cells/L | model, positive samples] × 1{cell in footprint}.
 
@@ -88,7 +88,7 @@ One ASCII per month, `sdmTMB_log__<yyyymm>.asc`, on the template grid, with no-d
 
 ## 6. Results
 
-The product is 504 monthly maps for 1985 to 2026 on the 5-min grid, committed in `out/5min/ecospace_ascii/` from the 30 Sept 2026 run (data through 2026-09-17). The example figure in the README (September 2018, `example_201809.png`) shows what a modelled bloom month looks like: predicted concentrations up to several million cells/L along the southwest coast inside the VIIRS footprint, zero elsewhere on the shelf, land in grey. What to look for in any month: whether the coloured area sits where samples were taken that month (`plots/sample locations by year.png`), whether its edge follows a satellite footprint (blocky 0.1° cells) or a hull (rounded 10 km buffers), and whether a month that should be quiet is quiet.
+The product is 504 monthly maps for 1985 to 2026 on the 5-min grid, committed in `out/5min/ecospace_ascii/` from the 30 Sept 2026 run (data through 2026-09-17). The example figure in the README (September 2018, `example_201809.png`) shows what a modeled bloom month looks like: predicted concentrations up to several million cells/L along the southwest coast inside the VIIRS footprint, zero elsewhere on the shelf, land in gray. What to look for in any month: whether the colored area sits where samples were taken that month (`plots/sample locations by year.png`), whether its edge follows a satellite footprint (blocky 0.1° cells) or a hull (rounded 10 km buffers), and whether a month that should be quiet is quiet.
 
 **Where each month's map comes from** (30 Sept run; Doc B §9 for the 6 Oct repeat):
 
@@ -99,10 +99,10 @@ The product is 504 monthly maps for 1985 to 2026 on the 5-min grid, committed in
 | MODIS month (2002-07 to 2011-12, 2025-01 to 2025-09, plus 2022-12) | 123 | nFLH polygon | model prediction inside, zero outside |
 | Hull month with a converged model | 114 | buffered hulls | model prediction inside, zero outside |
 | Hull month whose fit failed | 3 | buffered hulls | all zero |
-| Hull month not modelled: 33 with one to five positives, 76 with none | 109 | hull or none | all zero |
+| Hull month not modeled: 33 with one to five positives, 76 with none | 109 | hull or none | all zero |
 | Total | 504 | | |
 
-(MODIS months: 93 converged, 1 not converged, 1 failed, 28 not modelled. VIIRS months: 119 converged, 2 not converged, 1 failed, 33 not modelled; the 89 all-zero VIIRS months cut across these.) Fit status over the whole range: 334 months with at least six positives were fitted; by the code's criterion 326 converged, 3 did not and 5 failed; by sdmTMB's `sanity()` 229 are sound (§5.3). In-sample relative RMSE of the fitted months has median 2.29 (quartiles 1.31 and 3.50), so the monthly surfaces reproduce the sampled values only roughly; this is expected for an intercept-only spatial model fitted to a few dozen event-driven samples and is not by itself a defect.
+(MODIS months: 93 converged, 1 not converged, 1 failed, 28 not modeled. VIIRS months: 119 converged, 2 not converged, 1 failed, 33 not modeled; the 89 all-zero VIIRS months cut across these.) Fit status over the whole range: 334 months with at least six positives were fitted; by the code's criterion 326 converged, 3 did not and 5 failed; by sdmTMB's `sanity()` 229 are sound (§5.3). In-sample relative RMSE of the fitted months has median 2.29 (quartiles 1.31 and 3.50), so the monthly surfaces reproduce the sampled values only roughly; this is expected for an intercept-only spatial model fitted to a few dozen event-driven samples and is not by itself a defect.
 
 **QC the code performs.** The hull diagnostics flag months whose largest footprint spans more than 300 km; on the 30 Sept run 10 of the 226 hull-served months were flagged (1990-09, 1996-04, 1996-06, 1997-11, 1999-09, 2000-09, 2000-10, 2001-10, 2001-12, 2002-01) and the run log names them. Fit warnings are captured to a file. Nothing else is checked.
 
@@ -118,11 +118,11 @@ The product is 504 monthly maps for 1985 to 2026 on the 5-min grid, committed in
 
 ## 7. Discussion
 
-**Intended use.** The maps are a driver for a monthly ecosystem model, not an estimate of bloom extent or biomass in their own right. Read a cell value as "the concentration a sample would likely have shown here, if this cell was inside the month's bloom footprint", and a zero as "outside the footprint or not modelled". The model's responses are logistic in cells/L with inflection points from 12,500 to 400,000 cells/L (§2), so what matters most downstream is which cells are non-zero and whether they sit above or below those thresholds.
+**Intended use.** The maps are a driver for a monthly ecosystem model, not an estimate of bloom extent or biomass in their own right. Read a cell value as "the concentration a sample would likely have shown here, if this cell was inside the month's bloom footprint", and a zero as "outside the footprint or not modeled". The model's responses are logistic in cells/L with inflection points from 12,500 to 400,000 cells/L (§2), so what matters most downstream is which cells are non-zero and whether they sit above or below those thresholds.
 
 **Caveats, ranked by how much they could move a downstream result** (each has a Doc C row):
 
-1. **Satellite non-detection overrides sampled blooms (M1).** 58 modelled months in 2012-2024 are written as zero because the VIIRS layer has no positive cell; several are documented blooms with hundreds of positive samples (early 2017, June 2021). For those months Ecospace sees no red tide at all.
+1. **Satellite non-detection overrides sampled blooms (M1).** 58 modeled months in 2012-2024 are written as zero because the VIIRS layer has no positive cell; several are documented blooms with hundreds of positive samples (early 2017, June 2021). For those months Ecospace sees no red tide at all.
 2. **Months with one to five positives are zero maps (M2).** 87 such months since 1985. Most are quiet months, but the rule is a literal in the code and is not documented.
 3. **Fits that fail sdmTMB's sanity checks are used (M4).** 100 of 329 fits; concentrated in months with few positives, which are also the months where a single sample can dominate the surface.
 4. **"Positive" includes background counts (M3, carried over from issue #3).** A sample of 1,000 cells/L or less defines a footprint and enters the lognormal fit alongside 10⁶ cells/L samples.
@@ -152,9 +152,9 @@ The product is 504 monthly maps for 1985 to 2026 on the 5-min grid, committed in
 
 | Term in the code | Meaning | Units |
 |---|---|---|
-| `cells`, `COUNT_` | *K. brevis* cell concentration from an FWC water sample | cells per litre |
+| `cells`, `COUNT_` | *K. brevis* cell concentration from an FWC water sample | cells per liter |
 | `fit_sdmTMBlog` | lognormal sdmTMB model on positive samples for one (year, month) | |
-| `pred_array` | predicted concentration at each grid cell, per model, month and year | cells per litre |
+| `pred_array` | predicted concentration at each grid cell, per model, month and year | cells per liter |
 | `pol_list` | per-month buffered footprint polygons from positive samples | EPSG:4326 |
 | `flh.polys` | per-month MODIS nFLH bloom polygons | |
 | `clipping_source.csv` | which footprint each month used (`viirs`, `modis`, `pred` = hull) | |

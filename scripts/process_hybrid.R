@@ -33,7 +33,7 @@
 #' (10,227 km2): 84 in the VIIRS mask, 132 within 5 km, 80 in both;
 #' `"mask5adj"` has 189 cells (14,205 km2): 177 touch land, 53 of them by
 #' that criterion only. The rule is written out in
-#' docs/issue15_adjacent-land-hybrid/nearshore-set-method.md.
+#' docs/issue5_nearshore-hybrid-summary/subissues/issue15_adjacent-land-hybrid/nearshore-set-method.md.
 #'
 #' @param file_viirs Path (without extension) to the VIIRS stack written
 #'   by fn.viirs_tifs2stack().

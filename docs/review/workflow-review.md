@@ -52,7 +52,7 @@ Every setting lives in one list, `cfg`, at the top of the driver [`run_redtide_m
 | Key | Default | Purpose | When to change it |
 |---|---|---|---|
 | `res` | `5L` | Grid resolution in arc-minutes; templates exist for 5 and 15 | Only for the 15-min Ecospace variant |
-| `styr`, `enyr` | `1985`, current year | First and last year modelled; every month in the range gets an ASCII file | Never for the production driver; note that `enyr` moves every January (Doc C R8) |
+| `styr`, `enyr` | `1985`, current year | First and last year modeled; every month in the range gets an ASCII file | Never for the production driver; note that `enyr` moves every January (Doc C R8) |
 | `repo_dir` | detected | Repository root (the folder holding `RedTideMaps.Rproj`) | Never |
 | `proj_dir` | `repo_dir` | Where `cell_counts/`, `VIIRS/`, `MODIS/` and `out/` live | If you keep the data and outputs outside the clone; then copy `VIIRS/` and `MODIS/` there too, or the cascade silently loses them (Doc C P1) |
 | `bathy_dir` | `<repo>/template rasters` | Folder with the depth and exclusion templates | Rarely |
@@ -62,7 +62,7 @@ Every setting lives in one list, `cfg`, at the top of the driver [`run_redtide_m
 | `fwc_force_full` | `FALSE` | Ignore the local FWC cache and pull all six layers again (about 3 min) | After FWC corrects old records |
 | `incremental_fit` | `TRUE` | Reuse cached monthly fits; delete `OM_month/<yyyymm>/` to force a refit | Set `FALSE` after an sdmTMB upgrade |
 | `fit_nb` | `FALSE` | Also fit the negative-binomial model (not used downstream) | Diagnostics only |
-| `export_ecospace` | `FALSE` | Copy the ASCII drop to `<ecospace_root>/<res>min/red tide/sdmTMB/`, which must already exist | Production runs on the modeller's machine |
+| `export_ecospace` | `FALSE` | Copy the ASCII drop to `<ecospace_root>/<res>min/red tide/sdmTMB/`, which must already exist | Production runs on the modeler's machine |
 | `hull_link_km` | `75` | Single-linkage cut: positives further apart than this, with no chain of closer positives, get separate footprints | 50 km is the sensitivity case from issue #3 |
 | `hull_buffer_km` | `10` | Buffer around each footprint | |
 | `hull_min_pts` | `4L` | Distinct locations a cluster needs for a concave hull; fewer get buffered points | |
@@ -95,7 +95,7 @@ Every input the pipeline reads, in the order it reads them. "Vintage" is how to 
 
 ### 3.1 FWC HAB cell counts (pulled on every run)
 
-**What it is.** The Florida Fish and Wildlife Conservation Commission's harmful-algal-bloom monitoring records: one row per water sample with date, position, depth and the *Karenia brevis* concentration in cells per litre (`COUNT_`). The state serves them as six ArcGIS REST map layers (1980-1989, 1990-1999, 2000-2006, 2007-2014, 2015-2023, 2024-present), listed one per line in `data/FWC HAB API query urls.txt`. Public.
+**What it is.** The Florida Fish and Wildlife Conservation Commission's harmful-algal-bloom monitoring records: one row per water sample with date, position, depth and the *Karenia brevis* concentration in cells per liter (`COUNT_`). The state serves them as six ArcGIS REST map layers (1980-1989, 1990-1999, 2000-2006, 2007-2014, 2015-2023, 2024-present), listed one per line in `data/FWC HAB API query urls.txt`. Public.
 
 **How it is obtained.** Automatically. On a first run (or with `fwc_force_full = TRUE`) all six layers are paged through, 2,000 records per request, and merged [`scripts/get_HAB_data.R:30-80,133-141`]. On every later run the newest merged CSV in `cell_counts/` is read, its last `SAMPLE_DATE` taken, and only the layer whose URL contains `Recent_` is queried for records on or after that date; the new rows are appended, the table is de-duplicated on (HAB_ID, OBJECTID, SAMPLE_DATE, LATITUDE, LONGITUDE), keeping the first occurrence, and written back under a new name carrying the full date range. The previous CSV and Rdata are deleted [`:118-131,146-169`].
 
@@ -123,7 +123,7 @@ Every input the pipeline reads, in the order it reads them. "Vintage" is how to 
 
 ### 3.3 MODIS nFLH bloom polygons (tracked)
 
-**What it is.** Per-month polygons of where MODIS Aqua normalised fluorescence line height (nFLH) was at or above 0.02 mW cm⁻² µm⁻¹ sr⁻¹, the bloom threshold from Hu et al. 2005 as updated by personal communication [`scripts/process_MODIS.R:11-13`]. One R object, `flh.polys`, a named list of `SpatialPolygonsDataFrame` objects in WGS84.
+**What it is.** Per-month polygons of where MODIS Aqua normalized fluorescence line height (nFLH) was at or above 0.02 mW cm⁻² µm⁻¹ sr⁻¹, the bloom threshold from Hu et al. 2005 as updated by personal communication [`scripts/process_MODIS.R:11-13`]. One R object, `flh.polys`, a named list of `SpatialPolygonsDataFrame` objects in WGS84.
 
 **How it is obtained.** Ships as `MODIS/FLH polys 200207-20250926.Rdata` (3 MB). It can be rebuilt: `update_modis = TRUE` downloads the raw monthly nFLH stack from NOAA CoastWatch ERDDAP (needs network and the five optional packages; the raw stack is gitignored, so the first update pulls everything since 2002), and `rebuild_nflh = TRUE` thresholds it into polygons [`scripts/process_MODIS.R:37-168,222-270`]. Not exercised in this audit.
 
@@ -183,27 +183,27 @@ RedTideMaps/                     (or proj_dir, for the four data folders)
 
 ### 4.1 Stage 1: ingest
 
-Inputs: the endpoint list and any existing merged CSV. Steps: page each endpoint (full) or the Recent endpoint from the last cached date (incremental); convert the epoch-millisecond `SAMPLE_DATE` to a Date; fill missing columns with NA; append, de-duplicate, sort by date and OBJECTID; write CSV and Rdata named by the date range; delete the previous pair [`scripts/get_HAB_data.R:30-80,101-175`]. Units: cells per litre as served. Invariant: none checked; the only report is the record count and date range printed. Failure: HTTP status other than 200, or an `error` element in the JSON, stops the run; an endpoint returning zero records is accepted silently.
+Inputs: the endpoint list and any existing merged CSV. Steps: page each endpoint (full) or the Recent endpoint from the last cached date (incremental); convert the epoch-millisecond `SAMPLE_DATE` to a Date; fill missing columns with NA; append, de-duplicate, sort by date and OBJECTID; write CSV and Rdata named by the date range; delete the previous pair [`scripts/get_HAB_data.R:30-80,101-175`]. Units: cells per liter as served. Invariant: none checked; the only report is the record count and date range printed. Failure: HTTP status other than 200, or an `error` element in the JSON, stops the run; an endpoint returning zero records is accepted silently.
 
 ### 4.2 Stage 2: spatial filter
 
-Inputs: the Rdata (`hab.out`) and the depth template. Steps: lower-case the names; derive year and month; keep latitude, longitude, year, month, cells; drop rows without coordinates; make an `sf` point layer in the template's coordinate system (WGS84); drop points inside the Atlantic box (82°W-80.5°W, 28.5°N-31°N); crop to the template's bounding box; append the coordinates as `lon`, `lat`; save as `filtered_points_df` [`:225-300`]. Land points are kept on purpose (`:259`). Output: `out/5min/sdm/<cache name>_filtered.Rdata`. Invariant: 0 NA counts, 0 negative counts on the 30 Sept data (Doc C §3). Failure: an unrecognised file-name prefix stops the run; nothing else is checked. Two QA figures are written to `plots/`.
+Inputs: the Rdata (`hab.out`) and the depth template. Steps: lower-case the names; derive year and month; keep latitude, longitude, year, month, cells; drop rows without coordinates; make an `sf` point layer in the template's coordinate system (WGS84); drop points inside the Atlantic box (82°W-80.5°W, 28.5°N-31°N); crop to the template's bounding box; append the coordinates as `lon`, `lat`; save as `filtered_points_df` [`:225-300`]. Land points are kept on purpose (`:259`). Output: `out/5min/sdm/<cache name>_filtered.Rdata`. Invariant: 0 NA counts, 0 negative counts on the 30 Sept data (Doc C §3). Failure: an unrecognized file-name prefix stops the run; nothing else is checked. Two QA figures are written to `plots/`.
 
 ### 4.3 Stage 3: monthly fits
 
-Inputs: the filtered points and the prediction grid (cell centres of the depth template). Steps per (year, month): count positive samples (`cells > 0`); if six or more, and no cached fit exists for the month (incremental mode), fit the lognormal spatial model to the positive samples (`cells != 0`) and save it under `OM_month/<yyyymm>/`; otherwise skip. Then, for every month in the range, load the fit if any, predict to the grid, compute in-sample diagnostics, and fill a 4-D array (cell × {lon, lat, log model, NB model} × month × year) [`scripts/sdmTMB_HAB_data.R:61-290`]. Months without a model get zeros (by the route described in Doc C B3). Outputs: `pred_SDMs_RT.RData`, `RT_fit_matrix.RData`, `pred_obs_RT.RData`, `fit_warnings.csv` (only when warnings occurred; Doc C R4), five diagnostic PNGs. Invariant: none checked. Failure: a fit that errors twice is recorded as "no model" and becomes a zero map, with a console message only (Doc C B6); warnings are captured to the CSV and muffled.
+Inputs: the filtered points and the prediction grid (cell centers of the depth template). Steps per (year, month): count positive samples (`cells > 0`); if six or more, and no cached fit exists for the month (incremental mode), fit the lognormal spatial model to the positive samples (`cells != 0`) and save it under `OM_month/<yyyymm>/`; otherwise skip. Then, for every month in the range, load the fit if any, predict to the grid, compute in-sample diagnostics, and fill a 4-D array (cell × {lon, lat, log model, NB model} × month × year) [`scripts/sdmTMB_HAB_data.R:61-290`]. Months without a model get zeros (by the route described in Doc C B3). Outputs: `pred_SDMs_RT.RData`, `RT_fit_matrix.RData`, `pred_obs_RT.RData`, `fit_warnings.csv` (only when warnings occurred; Doc C R4), five diagnostic PNGs. Invariant: none checked. Failure: a fit that errors twice is recorded as "no model" and becomes a zero map, with a console message only (Doc C B6); warnings are captured to the CSV and muffled.
 
 ### 4.4 Stage 4: predict to grid
 
-Inputs: `pred_SDMs_RT.RData` and the depth template. Steps per month: take the month's slice, drop incomplete rows, make it a gridded `sp` object, rasterise each model column onto a raster built from the template's extent and resolution (so the grid is the template's), name the layer `X<yyyymm>`, stack [`:343-401`]. Output: `sdm/sdmTMB_log_stack_<first>-<last>.grd` (504 layers); the NB stack only if it holds any prediction. Invariant: the stack's extent and cell size equal the template's (verified: the ASCII headers match the template's `NCOLS`, `NROWS`, corners and `CELLSIZE`). Failure: a month with fewer than two distinct coordinates is written as all NA with a message.
+Inputs: `pred_SDMs_RT.RData` and the depth template. Steps per month: take the month's slice, drop incomplete rows, make it a gridded `sp` object, rasterize each model column onto a raster built from the template's extent and resolution (so the grid is the template's), name the layer `X<yyyymm>`, stack [`:343-401`]. Output: `sdm/sdmTMB_log_stack_<first>-<last>.grd` (504 layers); the NB stack only if it holds any prediction. Invariant: the stack's extent and cell size equal the template's (verified: the ASCII headers match the template's `NCOLS`, `NROWS`, corners and `CELLSIZE`). Failure: a month with fewer than two distinct coordinates is written as all NA with a message.
 
 ### 4.5 Stage 5: footprints and clipping
 
-**5a Hulls.** For each (year, month) with any sample: project the positives to UTM 17N (metres); single-linkage cluster them at `hull_link_km`; per cluster, a concave hull if at least `hull_min_pts` distinct locations, else the points; buffer by `hull_buffer_km`; record area, span and a flag; reproject to WGS84 as one MULTIPOLYGON layer per month [`scripts/polygon_clipping_rt.R:59-150`]. Outputs: `sdm/<cache name>_hullpolys.Rdata`, `sdm/hull_diagnostics.csv`. Then mask each month of the prediction stack with its polygons (cells whose centre falls inside keep their value, others become 0, land stays NA); months with no polygon become all zero [`:172-207`]. Output: `clipped/*_clipped_hull.grd`.
+**5a Hulls.** For each (year, month) with any sample: project the positives to UTM 17N (meters); single-linkage cluster them at `hull_link_km`; per cluster, a concave hull if at least `hull_min_pts` distinct locations, else the points; buffer by `hull_buffer_km`; record area, span and a flag; reproject to WGS84 as one MULTIPOLYGON layer per month [`scripts/polygon_clipping_rt.R:59-150`]. Outputs: `sdm/<cache name>_hullpolys.Rdata`, `sdm/hull_diagnostics.csv`. Then mask each month of the prediction stack with its polygons (cells whose center falls inside keep their value, others become 0, land stays NA); months with no polygon become all zero [`:172-207`]. Output: `clipped/*_clipped_hull.grd`.
 
-**5b VIIRS.** Stack the tifs with the forced extent; for each prediction month that has a VIIRS layer: if the layer has no positive cell, write an all-zero month; else polygonise the positive cells, mask the prediction with the polygon through `terra`, set outside to 0 and land to NA [`scripts/process_VIIRS.R:19-46,97-149`]. Output: `clipped/*_clipped_viirs.grd` (155 layers).
+**5b VIIRS.** Stack the tifs with the forced extent; for each prediction month that has a VIIRS layer: if the layer has no positive cell, write an all-zero month; else polygonize the positive cells, mask the prediction with the polygon through `terra`, set outside to 0 and land to NA [`scripts/process_VIIRS.R:19-46,97-149`]. Output: `clipped/*_clipped_viirs.grd` (155 layers).
 
-**5c MODIS.** For each prediction month in `flh.polys`: rasterise the polygons on the prediction raster, mask, outside 0, land NA [`scripts/process_MODIS.R:175-213`]. Output: `clipped/*_clipped_modis.grd` (275 layers).
+**5c MODIS.** For each prediction month in `flh.polys`: rasterize the polygons on the prediction raster, mask, outside 0, land NA [`scripts/process_MODIS.R:175-213`]. Output: `clipped/*_clipped_modis.grd` (275 layers).
 
 Invariants: every clipped layer has the template's grid (same raster object); a footprint of one buffered point (314 km²) always covers at least one 5-min cell (about 76 km²), so no month with a positive sample is lost to the raster rule (Doc C §3). Failure: a missing VIIRS folder stops the run here; missing MODIS polygons are skipped with a log line.
 
@@ -221,9 +221,9 @@ Copies every `.asc` from `ecospace_ascii/` into `<ecospace_root>/<res>min/red ti
 
 **Question it answers.** Given the positive samples of one calendar month, what concentration (cells/L) would a sample taken at each grid cell show?
 
-**Inputs.** The month's positive samples (`cells != 0`), their longitude and latitude in degrees; the cell centres of the template as prediction points. Nothing else: no depth, no covariates, no other months.
+**Inputs.** The month's positive samples (`cells != 0`), their longitude and latitude in degrees; the cell centers of the template as prediction points. Nothing else: no depth, no covariates, no other months.
 
-**Specification.** `sdmTMB(cells ~ 1, family = lognormal(), spatial = "on", spatiotemporal = "off", mesh = make_mesh(..., cutoff = 0.1))` [`scripts/sdmTMB_HAB_data.R:154-159`]. In words: log concentration = a month-wide mean + a smooth spatial surface (a Gaussian Markov random field on a triangular mesh whose vertices are at least 0.1° apart, Matérn covariance) + lognormal noise. The spatial range (distance at which cells are effectively independent) and the field and noise standard deviations are estimated per month. sdmTMB's lognormal family uses the Prentice (1974) mean parameterisation, so the response-scale prediction is the mean concentration, not the median.
+**Specification.** `sdmTMB(cells ~ 1, family = lognormal(), spatial = "on", spatiotemporal = "off", mesh = make_mesh(..., cutoff = 0.1))` [`scripts/sdmTMB_HAB_data.R:154-159`]. In words: log concentration = a month-wide mean + a smooth spatial surface (a Gaussian Markov random field on a triangular mesh whose vertices are at least 0.1° apart, Matérn covariance) + lognormal noise. The spatial range (distance at which cells are effectively independent) and the field and noise standard deviations are estimated per month. sdmTMB's lognormal family uses the Prentice (1974) mean parameterization, so the response-scale prediction is the mean concentration, not the median.
 
 **Assumptions (not stated in the code).** Concentration given presence is lognormal around a stationary, isotropic spatial surface; samples are independent given the surface; where samples were taken carries no information beyond their values (FWC sampling is event-driven, so during blooms this is doubtful); nothing is shared across months or years; six positives are enough to estimate three variance parameters and a field.
 
@@ -231,11 +231,11 @@ Copies every `.asc` from `ecospace_ascii/` into `<ecospace_root>/<res>min/red ti
 
 **Diagnostics saved.** Per fit: in-sample RRMSE (RMSE divided by the mean observation), MAE, AIC, a mis-specified AICc (Doc C B7), the negative log-likelihood, and "convergence" = nlminb return code 0 [`:243-262`]; all fit warnings to `fit_warnings.csv`. What the code does not run is sdmTMB's `sanity()`. Run on the 334 cached fits on 6 Oct: 326 have return code 0, 229 pass `sanity()`; the pass rate is 33% for months with ten or fewer positives and 97% above 100 (Doc C M4). In-sample RRMSE median 2.29.
 
-**Failure and fallback.** A fit that errors twice yields no model and a zero map for the month; nothing summarises this in the run log (Doc C B6). A fit that converges by the code's criterion but fails `sanity()` is used as if sound.
+**Failure and fallback.** A fit that errors twice yields no model and a zero map for the month; nothing summarizes this in the run log (Doc C B6). A fit that converges by the code's criterion but fails `sanity()` is used as if sound.
 
 **Where the parameters live.** The positive threshold (> 5), the mesh cutoff (0.1) and the family are literals in the function, not in `cfg`.
 
-**How the result feeds the next stage.** Predictions at cell centres become the monthly layer of the prediction stack (§4.4); the clipping cascade then decides which cells keep them.
+**How the result feeds the next stage.** Predictions at cell centers become the monthly layer of the prediction stack (§4.4); the clipping cascade then decides which cells keep them.
 
 ### 5.2 The footprint estimators
 
@@ -266,7 +266,7 @@ The preference VIIRS > MODIS > hull is a fixed rule, not an estimate. The final 
 
 ## 7. Outputs
 
-**The deliverable.** `out/<res>min/ecospace_ascii/sdmTMB_log__<yyyymm>.asc`, one ESRI ASCII grid per month from January of `styr` to December of `enyr` (504 files for 1985-2026). Grid: the template's (5 min: 66 × 78, corner 87.5°W 25°N, cell 1/12°). Units: cells per litre, as float32 values (e.g. `96024.078125`). Zero means "no bloom here this month" (outside the footprint, or no model). No-data (land) is written as `-3.4e+38`, not the template's `-9999` (Doc C R6); the no-data cells are exactly the template's 1,310 land cells. Consumer: the WFS Ecospace model, as the red-tide spatial-temporal driver, copied there by stage 8 or by hand.
+**The deliverable.** `out/<res>min/ecospace_ascii/sdmTMB_log__<yyyymm>.asc`, one ESRI ASCII grid per month from January of `styr` to December of `enyr` (504 files for 1985-2026). Grid: the template's (5 min: 66 × 78, corner 87.5°W 25°N, cell 1/12°). Units: cells per liter, as float32 values (e.g. `96024.078125`). Zero means "no bloom here this month" (outside the footprint, or no model). No-data (land) is written as `-3.4e+38`, not the template's `-9999` (Doc C R6); the no-data cells are exactly the template's 1,310 land cells. Consumer: the WFS Ecospace model, as the red-tide spatial-temporal driver, copied there by stage 8 or by hand.
 
 **Also tracked.** `out/<res>min/plots/`: two sample-coverage PNGs, the unclipped monthly map PDF, the combined monthly map PDF, and (5 min only) `hull_check_issue3.pdf` from the issue #3 QA script.
 
@@ -376,7 +376,7 @@ The three changed plots were left in the working tree for the reviewer to discar
 | `sdm/` (348 files) | 348 | 0, 2 added | the `-20260922` `_filtered` and `_hullpolys` Rdata beside the `-20260917` pair (R5) |
 | `clipped/clipping_source.csv` | 1 | 0 | |
 
-So the committed 5-min deliverables are reproduced exactly by a fresh run of the same commit on new FWC data that contained nothing new for any modelled month. The copy of run2's outputs is the working tree itself (unchanged except the plots); the fingerprints are `md5_5min_before.csv` and `md5_5min_after_run2.csv` in the audit folder.
+So the committed 5-min deliverables are reproduced exactly by a fresh run of the same commit on new FWC data that contained nothing new for any modeled month. The copy of run2's outputs is the working tree itself (unchanged except the plots); the fingerprints are `md5_5min_before.csv` and `md5_5min_after_run2.csv` in the audit folder.
 
 ### 9.2 Same-inputs repeat
 
@@ -416,7 +416,7 @@ See §2.2.
 | `scripts/_setup.R` | `rt_check_packages`, `rt_paths`, `rt_init_dirs`, `rt_log` | package check; output tree; create folders; timestamped log | driver |
 | `scripts/get_HAB_data.R` | `.fwc_fetch_endpoint`, `%\|\|%`, `fn.get_fwc_data`, `fn.filter_hab_data`, `fn.plot_hab_data` | page an endpoint; null-coalesce; pull and merge; spatial filter; QA plots | `fn.get_fwc_data`; `.fwc_fetch_endpoint`; driver; driver; driver |
 | | `fn.get_habsos_data` | download the NCEI HABSOS archive | nobody |
-| `scripts/sdmTMB_HAB_data.R` | `fn.make_input_grid`, `compute_area_km2`, `fn.fit_monthly_sdmTMB`, `.has_existing_fit`, `catch_warns`, `.plot_fit_diagnostics`, `fn.predict_monthly_sdmTMB`, `fn.plot_sdmTMB` | grid; cell area (unused product); fits; cache test; warning capture; diagnostic PNGs; rasterise; PDF | driver; `fn.make_input_grid`; driver; fit; fit; fit; driver; driver |
+| `scripts/sdmTMB_HAB_data.R` | `fn.make_input_grid`, `compute_area_km2`, `fn.fit_monthly_sdmTMB`, `.has_existing_fit`, `catch_warns`, `.plot_fit_diagnostics`, `fn.predict_monthly_sdmTMB`, `fn.plot_sdmTMB` | grid; cell area (unused product); fits; cache test; warning capture; diagnostic PNGs; rasterize; PDF | driver; `fn.make_input_grid`; driver; fit; fit; fit; driver; driver |
 | `scripts/polygon_clipping_rt.R` | `fn.buffered_hulls`, `fn.clip_2_hulls`, `make_redtide_ascii`, `fn.plot_redtide_stack`, `export_to_ecospace` | footprints; hull mask; combine and write; PDF; copy out | driver |
 | `scripts/process_VIIRS.R` | `fn.viirs_tifs2stack`, `fn.clip_2_viirs` | stack tifs; VIIRS mask | driver |
 | | `fn.get_viirs_obs` | VIIRS value at each sample | nobody |
@@ -447,13 +447,13 @@ R 4.5.1 (2025-06-13 ucrt), x86_64-w64-mingw32, Windows 10 x64 build (Windows 11 
 | Term | Meaning |
 |---|---|
 | ASCII grid (ESRI) | a text raster: six header lines (columns, rows, corner, cell size, no-data value) then one number per cell |
-| cells/L | *Karenia brevis* cells per litre of seawater; FWC's scale: background ≤ 1,000; very low to 10,000; low to 100,000; medium to 1,000,000; high above |
+| cells/L | *Karenia brevis* cells per liter of seawater; FWC's scale: background ≤ 1,000; very low to 10,000; low to 100,000; medium to 1,000,000; high above |
 | footprint | the set of cells treated as "bloom present" for a month; everything outside is set to zero |
 | hull (concave) | a polygon hugging a set of points more tightly than the convex hull; `concaveman` concavity 2 |
 | incremental pull | fetching only records dated on or after the last one already cached |
 | lognormal | a distribution whose logarithm is normal; here the noise around the spatial surface |
 | mesh, SPDE | the triangulation on which sdmTMB approximates the spatial random field; `cutoff` is the minimum vertex spacing |
-| nFLH | normalised fluorescence line height, a MODIS chlorophyll-fluorescence index used to detect blooms |
+| nFLH | normalized fluorescence line height, a MODIS chlorophyll-fluorescence index used to detect blooms |
 | no-data | the value standing for "not a water cell" (land); -9999 in the templates, -3.4e+38 in the deliverables |
 | sanity() | sdmTMB's set of post-fit checks (Hessian positive definite, finite standard errors, variance parameters not at bounds, range plausible) |
 | single linkage | clustering in which two points join a cluster when any chain of points connects them with every step shorter than the cut distance |
