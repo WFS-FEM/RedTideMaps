@@ -1,0 +1,2 @@
+"id","name","units","encoding","file_pattern","summary_file","total_column","fill","precision","description"
+"redtide","Karenia brevis cell concentration, delivered map","cells/L","long_sparse","values/redtide/<yyyy>.csv","summary/redtide.csv","exposure",0,"15 significant digits, 17 where 15 do not round-trip","sdmTMB prediction clipped by the VIIRS / MODIS / hull cascade with the nearshore hybrid, rule mask5adj"
