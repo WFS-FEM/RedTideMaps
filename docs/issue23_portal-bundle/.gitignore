@@ -3,3 +3,5 @@
 hoard/
 # Drafts of the comments posted to #23
 issue23-*-comment.md
+# Rendered copies of the markdown (the markdown is the source)
+*.html

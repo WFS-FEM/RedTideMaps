@@ -8,7 +8,7 @@ This document is the plan file of the planning session as approved: first the ex
 
 # Issue #23: Red Tide Maps portal (R Shiny) — plan
 
-Status: FINAL for approval (4 Nov 2026). Decisions D1-D4 fixed with Holden (3 Nov); design
+Status: approved 4 Nov 2026 (the planning session's final draft). Decisions D1-D4 fixed with Holden (3 Nov); design
 decisions D5-D14 from the design workflow (three independent designs, three judges, a synthesis,
 three critics, a revision; every repo claim verified) and my review; Holden's answers D15-D18
 (3 Nov). This plan is the executable summary. The full revised design document (schema, stage,
@@ -71,7 +71,7 @@ Plotting code
 - 12-months-per-page PDF layout exists in fn.plot_redtide_stack (pipeline) and the #18 script.
 
 Automation and repo
-- No scheduler, workflow, or deploy script anywhere. Runs are manual; VIIRS tifs are added by
+- No scheduler, workflow, or deploy script anywhere as of now, but planned for the future. Runs are manual; VIIRS tifs are added by
   hand (stack ends 2024-12); MODIS polygons end 2025-09; deliverables committed by hand. A
   monthly rerun takes about 9 min. fn.plot_sdmTMB and fn.plot_redtide_stack rewrite the tracked
   plots PDFs (date lines) on every run, so the tree is never clean at the end of a run.
@@ -79,12 +79,20 @@ Automation and repo
   core.autocrlf = true; no .gitattributes; R writes CRLF here, git stores LF.
 - Local refs stale: remote main is 4fee1c9 and already contains branch 5-subissue-folders
   (PR #21 merged 28 Oct) plus three README edits. #23 starts from git fetch --prune + ff main.
-- Conventions: one docs folder per issue (docs/issueNN_slug/ with README, plan, check script,
-  tables/, figures/, comments/, per-folder .gitignore for hoard/ and comment drafts); branch
-  NN-slug; draft PR; small commits split by type (docs:, feat:, config:, test:, qa:, data:);
-  Holden merges with a merge commit; pauses with evidence before commits. American English;
-  k/M wording for cell counts; the Atlantic box (lon > -82, lat > 28.5) excluded from every
-  spatial set.
+
+Conventions: 
+- one docs folder per issue (docs/issueNN_slug/ with README, plan, check script,
+  tables/, figures/, comments/, per-folder .gitignore for hoard/ and comment drafts) branch
+  NN-slug; 
+- draft PR; small commits split by type (docs:, feat:, config:, test:, qa:, data:);
+- Holden merges with a merge commit; pauses with evidence before commits. 
+- American English; metric units
+- k/M wording for cell counts, i.e, 'k' = 1,000 and 'M' = 1,000,000
+- This project focuses on the West Florida Shelf in the Gulf of Mexico; 
+  water cells in the the Atlantic box (lon > -82, lat > 28.5) should always excluded from every spatial set; 
+- explain Git, data science, and coding processes with minimal jargon
+- Fully and carefully document code, workflow, and decisions
+- Inherited code tested for '3-way reproducibility': (1) runs here (Holden's machine), (2) should run on an external user, (3) changes made so that the code would run on the orignal author's machine
 
 Environment (R 4.5.1 ucrt; Rscript at C:/Program Files/R/R-4.5.1/bin/x64/Rscript.exe, not on PATH)
 - Installed: shiny 1.12.0, bslib 0.9.0, htmltools, jsonlite, testthat 3.3.1, rsconnect, httpuv,
@@ -577,7 +585,7 @@ enyr change with its own check), "Part 2 exports" (PNG/JPG/TIFF single month or 
 export size; 12-months-per-page PDF with par(mfrow = c(4, 3)); GIF from the cached main PNGs
 via gifski or magick; the zip package for ranges), "Part 3 data portal" (time range and
 bounding box inputs; CSV long export, ESRI ASCII export in base R, GeoTIFF via terra inside a
-download handler only; the atlantic flag to exclude the box on request), "15-arcmin product"
+download handler only; always exclude the Atlantic box), "15-arcmin product"
 (one cfg$res <- 15L run), "Ecospace bundles" (volume: plain git vs LFS vs release assets; month
 range, units, precision, layer count). Not built in Part 1: download handlers, map clicks,
 dense encodings, a layer selector, leaflet, a client-side month controller, auth, renv.
