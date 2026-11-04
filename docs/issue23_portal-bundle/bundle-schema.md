@@ -6,7 +6,7 @@ Schema version 1.0, 4 November 2026. This document specifies the folder `out/<re
 
 The bundle is a data-only, text-only description of one map product on one grid: the monthly maps the pipeline delivers to Ecospace (`out/<res>min/ecospace_ascii/`), with a per-month summary, the FWC samples the maps were built from, the grid they sit on, the display facts of the product (palette recipe, band definition, units) and the provenance of the run. It holds no image and no binary file. A bundle is one grid plus one or more layers; the red tide bundle has one layer, `redtide`. Its identity is `bundle_id = <product>_<res>min`, `redtide_5min` for the 5-arcmin product; the resolution is encoded by the parent folder (`out/5min/`) and repeated in `meta.json`, and no file name inside the bundle carries the identity, so the folder is copied as a unit.
 
-The values the bundle carries are the cells/L of each monthly ASCII file, reproduced text for text (section 3.5). Everything else is derived from the run that wrote the maps.
+The values the bundle carries are the cells/L of each monthly ASCII file on the cells of the data domain, reproduced text for text (section 3.5); the Atlantic-side box carries no data (section 3.6). Everything else is derived from the run that wrote the maps.
 
 ## 2. Layout
 
@@ -58,7 +58,7 @@ The bundle values are identical to the text of the ASCII files, parsed as double
 
 The grid is the depth template of the pipeline (`template rasters/depth 5min 66x78.asc` at 5 arcmin): 78 columns by 66 rows of 1/12 degree, extent -87.5 to -81 E and 25 to 30.5 N, WGS 84 longitude and latitude (EPSG:4326). Cells are numbered row-major from the northwest corner, `cell = (row - 1) * ncols + col`, the numbering of the `raster` package and the token order of the ASCII files. The cell size is exactly 1/12 degree: `dx = (xmax - xmin) / ncols` and `dy = (ymax - ymin) / nrows` from `meta.grid.extent` in double arithmetic. The `cellsize` string of the ASCII header, repeated in `meta.grid.cellsize`, is a 15-digit rounding of that value and must not be used for cell arithmetic. Cell centers are `xmin + (col - 0.5) * dx` and `ymax - (row - 0.5) * dy`. Land is the set of template cells with no depth (1,310 at 5 arcmin; NODATA in every ASCII file); water is the rest (3,838).
 
-The Atlantic-side box (cell center longitude greater than -82 and latitude greater than 28.5) is excluded from every spatial set the pipeline builds (the nearshore set, the sample filter), but not from the maps: the MODIS nFLH polygons are not confined to the Gulf domain, so a MODIS-served month can carry positive cells on the Atlantic coast (94 of the 504 months do at 5 arcmin), while the VIIRS-served and hull-served months are zero there. The summary metrics count every water cell, those included, as the pipeline's own tables do; `grid.csv$atlantic` flags the box so a consumer can leave it out.
+The Atlantic-side box (cell center longitude greater than -82 and latitude greater than 28.5; 56 water cells at 5 arcmin) is excluded from everything the project computes: the pipeline keeps it out of the nearshore set and the sample filter, and the bundle treats it as land for every value and metric. The data domain is the water outside the box (`grid.csv$domain`; 3,782 cells at 5 arcmin): the values files list domain cells only, a reader rebuilds the box as missing, and exposure, the bands, the thresholds, the maximum and the cells changed run over the domain. The box cells keep `water = TRUE` and `atlantic = TRUE`, so a viewer can draw them as water without values. The delivered maps themselves still carry values there today (the MODIS nFLH polygons are not confined to the Gulf, so 94 of the 504 months hold positive cells on the Atlantic coast, about 1% of the record's exposure), which is why the bundle's metrics are smaller than a count over all water cells in those months; the pipeline's own tables counted all water cells until this schema, and zeroing the box in the delivered maps is a planned pipeline change.
 
 The ASCII files write their NODATA value, -3.4e+38, and a reader that parses the text must treat any value below -1e30 as missing: the first token of every file is printed in full, a 39-digit integer part followed by a decimal point and 15 zeros (56 characters with the sign), rather than in scientific notation.
 
@@ -72,7 +72,7 @@ One object, written by `jsonlite::toJSON(auto_unbox = TRUE, pretty = TRUE, digit
 |---|---|
 | `schema_version` | `"1.0"` |
 | `bundle_id`, `product`, `product_name`, `res_arcmin` | `"redtide_5min"`, `"redtide"`, `"Red Tide Maps"`, `5` |
-| `grid` | `ncols`, `nrows`, `xllcorner`, `yllcorner`, `cellsize` (as the ASCII header prints them), `nodata`, `crs` (`"EPSG:4326"`), `extent`, `n_cells`, `n_water`, `cell_order` (the sentence of section 3.6), `template` (the template file, repository-relative), `atlantic_box` (`{"lon_gt": -82, "lat_gt": 28.5}`) |
+| `grid` | `ncols`, `nrows`, `xllcorner`, `yllcorner`, `cellsize` (as the ASCII header prints them), `nodata`, `crs` (`"EPSG:4326"`), `extent`, `n_cells`, `n_water`, `n_domain` (the cells that carry data), `domain_rule` (one sentence), `cell_order` (the sentence of section 3.6), `template` (the template file, repository-relative; its base name when the template lives outside the repository), `atlantic_box` (`{"lon_gt": -82, "lat_gt": 28.5}`) |
 | `months` | `first`, `last`, `n`, `last_data` (the last month with an FWC sample), `n_placeholder` (the months after it) |
 | `samples` | `file_pattern`, `source`, `file` (the filtered samples file the run used), `date_from`, `date_to` (the sample date range parsed from that file's name; `null` when the name carries no `yyyymmdd-yyyymmdd` range), `n_rows_filtered` (the rows of the filtered file, all years and missing counts included), `n_rows_bundle` (the rows written to `samples/`), `last_month` (equals `months.last_data`), `coordinate_note`; `null` when a bundle carries no samples |
 | `nearshore` | `rule`, `n_cells`, `km2` (rounded to a whole km2); `null` when both nearshore rules of the run are `"none"` |
@@ -89,7 +89,8 @@ Example (the 5-arcmin bundle; `<...>` marks values that change with the run):
   "bundle_id": "redtide_5min", "product": "redtide", "product_name": "Red Tide Maps", "res_arcmin": 5,
   "grid": {"ncols": 78, "nrows": 66, "xllcorner": -87.5, "yllcorner": 25, "cellsize": 0.0833333333333333,
            "nodata": -3.4e+38, "crs": "EPSG:4326", "extent": [-87.5, -81, 25, 30.5],
-           "n_cells": 5148, "n_water": 3838,
+           "n_cells": 5148, "n_water": 3838, "n_domain": 3782,
+           "domain_rule": "the cells that carry data: water cells outside the Atlantic-side box, which is treated as land",
            "cell_order": "row-major from the northwest corner: cell = (row - 1) * ncols + col, the raster package numbering and the ASCII token order",
            "template": "template rasters/depth 5min 66x78.asc",
            "atlantic_box": {"lon_gt": -82, "lat_gt": 28.5}},
@@ -151,7 +152,7 @@ Example:
 
 ### 4.3 `grid.csv`
 
-One row per template cell, in cell order. Required columns (what every bundle on this schema carries): `cell, row, col, lon, lat, water, km2`. Optional columns, present in the red tide bundle: `depth_m, nearshore, atlantic`.
+One row per template cell, in cell order. Required columns (what every bundle on this schema carries): `cell, row, col, lon, lat, water, domain, km2`. Optional columns, present in the red tide bundle: `depth_m, nearshore, atlantic`.
 
 | column | type | definition |
 |---|---|---|
@@ -159,10 +160,11 @@ One row per template cell, in cell order. Required columns (what every bundle on
 | `row`, `col` | integer | 1-based; row 1 is the northernmost |
 | `lon`, `lat` | double | the cell center, `xmin + (col - 0.5) * dx` and `ymax - (row - 0.5) * dy` (section 3.6), full precision, so a point-in-cell lookup round-trips |
 | `water` | logical | `TRUE` where the template has a depth, `FALSE` on land |
+| `domain` | logical | `TRUE` for the cells that carry data: water outside the Atlantic-side box (3,782 at 5 arcmin); `FALSE` on land and in the box |
 | `km2` | double | the cell area (`raster::area()` of the template; 73.7 to 77.5 km2 at 5 arcmin) |
 | `depth_m` | double | the template depth; `NA` on land |
 | `nearshore` | logical | `TRUE` for the cells of the run's nearshore set, `FALSE` on other water, `NA` on land; absent when both nearshore rules are `"none"` |
-| `atlantic` | logical | `TRUE` where the cell center lies in the Atlantic-side box (section 3.6); the maps may be positive there in MODIS-served months |
+| `atlantic` | logical | `TRUE` where the cell center lies in the Atlantic-side box (section 3.6): water drawn without data |
 
 ### 4.4 `months.csv`
 
@@ -174,11 +176,11 @@ One row per layer: `id`, `name`, `units`, `encoding`, `file_pattern`, `summary_f
 
 ### 4.6 `values/<layer>/<yyyy>.csv`
 
-Columns `yrmo, cell, value`, unquoted: `yrmo` character (section 3.2); `cell` integer, a water cell of `grid.csv` (`water` is `TRUE`), unique within a month; `value` double, finite and strictly positive, usually fractional, printed per section 3.2. One row per water cell with a value above zero in each month of that year, sorted by `yrmo` then `cell`. Cells not listed are 0 on water and missing on land, the normalization the pipeline applies to every map it writes. There is one file per calendar year of the month range, from the year of `first` to the year of `last`; a year without a positive cell still has its file, with the header line only. To rebuild a month: a vector of `n_cells` zeros, `NA` where `grid.csv$water` is `FALSE`, then the listed values at their cells.
+Columns `yrmo, cell, value`, unquoted: `yrmo` character (section 3.2); `cell` integer, a domain cell of `grid.csv` (`domain` is `TRUE`), unique within a month; `value` double, finite and strictly positive, usually fractional, printed per section 3.2. One row per domain cell with a value above zero in each month of that year, sorted by `yrmo` then `cell`. Cells not listed are 0 on the domain and missing elsewhere (land and the Atlantic-side box). There is one file per calendar year of the month range, from the year of `first` to the year of `last`; a year without a positive cell still has its file, with the header line only. To rebuild a month: a vector of `n_cells` zeros, `NA` where `grid.csv$domain` is `FALSE`, then the listed values at their cells.
 
 ### 4.7 `summary/<layer>.csv`
 
-One row per month, ascending. The map metrics are computed on the water cells of the delivered map; the bands are right-closed on the positive cells (section 5.1); the exposure is the sum of cells/L over the water cells (section 5.2). The sample-derived columns (`n_samples` through `in_ge10k`) are optional in the schema: a bundle without samples omits them, and a reader treats an absent optional column as all `NA`. Every column derived from an optional input of the writer (`n_changed`, `hull_span_km`, `hull_flagged`, `fit_status`, `converged`, `viirs_status`) is `NA` throughout when that input was not supplied.
+One row per month, ascending. The map metrics are computed on the domain cells of the delivered map (section 3.6); the bands are right-closed on the positive cells (section 5.1); the exposure is the sum of cells/L over the domain cells (section 5.2). The sample-derived columns (`n_samples` through `in_ge10k`) are optional in the schema: a bundle without samples omits them, and a reader treats an absent optional column as all `NA`. Every column derived from an optional input of the writer (`n_changed`, `hull_span_km`, `hull_flagged`, `fit_status`, `converged`, `viirs_status`) is `NA` throughout when that input was not supplied.
 
 | column | type | definition |
 |---|---|---|
@@ -192,17 +194,17 @@ One row per month, ascending. The map metrics are computed on the water cells of
 | `converged` | logical | the convergence flag of the lognormal fit; `NA` when no model was fit |
 | `viirs_status` | character | `positive` (a VIIRS layer with detections), `zero` (a VIIRS layer with none), `missing` (inside the VIIRS era but the tif is missing), `no_coverage` (outside the VIIRS era) |
 | `n_samples` | integer | the filtered FWC samples of the month with a non-missing count, zero counts included |
-| `n_samples_water` | integer | those on a water cell of the template |
+| `n_samples_water` | integer | those on a domain cell (water outside the Atlantic-side box; the pipeline keeps no sample in the box, so this is every sample on a water cell) |
 | `n_samples_pos` | integer | those with a count above zero |
 | `s_le1k`, `s_1k_10k`, `s_10k_100k`, `s_100k_1M`, `s_gt1M` | integer | the positive samples by band; they sum to `n_samples_pos` |
 | `samples_ge10k` | integer | the water samples at or above 10k cells/L |
 | `in_ge10k` | integer | how many of them sit in a cell where the map is above zero |
-| `exposure` | double | the sum of cells/L over the water cells, unrounded |
-| `n_pos` | integer | the water cells above zero |
+| `exposure` | double | the sum of cells/L over the domain cells, unrounded |
+| `n_pos` | integer | the domain cells above zero |
 | `n_le1k`, `n_1k_10k`, `n_10k_100k`, `n_100k_1M`, `n_gt1M` | integer | the positive cells by band; they sum to `n_pos` |
 | `n_ge10k`, `km2_ge10k` | integer, double | the cells at or above 10k cells/L and their area |
 | `n_ge100k`, `n_ge1M` | integer | the cells at or above 100k and at or above 1M cells/L |
-| `max_cells`, `max_cell` | double, integer | the maximum value over the water cells and its cell (the first on ties); `max_cells` is 0 and `max_cell` is `NA` when the month is all zero |
+| `max_cells`, `max_cell` | double, integer | the maximum value over the domain cells and its cell (the first on ties); `max_cells` is 0 and `max_cell` is `NA` when the month is all zero |
 
 ### 4.8 `samples/fwc_<yyyy>.csv`
 
@@ -228,7 +230,7 @@ The five classes of the FWC monitoring reports, right-closed on the positive val
 
 ### 5.2 Exposure
 
-The sum of cells/L over the water cells of a month, with no area weighting: the exposure of a map as Ecospace reads it, and what every map panel of the pipeline's comparison figures prints first. Every water cell counts, the Atlantic-side box included.
+The sum of cells/L over the domain cells of a month, with no area weighting: the exposure of a map as Ecospace reads it over the Gulf, and what every map panel of the pipeline's comparison figures prints first (those figures counted all water cells, the Atlantic-side box included; the bundle leaves the box out, section 3.6).
 
 ### 5.3 Placeholder months
 
@@ -236,7 +238,7 @@ The pipeline models and writes every month of the current year, so the months af
 
 ### 5.4 `hybrid_changed` and `n_changed`
 
-`hybrid_changed` is the pipeline's own flag, written when the maps are combined: an exact comparison, in memory, of the delivered layer with the satellite-clipped layer it was built on. `n_changed` is the writer's count of the same difference from the bundle's own values: for a `hybrid` month, the water cells where the delivered map differs from the VIIRS-clipped layer; for a `hybrid_modis` month, from the MODIS-clipped layer; both layers normalized as the pipeline writes them (missing to 0 on water). A cell counts as changed when `abs(M - S) > 1e-9 * max(abs(S), 1)`, a relative tolerance that ignores the float32 representation of the pipeline's stacks (section 3.5). The two agree in every month of the current bundle (`hybrid_changed` is `TRUE` exactly where `n_changed > 0`, 210 months), and the pipeline's check script asserts the agreement.
+`hybrid_changed` is the pipeline's own flag, written when the maps are combined: an exact comparison, in memory, of the delivered layer with the satellite-clipped layer it was built on. `n_changed` is the writer's count of the same difference from the bundle's own values: for a `hybrid` month, the domain cells where the delivered map differs from the VIIRS-clipped layer; for a `hybrid_modis` month, from the MODIS-clipped layer; both layers normalized as the pipeline writes them (missing to 0 on the domain). The nearshore set lies inside the domain, so leaving the box out changes no count. A cell counts as changed when `abs(M - S) > 1e-9 * max(abs(S), 1)`, a relative tolerance that ignores the float32 representation of the pipeline's stacks (section 3.5). The two agree in every month of the current bundle (`hybrid_changed` is `TRUE` exactly where `n_changed > 0`, 210 months), and the pipeline's check script asserts the agreement.
 
 ### 5.5 `hull_span_km` and `hull_flagged`
 
@@ -258,7 +260,7 @@ The pipeline flags a month whose largest hull footprint spans more than `cfg$hul
 
 Optional in schema 1.0: `samples/` (absent, with `meta.samples` `null` and the sample-derived summary columns omitted, in a bundle without point samples); `grid.csv$depth_m`, `nearshore`, `atlantic`; `meta.nearshore` (`null` when the run used no nearshore rule); and, for a layer that is not red tide, every `summary` column beyond the generic set of the next paragraph. A reader treats an absent optional column as all `NA`; a present optional column may hold `NA` where its definition says so.
 
-A bundle for another product on the same grid (an Ecospace run, with one layer per species or fleet) uses the same files: the same `grid.csv`, its own `months.csv`, one `layers.csv` row per layer with its `units` and `total_column`, `values/<layer_id>/<yyyy>.csv`, `summary/<layer_id>.csv` with at least `yrmo, year, month, total, mean, n_pos, max_value, max_cell` (the generic set; `total_column` names the total, `total`), no `samples/`, and a `style.json` with its palette recipe and `"bands": null`. The red tide summary names its total `exposure` and its maximum `max_cells`, as the pipeline's own tables do.
+A bundle for another product on the same grid (an Ecospace run, with one layer per species or fleet) uses the same files: the same `grid.csv` (the same domain: the box carries no data in any product), its own `months.csv`, one `layers.csv` row per layer with its `units` and `total_column`, `values/<layer_id>/<yyyy>.csv`, `summary/<layer_id>.csv` with at least `yrmo, year, month, total, mean, n_pos, max_value, max_cell` (the generic set; `total_column` names the total, `total`), no `samples/`, and a `style.json` with its palette recipe and `"bands": null`. The red tide summary names its total `exposure` and its maximum `max_cells`, as the pipeline's own tables do.
 
 Reserved, named here and specified by a later minor version when a product needs them: a dense encoding for layers positive almost everywhere; per-layer style overrides in `style.json`; a `viridis` palette type.
 
@@ -273,7 +275,7 @@ summ   <- read.csv(file.path(dir, "summary", "redtide.csv"), colClasses = c(yrmo
 vals   <- do.call(rbind, lapply(list.files(file.path(dir, "values", "redtide"), full.names = TRUE),
                  read.csv, colClasses = c("character", "integer", "numeric")))
 M <- matrix(0, nrow(grid), nrow(months), dimnames = list(NULL, months$yrmo))
-M[!grid$water, ] <- NA
+M[!grid$domain, ] <- NA   # land and the Atlantic-side box carry no data
 M[cbind(vals$cell, match(vals$yrmo, months$yrmo))] <- vals$value
 # M[, "201809"] is the September 2018 map in cell order.
 z <- matrix(M[, "201809"], nrow = meta$grid$ncols)[, meta$grid$nrows:1]

@@ -180,6 +180,19 @@ Answered by Holden (3 Nov 2026)
   manifest dry run (rsconnect::writeManifest()) so the folder is known to be deployable.
   Return to D1 when a host is chosen.
 
+Decisions after the first commits (Holden, 4 Nov 2026, checkpoint A/B)
+- D19 The Atlantic-side box (water cells with center east of -82 E and north of 28.5 N; 56 cells
+  at 5 arcmin) carries NO data in the bundle: it is treated as land for every value and metric
+  (the values files omit its cells, a reader rebuilds them as missing, exposure, bands, thresholds,
+  maximum and the cells changed run over the Gulf domain = water and not Atlantic). The grid keeps
+  water = TRUE and atlantic = TRUE for those cells and gains a required domain flag, so a viewer can
+  draw the box as water without values. The delivered maps today carry positive cells there in 94
+  MODIS-served months (about 1% of the record's exposure); the check script reconciles the bundle
+  with the #18 tables by adding the box's contribution computed from the maps on disk.
+- D20 Zeroing the box in the delivered Ecospace maps (make_redtide_ascii and the ST drivers export)
+  is a SEPARATE issue opened after #23, with its own check script, verification run and data:
+  commit. #23 proceeds on the maps as they are.
+
 Still open, none blocking Part 1
 - Track the PNG cache in WFS-Portal or keep it gitignored: decided with the host (D1). An
   upload-style deploy carries the gitignored cache; a git-backed deploy needs a prerender on the
@@ -577,7 +590,7 @@ P7. docs:/config: both presets exercised, README, scripts/update.R skeleton; rsc
 The pipeline is not unattended today: VIIRS tifs arrive by hand (stack ends 2024-12), MODIS
 polygons refresh only with update_modis = TRUE, the two data: commits and the deploy are manual.
 Part 1 changes none of that; the bundle stage and scripts/update.R make the chain scriptable.
-Parked (opened after Part 1, not in #23): "Schedule the monthly run" (Task Scheduler on
+Parked (opened after Part 1, not in #23): "Zero the Atlantic-side box in the delivered maps" (D20: make_redtide_ascii and the ST drivers export; own check, verification run and data: commit), "Schedule the monthly run" (Task Scheduler on
 Holden's machine vs a GitHub Action running the cold pipeline, about 20 min; which steps stay
 manual), "Stop writing future placeholder months to the Ecospace deliverables" (D16: the ASCII
 drop and the ST drivers export end at the last month with samples; a make_redtide_ascii /
