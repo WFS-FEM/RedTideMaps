@@ -1,0 +1,5 @@
+# Local copies of the pipeline outputs the check stages read (the trial bundle of step 2,
+# the rerun of stage rerun); never tracked.
+hoard/
+# Drafts of the comments posted to #23
+issue23-*-comment.md
