@@ -130,6 +130,7 @@ rt_paths <- function(res,
     combined    = file.path(out_root, "combined"),
     ecospace    = file.path(out_root, "ecospace_ascii"),
     plots_out   = file.path(out_root, "plots"),
+    bundle      = file.path(out_root, "bundle"),   # the data bundle for WFS-Portal (step 9; docs/issue23_portal-bundle/bundle-schema.md)
     log_file    = file.path(out_root,
                             paste0("run_", format(Sys.Date(), "%Y%m%d"), ".log")),
 
