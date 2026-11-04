@@ -1,0 +1,101 @@
+{
+  "schema_version": "1.0",
+  "bundle_id": "redtide_5min",
+  "product": "redtide",
+  "product_name": "Red Tide Maps",
+  "res_arcmin": 5,
+  "grid": {
+    "ncols": 78,
+    "nrows": 66,
+    "xllcorner": -87.5,
+    "yllcorner": 25,
+    "cellsize": 0.0833333333333333,
+    "nodata": -3.4e+38,
+    "crs": "EPSG:4326",
+    "extent": [-87.5, -81, 25, 30.5],
+    "n_cells": 5148,
+    "n_water": 3838,
+    "n_domain": 3782,
+    "domain_rule": "the cells that carry data: water cells outside the Atlantic-side box, which is treated as land",
+    "cell_order": "row-major from the northwest corner: cell = (row - 1) * ncols + col, the raster package numbering and the ASCII token order",
+    "template": "template rasters/depth 5min 66x78.asc",
+    "atlantic_box": {
+      "lon_gt": -82,
+      "lat_gt": 28.5
+    }
+  },
+  "months": {
+    "first": "198501",
+    "last": "202612",
+    "n": 504,
+    "last_data": "202610",
+    "n_placeholder": 2
+  },
+  "samples": {
+    "file_pattern": "samples/fwc_<yyyy>.csv",
+    "source": "FWC GIS Open Data, Harmful Algal Bloom (HAB) Events layers (ArcGIS REST services)",
+    "file": "FWC HAB data 19800102-20261021_filtered.Rdata",
+    "date_from": "1980-01-02",
+    "date_to": "2026-10-21",
+    "n_rows_filtered": 183402,
+    "n_rows_bundle": 181411,
+    "last_month": "202610",
+    "coordinate_note": "exact doubles of the pipeline (6-decimal source values, about half stored one ulp off, printed with 17 digits where needed); cell is computed from them"
+  },
+  "nearshore": {
+    "rule": "mask5adj",
+    "n_cells": 189,
+    "km2": 14205
+  },
+  "clipping": {
+    "hybrid": 155,
+    "viirs": 0,
+    "hybrid_modis": 123,
+    "modis": 0,
+    "pred": 226,
+    "hybrid_changed": 210,
+    "hull_flagged": 10
+  },
+  "source": {
+    "repo": "https://github.com/WFS-FEM/RedTideMaps",
+    "branch": "23-portal-bundle",
+    "ascii_dir": "out/5min/ecospace_ascii",
+    "ascii_commit": "543bc8ef17aee7f70cd5b9e4dc5f12a7ba1c9610",
+    "ascii_dirty": false,
+    "ascii_md5": "2a2d8e68d311fe3dc2a0a3f29b1c26d6",
+    "head_commit": "ead431e05eda6c37acdb1a9f2912c1954ccab6bf",
+    "schema_url": "https://github.com/WFS-FEM/RedTideMaps/blob/ead431e05eda6c37acdb1a9f2912c1954ccab6bf/docs/issue23_portal-bundle/bundle-schema.md"
+  },
+  "build": {
+    "built_at": "2026-11-04T20:47:13Z",
+    "r_version": "4.5.1",
+    "raster_version": "3.6-32",
+    "writer": "scripts/write_bundle.R",
+    "run_log": "run_20261104.log",
+    "mode": "pipeline",
+    "toggles": {
+      "update_modis": false,
+      "rebuild_nflh": false,
+      "fwc_refresh": false,
+      "fwc_force_full": false,
+      "incremental_fit": true,
+      "fit_nb": false,
+      "export_ecospace": true,
+      "write_bundle": true
+    }
+  },
+  "cfg": {
+    "res": 5,
+    "styr": 1985,
+    "enyr": 2026,
+    "hull_link_km": 75,
+    "hull_buffer_km": 10,
+    "hull_min_pts": 4,
+    "hull_concavity": 2,
+    "hull_warn_span_km": 300,
+    "viirs_nearshore": "mask5adj",
+    "modis_nearshore": "mask5adj",
+    "use_viirs": true,
+    "use_modis": true
+  }
+}

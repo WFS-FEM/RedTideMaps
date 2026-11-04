@@ -11,7 +11,7 @@
 # tracked code; config.local.example.R shows what goes in it.
 config.local.R
 
-# Generated outputs — track the deliverables (ecospace_ascii/, plots/)
+# Generated outputs — track the deliverables (ecospace_ascii/, plots/, bundle/)
 # but not the heavy intermediates (sdm/, clipped/, combined/, run logs).
 out/**
 !out/*/
@@ -19,6 +19,8 @@ out/**
 !out/*/ecospace_ascii/**
 !out/*/plots/
 !out/*/plots/**
+!out/*/bundle/
+!out/*/bundle/**
 
 # FWC API cache — pulled on demand by fn.get_fwc_data
 cell_counts/
