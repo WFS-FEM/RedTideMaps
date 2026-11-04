@@ -64,3 +64,9 @@
 # rerun sees exactly the samples of the previous run (for reproducing a run;
 # a first run still pulls everything).
 # cfg$fwc_refresh <- FALSE
+
+
+# The data bundle for WFS-Portal (step 9; docs/issue23_portal-bundle/bundle-schema.md) is
+# written to out/<res>min/bundle/ on every run and tracked with the ASCII files it describes.
+# Skip it on an experimental run whose maps will not be committed.
+# cfg$write_bundle <- FALSE

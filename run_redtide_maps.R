@@ -14,6 +14,8 @@
 #'      -> combined stack.
 #'   7. Write per-month ASCII for Ecospace under out/<res>min/ecospace_ascii/.
 #'   8. Optionally export ASCII files to the external Ecospace ST drivers.
+#'   9. Write the data-only bundle for WFS-Portal under out/<res>min/bundle/ (tracked;
+#'      docs/issue23_portal-bundle/bundle-schema.md; issue #23).
 #'
 #' How to run:
 #'   - From the repo root: `Rscript run_redtide_maps.R`, or open
@@ -92,7 +94,8 @@ cfg <- list(
   fwc_force_full   = FALSE,   # set TRUE to rebuild the FWC merged CSV from scratch
   incremental_fit  = TRUE,    # skip months already fit (delete OM_month/<yyyymm>/ to force refit)
   fit_nb           = FALSE,   # set TRUE to also fit the NB2 model (only the log model is used downstream)
-  export_ecospace  = FALSE   # set TRUE (in config.local.R) to copy the ASCII drop to ecospace_root
+  export_ecospace  = FALSE,  # set TRUE (in config.local.R) to copy the ASCII drop to ecospace_root
+  write_bundle     = TRUE     # step 9: the data-only bundle for WFS-Portal, out/<res>min/bundle/ (tracked; docs/issue23_portal-bundle/bundle-schema.md)
 )
 
 # Local overrides (gitignored); see config.local.example.R
@@ -115,6 +118,14 @@ if (cfg$viirs_nearshore != "none" && cfg$modis_nearshore != "none" &&
     cfg$viirs_nearshore != cfg$modis_nearshore)
   stop("cfg$viirs_nearshore and cfg$modis_nearshore must name the same set when both are on (got \"",
        cfg$viirs_nearshore, "\" and \"", cfg$modis_nearshore, "\").", call. = FALSE)
+
+# A run without the VIIRS stack applies no nearshore rule (the set is read from that stack), so
+# the configuration records the rule that was applied, "none": the data bundle (step 9) writes
+# cfg$viirs_nearshore into its metadata.
+if (!isTRUE(cfg$use_viirs) && cfg$viirs_nearshore != "none") {
+  message("use_viirs is FALSE: cfg$viirs_nearshore set to none (no nearshore set without the VIIRS stack).")
+  cfg$viirs_nearshore <- "none"
+}
 
 # Check the export destination now rather than after a 20-minute run. It
 # must already exist: creating it would hide a mistyped root.
@@ -144,6 +155,7 @@ source(file.path(cfg$repo_dir, "scripts", "process_VIIRS.R"))
 source(file.path(cfg$repo_dir, "scripts", "process_MODIS.R"))
 source(file.path(cfg$repo_dir, "scripts", "process_hybrid.R"))
 source(file.path(cfg$repo_dir, "scripts", "polygon_clipping_rt.R"))
+source(file.path(cfg$repo_dir, "scripts", "write_bundle.R"))
 
 paths <- rt_paths(res          = cfg$res,
                   proj_dir     = cfg$proj_dir,
@@ -257,7 +269,7 @@ if (cfg$use_modis) {
 # hull footprint is added to the satellite-clipped layer (cell-wise
 # maximum); outside it the satellite result stands, zeros included. Both
 # keys default to "mask5adj" since #18. The set is built once, from the VIIRS stack.
-clip_hybrid <- NULL; clip_hybrid_modis <- NULL
+clip_hybrid <- NULL; clip_hybrid_modis <- NULL; nearshore <- NULL
 if (cfg$use_viirs && (cfg$viirs_nearshore != "none" || cfg$modis_nearshore != "none")) {
   rule <- if (cfg$viirs_nearshore != "none") cfg$viirs_nearshore else cfg$modis_nearshore
   nearshore <- fn.nearshore_mask(file_viirs = viirs$file,
@@ -343,5 +355,41 @@ if (isTRUE(cfg$export_ecospace)) {
   export_to_ecospace(dir_ascii     = paths$ecospace,
                      ecospace_root = cfg$ecospace_root,
                      res           = paths$res)
+}
+
+# 9) Data bundle for WFS-Portal -------------------------------------------
+# A tracked, data-only, text-only description of the delivered maps under
+# out/<res>min/bundle/ (docs/issue23_portal-bundle/bundle-schema.md; issue #23):
+# the values of every ASCII file, a per-month summary, the FWC samples, the
+# grid and the provenance of this run. The stage reads the ASCII files written
+# in step 7 plus the run's own outputs, writes to bundle_tmp/ and swaps the
+# folder into place, so a failure leaves the previous bundle untouched. Commit
+# the bundle with the ASCII files it describes.
+if (isTRUE(cfg$write_bundle)) {
+  rt_log(paths, "Step 9: write the data bundle for WFS-Portal (out/<res>min/bundle/)")
+  bundle <- fn.write_bundle(
+    dir_ascii       = paths$ecospace,
+    file_depth      = paths$file_depth,
+    file_clipsrc    = file.path(paths$clipped_out, "clipping_source.csv"),
+    file_filtered   = hab$file,
+    dir_out         = paths$bundle,
+    cfg = cfg, res = paths$res, repo_dir = cfg$repo_dir,
+    file_schema     = file.path(cfg$repo_dir, "docs", "issue23_portal-bundle", "bundle-schema.md"),
+    file_mask       = if (!is.null(nearshore)) nearshore$file else NULL,
+    file_unclip     = pred_paths$file_log,
+    file_fitmat     = fit_files$fit_matrix,
+    file_viirs_raw  = if (isTRUE(cfg$use_viirs)) viirs$file else NULL,
+    file_viirs_clip = if (!is.null(clip_viirs)) clip_viirs$file else NULL,
+    file_modis_clip = if (!is.null(clip_modis)) clip_modis$file else NULL,
+    file_hulldiag   = file.path(paths$sdm_out, "hull_diagnostics.csv"),
+    file_combined   = combined_path,
+    file_log        = paths$log_file,
+    mode            = "pipeline")
+  rt_log(paths, sprintf("Bundle %s: %d months (%d placeholders, %d with positives) on %d domain cells, %d samples to %s, %d files, %.1f MB, ASCII commit %s%s, %.0f s",
+                        bundle$bundle_id, bundle$n_months, bundle$n_placeholder, bundle$n_months_pos, bundle$n_domain,
+                        bundle$n_samples, bundle$samples_to, bundle$n_files, bundle$bytes / 1e6,
+                        substr(bundle$ascii_commit, 1, 7),
+                        if (isTRUE(bundle$ascii_dirty)) " (ASCII modified, not yet committed)" else "",
+                        bundle$seconds))
 }
 rt_log(paths, "Run complete.")
