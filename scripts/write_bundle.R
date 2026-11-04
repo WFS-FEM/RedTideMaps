@@ -198,20 +198,22 @@ fn.band_counts <- function(v, breaks = c(0, 1e3, 1e4, 1e5, 1e6, Inf)) {
   c(length(v), tabulate(k, nbins = length(breaks) - 1))
 }
 
-#' The map metrics of a cell x month matrix (schema 4.7): pure, reused by the check script.
-fn.layer_summary <- function(M, water, km2, breaks = c(0, 1e3, 1e4, 1e5, 1e6, Inf)) {
-  Mw <- M[water, , drop = FALSE]
+#' The map metrics of a cell x month matrix over the data domain (schema 4.7): pure, reused by the
+#' check script. `domain` is the logical vector of the cells that carry data (water outside the
+#' Atlantic-side box for the red tide bundle).
+fn.layer_summary <- function(M, domain, km2, breaks = c(0, 1e3, 1e4, 1e5, 1e6, Inf)) {
+  Mw <- M[domain, , drop = FALSE]
   bands <- t(apply(Mw, 2, fn.band_counts, breaks = breaks))
   ge <- function(thr) !is.na(Mw) & Mw >= thr
   mx <- apply(Mw, 2, max, na.rm = TRUE)
   wmx <- apply(Mw, 2, which.max)
-  max_cell <- ifelse(mx > 0, which(water)[wmx], NA_integer_)
+  max_cell <- ifelse(mx > 0, which(domain)[wmx], NA_integer_)
   data.frame(exposure  = colSums(Mw, na.rm = TRUE),
              n_pos     = as.integer(bands[, 1]),
              n_le1k    = as.integer(bands[, 2]), n_1k_10k   = as.integer(bands[, 3]),
              n_10k_100k = as.integer(bands[, 4]), n_100k_1M = as.integer(bands[, 5]),
              n_gt1M    = as.integer(bands[, 6]),
-             n_ge10k   = as.integer(colSums(ge(1e4))), km2_ge10k = colSums(ge(1e4) * km2[water]),
+             n_ge10k   = as.integer(colSums(ge(1e4))), km2_ge10k = colSums(ge(1e4) * km2[domain]),
              n_ge100k  = as.integer(colSums(ge(1e5))), n_ge1M = as.integer(colSums(ge(1e6))),
              max_cells = as.numeric(mx), max_cell = as.integer(max_cell),
              row.names = NULL, stringsAsFactors = FALSE)
@@ -313,10 +315,11 @@ fn.write_bundle <- function(dir_ascii, file_depth, file_clipsrc, file_filtered, 
   km2 <- raster::values(raster::area(depth))
   xy  <- raster::xyFromCell(depth, seq_len(n))
   atl <- xy[, 1] > -82 & xy[, 2] > 28.5
+  domain <- water & !atl   # the cells that carry data: the Atlantic-side box is treated as land for every value and metric (D19)
   ext <- as.vector(raster::extent(depth))   # xmin, xmax, ymin, ymax
   grid <- data.frame(cell = seq_len(n),
                      row = as.integer(raster::rowFromCell(depth, seq_len(n))), col = as.integer(raster::colFromCell(depth, seq_len(n))),
-                     lon = xy[, 1], lat = xy[, 2], water = water, km2 = km2,
+                     lon = xy[, 1], lat = xy[, 2], water = water, domain = domain, km2 = km2,
                      depth_m = ifelse(land, NA_real_, dv), stringsAsFactors = FALSE)
   nearshore <- NULL
   if (!is.null(file_mask) && opt(file_mask)) {
@@ -340,10 +343,12 @@ fn.write_bundle <- function(dir_ascii, file_depth, file_clipsrc, file_filtered, 
   if (!identical(months, exp_months)) stop("The ASCII months are not the contiguous months ", exp_months[1], " to ", exp_months[length(exp_months)], call. = FALSE)
   if (!all(is.na(M) == land)) stop("An ASCII file is NA somewhere other than the template land.", call. = FALSE)
   if (!all(is.finite(M[water, ])) || any(M[water, ] < 0)) stop("A water cell is not finite and >= 0.", call. = FALSE)
+  n_box_pos <- sum(M[water & atl, ] > 0, na.rm = TRUE)   # what the delivered maps carry in the box (reported, then dropped)
+  M[!domain, ] <- NA   # the box carries no data in the bundle (D19)
   if (!is.null(file_combined) && opt(file_combined)) {
     Cm <- fn.read_stack_mat(file_combined, depth)
     if (!identical(colnames(Cm), months)) stop("The combined stack has other months than the ASCII files.", call. = FALSE)
-    Cm[is.na(Cm)] <- 0; Cm[land, ] <- NA
+    Cm[is.na(Cm)] <- 0; Cm[!domain, ] <- NA
     for (m in months) if (!isTRUE(all.equal(unname(M[, m]), unname(Cm[, m]))))
       stop("ASCII and combined stack differ beyond tolerance in ", m, call. = FALSE)
     rm(Cm)
@@ -366,7 +371,7 @@ fn.write_bundle <- function(dir_ascii, file_depth, file_clipsrc, file_filtered, 
   # Cells the nearshore rule changed, per sensor: a hybrid month without its clipped stack stays NA;
   # the viirs / modis / pred months are 0 by definition once any clipped stack is at hand.
   n_changed <- rep(NA_integer_, length(months))
-  norm <- function(X) { X[is.na(X)] <- 0; X[land, ] <- NA; X }
+  norm <- function(X) { X[is.na(X)] <- 0; X[!domain, ] <- NA; X }
   has_v <- !is.null(file_viirs_clip) && opt(file_viirs_clip); has_m <- !is.null(file_modis_clip) && opt(file_modis_clip)
   if (has_v || has_m) n_changed[use %in% c("viirs", "modis", "pred")] <- 0L
   if (has_v) { Vc <- norm(fn.read_stack_mat(file_viirs_clip, depth)); mv <- months[use == "hybrid"]
@@ -418,7 +423,7 @@ fn.write_bundle <- function(dir_ascii, file_depth, file_clipsrc, file_filtered, 
   pts$yrmo <- sprintf("%04d%02d", pts$year, pts$month)
   ymf <- factor(pts$yrmo, levels = months)
   cnt <- function(sel) as.integer(table(ymf[sel]))
-  on_water <- !is.na(pts$cell) & pts$water %in% TRUE
+  on_water <- !is.na(pts$cell) & domain[ifelse(is.na(pts$cell), 1L, pts$cell)]   # a domain cell; the pipeline keeps no sample in the box
   pos <- pts$cells > 0
   sb <- cut(pts$cells[pos], c(0, 1e3, 1e4, 1e5, 1e6, Inf), labels = FALSE, include.lowest = TRUE)
   s_band <- t(sapply(1:5, function(b) { sel <- rep(FALSE, nrow(pts)); sel[which(pos)[sb == b]] <- TRUE; cnt(sel) }))
@@ -430,7 +435,7 @@ fn.write_bundle <- function(dir_ascii, file_depth, file_clipsrc, file_filtered, 
   as_date <- function(s) paste0(substr(s, 1, 4), "-", substr(s, 5, 6), "-", substr(s, 7, 8))
 
   # The summary ------------------------------------------------------------------------------
-  ls <- fn.layer_summary(M, water, km2)
+  ls <- fn.layer_summary(M, domain, km2)
   summ <- data.frame(yrmo = months, year = as.integer(substr(months, 1, 4)), month = as.integer(substr(months, 5, 6)),
                      use = use, hybrid_changed = hybrid_changed, n_changed = n_changed,
                      hull_span_km = hull_span_km, hull_flagged = hull_flagged,
@@ -444,8 +449,9 @@ fn.write_bundle <- function(dir_ascii, file_depth, file_clipsrc, file_filtered, 
   if (!all(rowSums(summ[, c("n_le1k", "n_1k_10k", "n_10k_100k", "n_100k_1M", "n_gt1M")]) == summ$n_pos)) stop("Bands do not sum to n_pos.", call. = FALSE)
   if (!all(rowSums(summ[, c("s_le1k", "s_1k_10k", "s_10k_100k", "s_100k_1M", "s_gt1M")]) == summ$n_samples_pos)) stop("Sample bands do not sum to n_samples_pos.", call. = FALSE)
   if (any(summ$hull_flagged %in% TRUE & summ$use != "pred")) stop("hull_flagged TRUE in a satellite month.", call. = FALSE)
-  exact10k <- sum(M[water, ] == 1e4, na.rm = TRUE)
+  exact10k <- sum(M[domain, ] == 1e4, na.rm = TRUE)
   if (exact10k > 0) message("Note: ", exact10k, " cell-month(s) are exactly 10,000 cells/L (band 1k to 10k, counted in n_ge10k).")
+  if (n_box_pos > 0) message("Note: the delivered maps carry ", n_box_pos, " positive cell-month(s) in the Atlantic-side box; the bundle carries no data there (D19).")
 
   # The tables -------------------------------------------------------------------------------
   months_df <- data.frame(yrmo = months, year = summ$year, month = summ$month, index = seq_along(months),
@@ -482,7 +488,8 @@ fn.write_bundle <- function(dir_ascii, file_depth, file_clipsrc, file_filtered, 
     grid = list(ncols = nc, nrows = nr,
                 xllcorner = as.numeric(A$header[["XLLCORNER"]]), yllcorner = as.numeric(A$header[["YLLCORNER"]]),
                 cellsize = as.numeric(A$header[["CELLSIZE"]]), nodata = as.numeric(A$header[["NODATA_VALUE"]]),
-                crs = "EPSG:4326", extent = ext, n_cells = n, n_water = sum(water),
+                crs = "EPSG:4326", extent = ext, n_cells = n, n_water = sum(water), n_domain = sum(domain),
+                domain_rule = "the cells that carry data: water cells outside the Atlantic-side box, which is treated as land",
                 cell_order = "row-major from the northwest corner: cell = (row - 1) * ncols + col, the raster package numbering and the ASCII token order",
                 template = rel_template,
                 atlantic_box = list(lon_gt = -82, lat_gt = 28.5)),
@@ -537,7 +544,7 @@ fn.write_bundle <- function(dir_ascii, file_depth, file_clipsrc, file_filtered, 
   # Read-back: every table identical to what was computed, no CR byte ---------------------------
   rb <- function(file, classes) { d <- utils::read.csv(file, colClasses = classes, stringsAsFactors = FALSE); rownames(d) <- NULL; d }
   same <- function(a, b, what) if (!identical(a, b)) stop("Read-back differs: ", what, call. = FALSE)
-  cls_grid <- c(cell = "integer", row = "integer", col = "integer", lon = "numeric", lat = "numeric", water = "logical", km2 = "numeric", depth_m = "numeric", nearshore = "logical", atlantic = "logical")
+  cls_grid <- c(cell = "integer", row = "integer", col = "integer", lon = "numeric", lat = "numeric", water = "logical", domain = "logical", km2 = "numeric", depth_m = "numeric", nearshore = "logical", atlantic = "logical")
   same(rb(file.path(dir_tmp, "grid.csv"), cls_grid[names(grid)]), grid, "grid.csv")
   same(rb(file.path(dir_tmp, "months.csv"), c(yrmo = "character", year = "integer", month = "integer", index = "integer", label = "character", placeholder = "logical")), months_df, "months.csv")
   same(rb(file.path(dir_tmp, "layers.csv"), c(rep("character", 7), "numeric", "character", "character")), layers_df, "layers.csv")
@@ -553,7 +560,7 @@ fn.write_bundle <- function(dir_ascii, file_depth, file_clipsrc, file_filtered, 
   vb <- do.call(rbind, lapply(years, function(y) rb(file.path(dir_tmp, "values", layer, paste0(y, ".csv")), c(yrmo = "character", cell = "integer", value = "numeric"))))
   rownames(vb) <- NULL
   same(vb, values_df, "values/")
-  Mb <- matrix(0, n, length(months), dimnames = list(NULL, months)); Mb[land, ] <- NA
+  Mb <- matrix(0, n, length(months), dimnames = list(NULL, months)); Mb[!domain, ] <- NA
   Mb[cbind(vb$cell, match(vb$yrmo, months))] <- vb$value
   same(Mb, M, "the values matrix rebuilt from the year files")
   sbk <- do.call(rbind, lapply(years, function(y) rb(file.path(dir_tmp, "samples", paste0("fwc_", y, ".csv")), c(year = "integer", month = "integer", cells = "numeric", lon = "numeric", lat = "numeric", cell = "integer", water = "logical"))))
@@ -578,7 +585,8 @@ fn.write_bundle <- function(dir_ascii, file_depth, file_clipsrc, file_filtered, 
 
   secs <- as.numeric(difftime(Sys.time(), t0, units = "secs"))
   invisible(list(bundle_id = bundle_id, dir = dir_out, n_months = length(months), n_placeholder = sum(placeholder),
-                 n_months_pos = sum(summ$n_pos > 0), n_samples = nrow(pts), samples_to = meta$samples$date_to,
+                 n_months_pos = sum(summ$n_pos > 0), n_domain = sum(domain), n_box_pos = n_box_pos,
+                 n_samples = nrow(pts), samples_to = meta$samples$date_to,
                  n_files = nrow(manifest) + 1L, bytes = sum(manifest$bytes) + file.info(file.path(dir_out, "manifest.csv"))$size,
                  ascii_commit = gs$ascii_commit, ascii_dirty = gs$ascii_dirty, seconds = secs,
                  summary = summ, manifest = manifest))
