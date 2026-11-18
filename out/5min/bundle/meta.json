@@ -58,21 +58,21 @@
   },
   "source": {
     "repo": "https://github.com/WFS-FEM/RedTideMaps",
-    "branch": "23-portal-bundle",
+    "branch": "palette-darkblue-red",
     "ascii_dir": "out/5min/ecospace_ascii",
     "ascii_commit": "543bc8ef17aee7f70cd5b9e4dc5f12a7ba1c9610",
     "ascii_dirty": false,
     "ascii_md5": "2a2d8e68d311fe3dc2a0a3f29b1c26d6",
-    "head_commit": "ead431e05eda6c37acdb1a9f2912c1954ccab6bf",
-    "schema_url": "https://github.com/WFS-FEM/RedTideMaps/blob/ead431e05eda6c37acdb1a9f2912c1954ccab6bf/docs/issue23_portal-bundle/bundle-schema.md"
+    "head_commit": "bbde22833c8d24789db420f36680abb702f6b663",
+    "schema_url": "https://github.com/WFS-FEM/RedTideMaps/blob/bbde22833c8d24789db420f36680abb702f6b663/docs/issue23_portal-bundle/bundle-schema.md"
   },
   "build": {
-    "built_at": "2026-11-04T20:47:13Z",
+    "built_at": "2026-11-18T21:51:38Z",
     "r_version": "4.5.1",
     "raster_version": "3.6-32",
     "writer": "scripts/write_bundle.R",
-    "run_log": "run_20261104.log",
-    "mode": "pipeline",
+    "run_log": null,
+    "mode": "standalone",
     "toggles": {
       "update_modis": false,
       "rebuild_nflh": false,
