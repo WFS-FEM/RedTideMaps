@@ -246,7 +246,7 @@ fn.samples_table <- function(file_filtered, depth, water, styr, enyr) {
 
 #' The style.json content (schema 4.2): the product facts, with the palette expanded to hex.
 fn.bundle_style <- function() {
-  anchors <- c("white", "purple", "blue", "darkblue", "cyan", "green", "darkgreen", "yellow", "orange", "red", "darkred")
+  anchors <- c("white", "darkblue", "blue", "cyan", "green", "darkgreen", "yellow", "orange", "red", "darkred")
   cols <- c(grDevices::colorRampPalette(anchors, bias = 2)(401), "darkred")
   hex <- toupper(grDevices::rgb(t(grDevices::col2rgb(cols)), maxColorValue = 255))
   list(schema_version = "1.0", units = "cells/L",

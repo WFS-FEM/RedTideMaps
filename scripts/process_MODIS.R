@@ -285,7 +285,7 @@ fn.plot_modis <- function(dir_in, file_flhpolys, file_depth, dir_out = dir_in) {
 
   load(file_flhpolys)
 
-  colv <- c("purple","blue","darkblue","cyan","green","darkgreen","yellow","orange","red","darkred")
+  colv <- c("darkblue","blue","cyan","green","darkgreen","yellow","orange","red","darkred")
   funpal <- colorRampPalette(colv, bias = 2)
   brks <- seq(0, .1, .001)
   color <- funpal(length(brks) - 1)
