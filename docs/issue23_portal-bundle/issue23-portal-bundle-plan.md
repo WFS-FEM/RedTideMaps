@@ -112,9 +112,10 @@ Environment (R 4.5.1 ucrt; Rscript at C:/Program Files/R/R-4.5.1/bin/x64/Rscript
 Fixed with Holden (3 Nov 2026)
 - D1 Hosting: undecided until a constraint forces it. Build portable: light dependencies, no
   host-specific code, deployable from the app folder. An institutional server may exist later.
-  Update 19 Nov 2026: decided as a staged plan in docs/hosting/wfs-portal-hosting.md. Start on
-  the Posit Connect Cloud Free plan, built to move; a dedicated host (UF PubApps first choice)
-  only when a move trigger in that file is met.
+  Update 19 Nov 2026: decided as a staged plan, tracked in WFS-Portal issue #10 and its
+  docs/issue10_hosting/ (pointer: docs/hosting/wfs-portal-hosting.md here). Start on the Posit
+  Connect Cloud Free plan, built to move; a dedicated host (UF PubApps first choice) only when
+  a move trigger of that plan is met.
 - D2 Repository: a NEW repo WFS-FEM/WFS-Portal (D2a) that is the future integrated portal;
   red tide is product one. RedTideMaps gains a final pipeline stage that writes a tracked,
   data-only bundle and documents its schema; WFS-Portal holds the app, product-agnostic modules,
@@ -201,7 +202,7 @@ Still open, none blocking Part 1
   upload-style deploy carries the gitignored cache; a git-backed deploy needs a prerender on the
   host or a tracked cache (about 30 MB of binaries rewritten on every restyle).
   Update 19 Nov 2026: build the cache in CI and commit it to a `deploy` branch that the host
-  tracks; never track it on `main` (docs/hosting/wfs-portal-hosting.md, section 3).
+  tracks; never track it on `main` (WFS-Portal issue #10, decision H3 of its plan).
 - Attribution wording (section D) and the funding acknowledgment line: Holden confirms with
   FWC-FWRI and the USF Optical Oceanography Laboratory before any public deploy.
 - Ecospace bundle volume and transport (plain git, Git LFS, or release assets), month range,
