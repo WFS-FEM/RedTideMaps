@@ -403,21 +403,21 @@ fn.predict_monthly_sdmTMB <- function(file_sdmpred, file_depth, dir_sdmout) {
 #' Two PDFs of monthly raster maps (one per model).
 #' @param file_log,file_nb Paths returned by fn.predict_monthly_sdmTMB().
 #' @param dir_plots Directory for PDFs.
-fn.plot_sdmTMB <- function(file_log, file_nb, dir_plots) {
+fn.plot_sdmTMB <- function(file_log, file_nb, dir_plots, palette = c("rainbow", "red")) {
+  palette <- match.arg(palette)
   if (!dir.exists(dir_plots)) dir.create(dir_plots, recursive = TRUE)
 
-  colv <- c("white","darkblue","blue","cyan","green","darkgreen","yellow","orange","red","darkred")
-  funpal <- colorRampPalette(colv, bias = 2)
-  # Upper break Inf so any cell value above 4M still renders darkred
-  # rather than falling outside the break range and rendering white/NA.
-  brks <- c(0, 1e4 - 1, seq(1e4, 4e6, 10000), Inf)
-  color <- c(funpal(length(brks) - 2), "darkred")
+  # The palette of palettes.R (issue #26): the same bins as the combined stack's PDF.
+  pal <- fn.redtide_palette(palette)
+  brks <- pal$breaks
+  color <- pal$colors
+  suffix <- if (palette == "rainbow") "" else paste0("_", palette)
 
   for (info in list(list(file = file_log, lbl = "log"),
                     list(file = file_nb,  lbl = "nb"))) {
     if (is.null(info$file) || !file.exists(paste0(info$file, ".grd"))) next
     stk <- stack(info$file)
-    pdf(file.path(dir_plots, paste0("sdmTMB ", info$lbl, " maps.pdf")), onefile = TRUE)
+    pdf(file.path(dir_plots, paste0("sdmTMB ", info$lbl, " maps", suffix, ".pdf")), onefile = TRUE)
     par(mfrow = c(4, 3), mar = c(1, 1, 2, 0), oma = c(2, 2, 0, 6))
     for (i in seq_len(nlayers(stk))) {
       plot(stk[[i]], main = "", breaks = brks, col = color,

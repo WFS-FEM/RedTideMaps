@@ -3,7 +3,7 @@
 # fn.write_bundle() writes out/<res>min/bundle/, a tracked, data-only, text-only description of
 # the delivered monthly maps: the values of every ASCII file reproduced text for text, a per-month
 # summary, the FWC samples, the grid, the display facts of the product and the provenance of the
-# run. The folder is specified by docs/issue23_portal-bundle/bundle-schema.md (schema 1.0), which
+# run. The folder is specified by docs/issue23_portal-bundle/bundle-schema.md (schema 1.1), which
 # the stage writes into the bundle as SCHEMA.md. Everything is written LF through binary
 # connections; the stage reads every file back and asserts it is identical to what it computed,
 # then swaps the folder into place, so a failure never leaves a half-written bundle.
@@ -244,15 +244,13 @@ fn.samples_table <- function(file_filtered, depth, water, styr, enyr) {
   pts
 }
 
-#' The style.json content (schema 4.2): the product facts, with the palette expanded to hex.
+#' The style.json content (schema 1.1): the product facts, with both palettes expanded to hex
+#' (palettes.R). `palette` is the default (rainbow), as in schema 1.0; `palettes` names both.
 fn.bundle_style <- function() {
-  anchors <- c("white", "darkblue", "blue", "cyan", "green", "darkgreen", "yellow", "orange", "red", "darkred")
-  cols <- c(grDevices::colorRampPalette(anchors, bias = 2)(401), "darkred")
-  hex <- toupper(grDevices::rgb(t(grDevices::col2rgb(cols)), maxColorValue = 255))
-  list(schema_version = "1.0", units = "cells/L",
-       palette = list(type = "ramp", anchors = anchors, bias = 2,
-                      breaks = list(zero = 0, first_colored = 10000, step = 10000, last = 4000000),
-                      above = "darkred", colors_hex = hex),
+  pal_rainbow <- fn.bundle_palette("rainbow")
+  list(schema_version = "1.1", units = "cells/L",
+       palette = pal_rainbow,
+       palettes = list(rainbow = pal_rainbow, red = fn.bundle_palette("red")),
        bands = list(breaks = list(0, 1000, 10000, 100000, 1000000, "Inf"), right_closed = TRUE,
                     columns = c("n_le1k", "n_1k_10k", "n_10k_100k", "n_100k_1M", "n_gt1M"),
                     sample_columns = c("s_le1k", "s_1k_10k", "s_10k_100k", "s_100k_1M", "s_gt1M"),
@@ -271,7 +269,7 @@ fn.bundle_style <- function() {
 
 # The stage ----------------------------------------------------------------------------------
 
-#' Write the data bundle of the delivered maps (schema 1.0).
+#' Write the data bundle of the delivered maps (schema 1.1).
 #'
 #' @param dir_ascii       paths$ecospace: the monthly ASCII files, the source of the values.
 #' @param file_depth      paths$file_depth: the template (land, centers, km2, the grid header).
@@ -299,7 +297,7 @@ fn.write_bundle <- function(dir_ascii, file_depth, file_clipsrc, file_filtered, 
                             file_hulldiag = NULL, file_combined = NULL, file_log = NULL,
                             mode = c("pipeline", "standalone"),
                             product = "redtide", product_name = "Red Tide Maps", layer = "redtide",
-                            schema_version = "1.0") {
+                            schema_version = "1.1") {
   t0 <- Sys.time()
   mode <- match.arg(mode)
   res  <- as.integer(res)

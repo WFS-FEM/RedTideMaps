@@ -150,6 +150,7 @@ cfg$fwc_urls <- file.path(cfg$repo_dir, "data", "FWC HAB API query urls.txt")
 # Setup ------------------------------------------------------------------
 source(file.path(cfg$repo_dir, "scripts", "_setup.R"))
 source(file.path(cfg$repo_dir, "scripts", "get_HAB_data.R"))
+source(file.path(cfg$repo_dir, "scripts", "palettes.R"))
 source(file.path(cfg$repo_dir, "scripts", "sdmTMB_HAB_data.R"))
 source(file.path(cfg$repo_dir, "scripts", "process_VIIRS.R"))
 source(file.path(cfg$repo_dir, "scripts", "process_MODIS.R"))
@@ -207,9 +208,12 @@ rt_log(paths, "Step 4: predict monthly sdmTMB to grid")
 pred_paths <- fn.predict_monthly_sdmTMB(file_sdmpred = fit_files$pred_array,
                                         file_depth   = paths$file_depth,
                                         dir_sdmout   = paths$sdm_out)
-fn.plot_sdmTMB(file_log  = pred_paths$file_log,
-               file_nb   = pred_paths$file_nb,
-               dir_plots = paths$plots_out)
+for (pal_name in c("rainbow", "red")) {          # issue #26: the rainbow and the monochrome red PDFs
+  fn.plot_sdmTMB(file_log  = pred_paths$file_log,
+                 file_nb   = pred_paths$file_nb,
+                 dir_plots = paths$plots_out,
+                 palette   = pal_name)
+}
 
 # 5) Clipping ------------------------------------------------------------
 rt_log(paths, "Step 5: clipping cascade (hulls / MODIS / VIIRS)")
@@ -328,7 +332,9 @@ combined_path <- make_redtide_ascii(file_hull    = clip_hull$file,
                                     dir_combined = paths$combined,
                                     file_depth   = paths$file_depth,
                                     var          = "log")
-fn.plot_redtide_stack(file_stack = combined_path, dir_plots = paths$plots_out)
+for (pal_name in c("rainbow", "red")) {          # issue #26: the rainbow and the monochrome red PDFs
+  fn.plot_redtide_stack(file_stack = combined_path, dir_plots = paths$plots_out, palette = pal_name)
+}
 
 # Flagged hulls (largest footprint > hull_warn_span_km), reported only for
 # the months the hull path actually serves (use == "pred" in

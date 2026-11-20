@@ -332,17 +332,20 @@ make_redtide_ascii <- function(file_hull,
 #' @param file_stack Path (without extension) to the combined .grd stack.
 #' @param dir_plots Directory for the PDF.
 #' @return Invisibly returns the PDF path.
-fn.plot_redtide_stack <- function(file_stack, dir_plots) {
+fn.plot_redtide_stack <- function(file_stack, dir_plots, palette = c("rainbow", "red")) {
+  palette <- match.arg(palette)
   if (!dir.exists(dir_plots)) dir.create(dir_plots, recursive = TRUE)
   habstack <- stack(file_stack)
 
-  colv <- c("white","darkblue","blue","cyan","green","darkgreen","yellow","orange","red","darkred")
-  funpal <- colorRampPalette(colv, bias = 2)
-  # Upper break Inf so any cell value above 4M still renders darkred.
-  brks <- c(0, 1e4 - 1, seq(1e4, 4e6, 10000), Inf)
-  color <- c(funpal(length(brks) - 2), "darkred")
+  # The palette of palettes.R (issue #26): exact zero white, 0 to 10k one band, 10k steps, 4M+ dark red.
+  pal <- fn.redtide_palette(palette)
+  brks <- pal$breaks
+  color <- pal$colors
+  # The legend runs 0 to 4M+ on the same linear scale; its top block is the dark red above 4M.
+  leg_brks <- c(brks[-length(brks)], 4.4e6)
 
-  file_pdf <- file.path(dir_plots, paste0(basename(file_stack), ".pdf"))
+  suffix <- if (palette == "rainbow") "" else paste0("_", palette)
+  file_pdf <- file.path(dir_plots, paste0(basename(file_stack), suffix, ".pdf"))
   pdf(file_pdf, onefile = TRUE)
   par(mfrow = c(4, 3), mar = c(1, 1, 2, 0), oma = c(2, 2, 0, 6))
   for (i in seq_len(nlayers(habstack))) {
@@ -355,9 +358,11 @@ fn.plot_redtide_stack <- function(file_stack, dir_plots) {
     if (substr(name_i, 6, 7) == "12") {
       par(mfrow = c(1, 1), mar = c(0, 0, 0, 0), oma = c(0, 0, 0, 1))
       image.plot(hab_i, legend.only = TRUE,
-                 breaks = brks[-length(brks)], col = color[-1],
+                 breaks = leg_brks, col = color,
                  add = TRUE, legend.width = 1, legend.mar = 4,
-                 legend.line = 3, legend.lab = "cells/L")
+                 legend.line = 3, legend.lab = "cells/L",
+                 axis.args = list(at = c(0, 1e6, 2e6, 3e6, 4.2e6),
+                                  labels = c("0", "1M", "2M", "3M", "4M+")))
       par(mfrow = c(4, 3), mar = c(1, 1, 2, 0), oma = c(2, 2, 0, 6))
     }
   }
