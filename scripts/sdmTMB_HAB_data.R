@@ -406,7 +406,7 @@ fn.predict_monthly_sdmTMB <- function(file_sdmpred, file_depth, dir_sdmout) {
 fn.plot_sdmTMB <- function(file_log, file_nb, dir_plots) {
   if (!dir.exists(dir_plots)) dir.create(dir_plots, recursive = TRUE)
 
-  colv <- c("white","purple","blue","darkblue","cyan","green","darkgreen","yellow","orange","red","darkred")
+  colv <- c("white","darkblue","blue","cyan","green","darkgreen","yellow","orange","red","darkred")
   funpal <- colorRampPalette(colv, bias = 2)
   # Upper break Inf so any cell value above 4M still renders darkred
   # rather than falling outside the break range and rendering white/NA.

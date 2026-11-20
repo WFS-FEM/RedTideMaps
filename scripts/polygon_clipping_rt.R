@@ -336,7 +336,7 @@ fn.plot_redtide_stack <- function(file_stack, dir_plots) {
   if (!dir.exists(dir_plots)) dir.create(dir_plots, recursive = TRUE)
   habstack <- stack(file_stack)
 
-  colv <- c("white","purple","blue","darkblue","cyan","green","darkgreen","yellow","orange","red","darkred")
+  colv <- c("white","darkblue","blue","cyan","green","darkgreen","yellow","orange","red","darkred")
   funpal <- colorRampPalette(colv, bias = 2)
   # Upper break Inf so any cell value above 4M still renders darkred.
   brks <- c(0, 1e4 - 1, seq(1e4, 4e6, 10000), Inf)

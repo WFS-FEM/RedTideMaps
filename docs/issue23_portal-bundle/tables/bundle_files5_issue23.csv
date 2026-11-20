@@ -1,10 +1,10 @@
 "file","bytes","rows"
 ".gitattributes",14,NA
-"SCHEMA.md",38813,NA
+"SCHEMA.md",38800,NA
 "ascii_md5.csv",37828,504
 "grid.csv",494248,5148
 "layers.csv",417,1
-"meta.json",3018,NA
+"meta.json",3010,NA
 "months.csv",18212,504
 "samples/fwc_1985.csv",6101,138
 "samples/fwc_1986.csv",12184,276
@@ -48,7 +48,7 @@
 "samples/fwc_2024.csv",338564,7916
 "samples/fwc_2025.csv",321692,7518
 "samples/fwc_2026.csv",207820,4895
-"style.json",5869,NA
+"style.json",5859,NA
 "summary/redtide.csv",78098,504
 "values/redtide/1985.csv",4830,191
 "values/redtide/1986.csv",6575,252

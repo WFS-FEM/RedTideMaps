@@ -126,7 +126,7 @@ Facts about the product that a consumer needs to draw it as the pipeline does; n
 |---|---|
 | `schema_version` | `"1.0"` |
 | `units` | `"cells/L"` |
-| `palette` | `type` (`"ramp"`), `anchors` (the eleven color names of the pipeline PDFs), `bias` (2), `breaks` (`zero`, `first_colored`, `step`, `last`), `above` (the color above `last`), `colors_hex` (the 402 colors the recipe expands to). The recipe: `colors = c(colorRampPalette(anchors, bias = bias)(401), above)` and `brks = c(zero, first_colored - 1, seq(first_colored, last, step), Inf)`; color `k` applies to the values `brks[k] < v <= brks[k + 1]`, with `v = 0` in color 1. So color 1 (white) covers 0 and the values up to and including `first_colored - 1` (9,999 cells/L), color 2 the values above that up to 10k, colors 3 to 401 the 399 steps of 10k from 10k to 4M, and color 402 (darkred) everything above 4M. |
+| `palette` | `type` (`"ramp"`), `anchors` (the ten color names of the pipeline PDFs), `bias` (2), `breaks` (`zero`, `first_colored`, `step`, `last`), `above` (the color above `last`), `colors_hex` (the 402 colors the recipe expands to). The recipe: `colors = c(colorRampPalette(anchors, bias = bias)(401), above)` and `brks = c(zero, first_colored - 1, seq(first_colored, last, step), Inf)`; color `k` applies to the values `brks[k] < v <= brks[k + 1]`, with `v = 0` in color 1. So color 1 (white) covers 0 and the values up to and including `first_colored - 1` (9,999 cells/L), color 2 the values above that up to 10k, colors 3 to 401 the 399 steps of 10k from 10k to 4M, and color 402 (darkred) everything above 4M. |
 | `bands` | `breaks` (`[0, 1000, 10000, 100000, 1000000, "Inf"]`), `right_closed` (`true`), `columns` (the five band columns of the summary), `sample_columns` (the five sample band columns), `labels` (`"<= 1k"`, `"1k to 10k"`, `"10k to 100k"`, `"100k to 1M"`, `"> 1M"`) |
 | `codes` | the vocabularies of the summary's categorical columns with one-line meanings: `use`, `fit_status`, `viirs_status` |
 
@@ -135,7 +135,7 @@ Example:
 ```json
 {"schema_version": "1.0", "units": "cells/L",
  "palette": {"type": "ramp",
-             "anchors": ["white", "purple", "blue", "darkblue", "cyan", "green", "darkgreen", "yellow", "orange", "red", "darkred"],
+             "anchors": ["white", "darkblue", "blue", "cyan", "green", "darkgreen", "yellow", "orange", "red", "darkred"],
              "bias": 2, "breaks": {"zero": 0, "first_colored": 10000, "step": 10000, "last": 4000000}, "above": "darkred",
              "colors_hex": ["#FFFFFF", "<400 more>", "#8B0000"]},
  "bands": {"breaks": [0, 1000, 10000, 100000, 1000000, "Inf"], "right_closed": true,
