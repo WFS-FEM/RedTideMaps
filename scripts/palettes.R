@@ -60,16 +60,17 @@ fn.bundle_palette <- function(name = c("rainbow", "red")) {
        colors_hex = toupper(p$colors))
 }
 
-#' The legend of the map PDFs, drawn in a region of the current page: the palette from just above
-#' zero to 4M as a bar whose axis is spaced by the square root of the value (ticks at `at`), a block
-#' of the top color above it ("4M+") and a separate white box for exact zero under it. The colors are
-#' those of the maps; only the bar's axis is stretched, so the low values can be read.
+#' The legend of the map PDFs, drawn in a region of the current page: the palette from zero to 4M as a
+#' bar whose axis is spaced by the square root of the value (ticks at `at`, from 0 at its foot) and a
+#' block of the top color above it ("4M+"). The colors are those of the maps; only the bar's axis is
+#' stretched, so the low values can be read. Exact zero is white on the maps; the foot of the bar, the
+#' whitish start of the 0 to 10k band, stands for it (no separate zero box: Holden, 21 Nov 2026).
 #' The caller sets its own layout again afterwards (par(mfrow = ...)): the region is set with par(fig).
 #' @param pal    a palette of fn.redtide_palette().
 #' @param fig    the region in normalized device coordinates (x1, x2, y1, y2): the right outer margin of the 4 x 3 pages.
 #' @param at,labels the ticks of the bar, in cells/L, and their labels in k and M.
-fn.draw_palette_legend <- function(pal, fig = c(0.85, 1, 0.22, 0.80), at = c(1e4, 1e5, 1e6, 2e6, 3e6),
-                                   labels = c("10k", "100k", "1M", "2M", "3M"), above = "4M+", zero = "0",
+fn.draw_palette_legend <- function(pal, fig = c(0.85, 1, 0.22, 0.80), at = c(0, 1e4, 1e5, 1e6, 2e6, 3e6),
+                                   labels = c("0", "10k", "100k", "1M", "2M", "3M"), above = "4M+",
                                    title = "cells/L", cex = 1.2) {
   par(fig = fig, new = TRUE, mar = c(0, 0, 0, 0), oma = c(0, 0, 0, 0))
   plot.new()
@@ -77,7 +78,7 @@ fn.draw_palette_legend <- function(pal, fig = c(0.85, 1, 0.22, 0.80), at = c(1e4
   n <- length(pal$colors)
   top <- pal$breaks[n]                                  # the last finite break, 4M
   x1 <- 0.10; x2 <- 0.34; xt <- 0.46
-  y_zero <- c(0, 0.045); y0 <- 0.075; y1 <- 0.875; y2 <- 0.93
+  y0 <- 0.035; y1 <- 0.875; y2 <- 0.93
   rows <- 400
   v <- top * ((seq_len(rows) - 0.5) / rows)^2           # the value at each row of the bar
   cols <- pal$colors[findInterval(v, pal$breaks, left.open = TRUE)]
@@ -85,12 +86,11 @@ fn.draw_palette_legend <- function(pal, fig = c(0.85, 1, 0.22, 0.80), at = c(1e4
   rect(x1, y1, x2, y2, col = pal$colors[n], border = NA)                 # 4M and above
   segments(x1, y1, x2, y1, col = "white", lwd = 0.6)
   rect(x1, y0, x2, y2, border = "gray30", lwd = 0.6)
-  rect(x1, y_zero[1], x2, y_zero[2], col = pal$colors[1], border = "gray30", lwd = 0.6)   # exact zero
   ya <- y0 + sqrt(at / top) * (y1 - y0)
   segments(x2, ya, x2 + 0.05, ya, lwd = 0.6)
-  text(xt, ya, labels, adj = 0, cex = cex)
+  # the labels centered on their ticks; the 0 hangs a little below its tick to stay clear of 10k
+  for (i in seq_along(at)) text(xt, ya[i], labels[i], adj = c(0, if (at[i] == 0) 0.85 else 0.5), cex = cex)
   text(xt, (y1 + y2) / 2, above, adj = 0, cex = cex)
-  text(xt, mean(y_zero), zero, adj = 0, cex = cex)
   text(x1, 0.97, title, adj = c(0, 0.5), cex = cex)
   invisible(NULL)
 }
