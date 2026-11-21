@@ -1,5 +1,5 @@
 {
-  "schema_version": "1.0",
+  "schema_version": "1.1",
   "bundle_id": "redtide_5min",
   "product": "redtide",
   "product_name": "Red Tide Maps",
@@ -58,16 +58,16 @@
   },
   "source": {
     "repo": "https://github.com/WFS-FEM/RedTideMaps",
-    "branch": "palette-darkblue-red",
+    "branch": "26-palette",
     "ascii_dir": "out/5min/ecospace_ascii",
     "ascii_commit": "543bc8ef17aee7f70cd5b9e4dc5f12a7ba1c9610",
     "ascii_dirty": false,
     "ascii_md5": "2a2d8e68d311fe3dc2a0a3f29b1c26d6",
-    "head_commit": "bbde22833c8d24789db420f36680abb702f6b663",
-    "schema_url": "https://github.com/WFS-FEM/RedTideMaps/blob/bbde22833c8d24789db420f36680abb702f6b663/docs/issue23_portal-bundle/bundle-schema.md"
+    "head_commit": "9f0c44af887ca2843972dabb480cab278fc205f1",
+    "schema_url": "https://github.com/WFS-FEM/RedTideMaps/blob/9f0c44af887ca2843972dabb480cab278fc205f1/docs/issue23_portal-bundle/bundle-schema.md"
   },
   "build": {
-    "built_at": "2026-11-18T21:51:38Z",
+    "built_at": "2026-11-20T22:04:09Z",
     "r_version": "4.5.1",
     "raster_version": "3.6-32",
     "writer": "scripts/write_bundle.R",

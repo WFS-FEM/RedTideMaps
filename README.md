@@ -220,8 +220,10 @@ out/<res>min/
   plots/
     sample locations by year.png
     N samples over time.png
-    sdmTMB log maps.pdf
-    *_clipped_combined.pdf
+    sdmTMB log maps.pdf          # the rainbow palette (scripts/palettes.R; the default)
+    *_clipped_combined.pdf       # the rainbow palette, 0 to 4M+ legend
+    sdmTMB log maps_red.pdf      # the same maps in the monochrome red palette
+    *_clipped_combined_red.pdf
     hull_check_issue3.pdf   # 5 min only; written by scripts/qa/check_hulls_issue3.R, not the pipeline
   run_<yyyymmdd>.log        # the run log
 ```

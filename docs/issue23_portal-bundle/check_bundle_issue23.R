@@ -1,4 +1,4 @@
-#' Issue #23: checks of the data bundle for WFS-Portal (out/<res>min/bundle/, schema 1.0).
+#' Issue #23: checks of the data bundle for WFS-Portal (out/<res>min/bundle/, schema 1.1).
 #'
 #' Reads only what the last pipeline run left on disk (out/<res>min/), the tracked #18 tables
 #' and the bundle; writes its tables and figures byte-identically on rerun (no RNG, no dates in
@@ -43,6 +43,7 @@
   stop("Run from the repo root: Rscript docs/issue23_portal-bundle/check_bundle_issue23.R", call. = FALSE)
 })
 source(file.path(.root, "scripts", "_setup.R"))        # raster, sf, jsonlite, ...
+source(file.path(.root, "scripts", "palettes.R"))     # fn.redtide_palette, fn.bundle_palette (issue #26)
 source(file.path(.root, "scripts", "write_bundle.R"))  # fn.read_ascii_dir, fn.md5_lf, fn.md5_string, fn.rel_to_repo, fn.write_bundle
 
 stage <- Sys.getenv("RT_QA_STAGE", "frozen")
@@ -204,8 +205,11 @@ if (stage == "frozen") {
        identical(months$year, as.integer(substr(key, 1, 4))) && identical(months$month, as.integer(substr(key, 5, 6))),
        sprintf("months.csv: %d contiguous months %s to %s, year and month as the key", length(key), key[1], key[length(key)]))
   pass(all(style$bands$columns %in% names(summ)) && all(style$bands$sample_columns %in% names(summ)) && identical(style$bands$labels, c("<= 1k", "1k to 10k", "10k to 100k", "100k to 1M", "> 1M")) &&
-       length(style$palette$colors_hex) == 402 && identical(as.numeric(style$bands$breaks), c(0, 1e3, 1e4, 1e5, 1e6, Inf)) && style$units == "cells/L",
-       "style.json: the band columns exist in the summary, the labels in k and M, 402 palette colors, the band breaks")
+       length(style$palette$colors_hex) == 402 && identical(as.numeric(style$bands$breaks), c(0, 1e3, 1e4, 1e5, 1e6, Inf)) && style$units == "cells/L" &&
+       identical(sort(names(style$palettes)), c("rainbow", "red")) && identical(style$palette$colors_hex, style$palettes$rainbow$colors_hex) &&
+       all(vapply(style$palettes, function(p) length(p$colors_hex) == 402 && identical(p$colors_hex[1], "#FFFFFF") && identical(p$above, "#8B0000"), logical(1))) &&
+       identical(as.numeric(style$palettes$rainbow$stops$value), c(0, 1e4, 2.5e5, 1e6, 2e6, 3e6, 4e6)),
+       "style.json: the band columns exist in the summary, the labels in k and M, 402 palette colors, the band breaks; schema 1.1: palettes rainbow and red (402 colors each, white at zero, dark red above 4M), palette = rainbow, the rainbow stops")
 
   # 3. The values and the summary against the ASCII text, the float32 readings, the combined stack, and this script's own arithmetic.
   cat("3. values\n")
@@ -360,7 +364,7 @@ if (stage == "frozen") {
   to_z <- function(v) matrix(v, nrow = g_nc)[, g_nr:1]
   xs <- sort(unique(grid$lon)); ys <- sort(unique(grid$lat)); h <- meta$grid$cellsize / 2
   pb <- style$palette$breaks
-  cols <- style$palette$colors_hex; brks <- c(pb$zero, pb$first_colored - 1, seq(pb$first_colored, pb$last, pb$step), 1e12)
+  cols <- style$palette$colors_hex; brks <- c(pb$zero, pb$eps, seq(pb$first_band_top, pb$last, pb$step), 1e12)
   land_z <- to_z(ifelse(!grid$water, 1, NA)); box_z <- to_z(ifelse(grid$water & grid$atlantic, 1, NA))
   draw_month <- function(m) {
     r <- summ[summ$yrmo == m, ]
@@ -384,7 +388,7 @@ if (stage == "frozen") {
   par(mfrow = c(2, 2), mar = c(0.5, 0.5, 2, 0.5), oma = c(0, 0, 2.5, 0))
   for (m in fig_months) draw_month(m)
   mtext(sprintf("The data bundle %s drawn from its own files: land (wheat) and the Atlantic-side box (gray, water without data) from grid.csv, the maps from values/, the samples from samples/, the counts from summary/", meta$bundle_id), outer = TRUE, cex = 0.65, line = 1)
-  mtext(sprintf("Palette: style.json (white below %sk cells/L, %s above %sM). Exposure and counts over the Gulf domain. Samples: black positive, gray zero.", pb$first_colored / 1e3, style$palette$above, pb$last / 1e6), outer = TRUE, cex = 0.6, line = 0)
+  mtext(sprintf("Palette: style.json, rainbow (white at 0, one band to %sk cells/L, %s above %sM). Exposure and counts over the Gulf domain. Samples: black positive, gray zero.", pb$first_band_top / 1e3, style$palette$above, pb$last / 1e6), outer = TRUE, cex = 0.6, line = 0)
   invisible(dev.off())
   png(file_fig2, width = 1800, height = 900, res = 150)
   par(mfrow = c(2, 1), mar = c(2.2, 4.2, 2, 1), oma = c(1.5, 0, 1.5, 0))
