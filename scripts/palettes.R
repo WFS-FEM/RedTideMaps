@@ -7,10 +7,12 @@
 #   [eps, 1e4)        one band 0 to 10k
 #   10k steps to 4M   one color per 10k interval, at the interval's midpoint
 #   [4M, Inf)         "4M+": the dark red of the top stop
-# and the legend runs from 0 to 4M+ on the same linear scale.
+# The legend (fn.draw_palette_legend) runs from 0 to 4M+ with its axis spaced by the square root of
+# the value, so 10k and 100k have their own ticks and the 0 to 10k band shows; the colors of the maps
+# stay linear in the value between the stops (Holden, 21 Nov 2026).
 #
 # rainbow: the default (Holden, 20 Nov 2026): whitish light blue to 10k, light green, yellow at 1M,
-#          orange, red, dark red at 4M+. The 250k, 2M and 3M stops are candidates (the swatch of 21 Nov).
+#          orange, red, dark red at 4M+ (the stops of the approved swatch).
 # red:     the monochrome version: the lightest tint to 10k, through reds, to the same dark red.
 
 redtide_palette_stops <- list(
@@ -56,4 +58,39 @@ fn.bundle_palette <- function(name = c("rainbow", "red")) {
        breaks = list(zero = 0, eps = 1e-9, first_band_top = 10000, step = 10000, last = 4000000),
        above = toupper(p$above),
        colors_hex = toupper(p$colors))
+}
+
+#' The legend of the map PDFs, drawn in a region of the current page: the palette from just above
+#' zero to 4M as a bar whose axis is spaced by the square root of the value (ticks at `at`), a block
+#' of the top color above it ("4M+") and a separate white box for exact zero under it. The colors are
+#' those of the maps; only the bar's axis is stretched, so the low values can be read.
+#' The caller sets its own layout again afterwards (par(mfrow = ...)): the region is set with par(fig).
+#' @param pal    a palette of fn.redtide_palette().
+#' @param fig    the region in normalized device coordinates (x1, x2, y1, y2): the right outer margin of the 4 x 3 pages.
+#' @param at,labels the ticks of the bar, in cells/L, and their labels in k and M.
+fn.draw_palette_legend <- function(pal, fig = c(0.85, 1, 0.22, 0.80), at = c(1e4, 1e5, 1e6, 2e6, 3e6),
+                                   labels = c("10k", "100k", "1M", "2M", "3M"), above = "4M+", zero = "0",
+                                   title = "cells/L", cex = 1.2) {
+  par(fig = fig, new = TRUE, mar = c(0, 0, 0, 0), oma = c(0, 0, 0, 0))
+  plot.new()
+  plot.window(xlim = c(0, 1), ylim = c(0, 1), xaxs = "i", yaxs = "i")
+  n <- length(pal$colors)
+  top <- pal$breaks[n]                                  # the last finite break, 4M
+  x1 <- 0.10; x2 <- 0.34; xt <- 0.46
+  y_zero <- c(0, 0.045); y0 <- 0.075; y1 <- 0.875; y2 <- 0.93
+  rows <- 400
+  v <- top * ((seq_len(rows) - 0.5) / rows)^2           # the value at each row of the bar
+  cols <- pal$colors[findInterval(v, pal$breaks, left.open = TRUE)]
+  rasterImage(as.raster(matrix(rev(cols), ncol = 1)), x1, y0, x2, y1, interpolate = FALSE)
+  rect(x1, y1, x2, y2, col = pal$colors[n], border = NA)                 # 4M and above
+  segments(x1, y1, x2, y1, col = "white", lwd = 0.6)
+  rect(x1, y0, x2, y2, border = "gray30", lwd = 0.6)
+  rect(x1, y_zero[1], x2, y_zero[2], col = pal$colors[1], border = "gray30", lwd = 0.6)   # exact zero
+  ya <- y0 + sqrt(at / top) * (y1 - y0)
+  segments(x2, ya, x2 + 0.05, ya, lwd = 0.6)
+  text(xt, ya, labels, adj = 0, cex = cex)
+  text(xt, (y1 + y2) / 2, above, adj = 0, cex = cex)
+  text(xt, mean(y_zero), zero, adj = 0, cex = cex)
+  text(x1, 0.97, title, adj = c(0, 0.5), cex = cex)
+  invisible(NULL)
 }

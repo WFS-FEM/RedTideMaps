@@ -425,11 +425,8 @@ fn.plot_sdmTMB <- function(file_log, file_nb, dir_plots, palette = c("rainbow", 
       map(database = "state", region = "Florida", add = TRUE, fill = TRUE, col = "wheat")
       text(-86, 26, gsub("X", "", names(stk)[i]), cex = 1.5)
       if (substr(names(stk)[i], 6, 7) == "12") {
-        par(mfrow = c(1, 1), mar = c(0, 0, 0, 0), oma = c(0, 0, 0, 1))
-        image.plot(stk[[i]], legend.only = TRUE,
-                   breaks = brks[-length(brks)], col = color[-1],
-                   add = TRUE, legend.width = 1, legend.mar = 4,
-                   legend.line = 3, legend.lab = "cells/L")
+        # the legend of the page, in the right outer margin: 0, 10k, 100k, 1M, 2M, 3M, 4M+ (palettes.R)
+        fn.draw_palette_legend(pal)
         par(mfrow = c(4, 3), mar = c(1, 1, 2, 0), oma = c(2, 2, 0, 6))
       }
     }

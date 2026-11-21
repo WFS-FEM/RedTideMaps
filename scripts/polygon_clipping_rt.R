@@ -341,8 +341,6 @@ fn.plot_redtide_stack <- function(file_stack, dir_plots, palette = c("rainbow", 
   pal <- fn.redtide_palette(palette)
   brks <- pal$breaks
   color <- pal$colors
-  # The legend runs 0 to 4M+ on the same linear scale; its top block is the dark red above 4M.
-  leg_brks <- c(brks[-length(brks)], 4.4e6)
 
   suffix <- if (palette == "rainbow") "" else paste0("_", palette)
   file_pdf <- file.path(dir_plots, paste0(basename(file_stack), suffix, ".pdf"))
@@ -356,13 +354,8 @@ fn.plot_redtide_stack <- function(file_stack, dir_plots, palette = c("rainbow", 
     map(database = "state", region = "Florida", add = TRUE, fill = TRUE, col = "wheat")
     text(-86, 26, gsub("X", "", name_i), cex = 1.5)
     if (substr(name_i, 6, 7) == "12") {
-      par(mfrow = c(1, 1), mar = c(0, 0, 0, 0), oma = c(0, 0, 0, 1))
-      image.plot(hab_i, legend.only = TRUE,
-                 breaks = leg_brks, col = color,
-                 add = TRUE, legend.width = 1, legend.mar = 4,
-                 legend.line = 3, legend.lab = "cells/L",
-                 axis.args = list(at = c(0, 1e6, 2e6, 3e6, 4.2e6),
-                                  labels = c("0", "1M", "2M", "3M", "4M+")))
+      # the legend of the page, in the right outer margin: 0, 10k, 100k, 1M, 2M, 3M, 4M+ (palettes.R)
+      fn.draw_palette_legend(pal)
       par(mfrow = c(4, 3), mar = c(1, 1, 2, 0), oma = c(2, 2, 0, 6))
     }
   }
