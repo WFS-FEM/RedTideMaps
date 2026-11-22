@@ -1,6 +1,6 @@
-# The red tide data bundle: schema 1.0
+# The red tide data bundle: schema 1.1
 
-Schema version 1.0, 4 November 2026. This document specifies the folder `out/<res>min/bundle/` that step 9 of `run_redtide_maps.R` writes (`fn.write_bundle()`, `scripts/write_bundle.R`) for the delivered red tide maps, and it is written into every bundle as `SCHEMA.md`, so the data travels with its description. The consumer it was designed for is the WFS-Portal application ([WFS-FEM/WFS-Portal](https://github.com/WFS-FEM/WFS-Portal), planned); any reader of CSV and JSON can use it. The plan and the decisions behind it are `docs/issue23_portal-bundle/issue23-portal-bundle-plan.md` in the RedTideMaps repository ([#23](https://github.com/WFS-FEM/RedTideMaps/issues/23)).
+Schema version 1.1 (1.0 of 4 November 2026; the change of 20 November 2026 is in section 10). This document specifies the folder `out/<res>min/bundle/` that step 9 of `run_redtide_maps.R` writes (`fn.write_bundle()`, `scripts/write_bundle.R`) for the delivered red tide maps, and it is written into every bundle as `SCHEMA.md`, so the data travels with its description. The consumer it was designed for is the WFS-Portal application ([WFS-FEM/WFS-Portal](https://github.com/WFS-FEM/WFS-Portal), planned); any reader of CSV and JSON can use it. The plan and the decisions behind it are `docs/issue23_portal-bundle/issue23-portal-bundle-plan.md` in the RedTideMaps repository ([#23](https://github.com/WFS-FEM/RedTideMaps/issues/23)).
 
 ## 1. What the bundle is
 
@@ -70,7 +70,7 @@ One object, written by `jsonlite::toJSON(auto_unbox = TRUE, pretty = TRUE, digit
 
 | key | content |
 |---|---|
-| `schema_version` | `"1.0"` |
+| `schema_version` | `"1.1"` |
 | `bundle_id`, `product`, `product_name`, `res_arcmin` | `"redtide_5min"`, `"redtide"`, `"Red Tide Maps"`, `5` |
 | `grid` | `ncols`, `nrows`, `xllcorner`, `yllcorner`, `cellsize` (as the ASCII header prints them), `nodata`, `crs` (`"EPSG:4326"`), `extent`, `n_cells`, `n_water`, `n_domain` (the cells that carry data), `domain_rule` (one sentence), `cell_order` (the sentence of section 3.6), `template` (the template file, repository-relative; its base name when the template lives outside the repository), `atlantic_box` (`{"lon_gt": -82, "lat_gt": 28.5}`) |
 | `months` | `first`, `last`, `n`, `last_data` (the last month with an FWC sample), `n_placeholder` (the months after it) |
@@ -85,7 +85,7 @@ Example (the 5-arcmin bundle; `<...>` marks values that change with the run):
 
 ```json
 {
-  "schema_version": "1.0",
+  "schema_version": "1.1",
   "bundle_id": "redtide_5min", "product": "redtide", "product_name": "Red Tide Maps", "res_arcmin": 5,
   "grid": {"ncols": 78, "nrows": 66, "xllcorner": -87.5, "yllcorner": 25, "cellsize": 0.0833333333333333,
            "nodata": -3.4e+38, "crs": "EPSG:4326", "extent": [-87.5, -81, 25, 30.5],
@@ -124,20 +124,24 @@ Facts about the product that a consumer needs to draw it as the pipeline does; n
 
 | key | content |
 |---|---|
-| `schema_version` | `"1.0"` |
+| `schema_version` | `"1.1"` |
 | `units` | `"cells/L"` |
-| `palette` | `type` (`"ramp"`), `anchors` (the ten color names of the pipeline PDFs), `bias` (2), `breaks` (`zero`, `first_colored`, `step`, `last`), `above` (the color above `last`), `colors_hex` (the 402 colors the recipe expands to). The recipe: `colors = c(colorRampPalette(anchors, bias = bias)(401), above)` and `brks = c(zero, first_colored - 1, seq(first_colored, last, step), Inf)`; color `k` applies to the values `brks[k] < v <= brks[k + 1]`, with `v = 0` in color 1. So color 1 (white) covers 0 and the values up to and including `first_colored - 1` (9,999 cells/L), color 2 the values above that up to 10k, colors 3 to 401 the 399 steps of 10k from 10k to 4M, and color 402 (darkred) everything above 4M. |
+| `palette` | the default palette, `rainbow` (the same object as `palettes.rainbow`); schema 1.0 readers read it as before, with `type` now `"stops"`. |
+| `palettes` | `rainbow` (the default) and `red` (monochrome), each with the keys below. |
+| per palette: `type` (`"stops"`), `name`, `stops` (`value`: the color stops by value in cells/L, `color`: their hex colors, linear in RGB between stops), `breaks` (`zero` 0, `eps` 1e-9, `first_band_top` 10000, `step` 10000, `last` 4000000), `above` (the color above `last`), `colors_hex` (the 402 colors) | The bins: color 1 (white) covers exact zero (`[0, eps)`); color 2 covers `[eps, 10k)`, the one band 0 to 10k (zeros are not in it); colors 3 to 401 the 399 steps of 10k from 10k to 4M, each at its midpoint; color 402 (`above`) everything from 4M up. The stops of `rainbow`: white at 0, whitish light blue at 10k, light green at 250k, yellow at 1M, orange at 2M, red at 3M, dark red at 4M. The stops of `red`: white at 0, the lightest tint at 10k, `#E8443C` at 1M, dark red at 4M. Color `k` applies to the values `brks[k] < v <= brks[k + 1]`, with `v = 0` in color 1, the convention of the pipeline's own draw (`brks = c(zero, eps, seq(first_band_top, last, step), Inf)`). The smallest positive value of a bundle is above 100 cells/L, so `eps` separates only exact zero. |
 | `bands` | `breaks` (`[0, 1000, 10000, 100000, 1000000, "Inf"]`), `right_closed` (`true`), `columns` (the five band columns of the summary), `sample_columns` (the five sample band columns), `labels` (`"<= 1k"`, `"1k to 10k"`, `"10k to 100k"`, `"100k to 1M"`, `"> 1M"`) |
 | `codes` | the vocabularies of the summary's categorical columns with one-line meanings: `use`, `fit_status`, `viirs_status` |
 
 Example:
 
 ```json
-{"schema_version": "1.0", "units": "cells/L",
- "palette": {"type": "ramp",
-             "anchors": ["white", "darkblue", "blue", "cyan", "green", "darkgreen", "yellow", "orange", "red", "darkred"],
-             "bias": 2, "breaks": {"zero": 0, "first_colored": 10000, "step": 10000, "last": 4000000}, "above": "darkred",
+{"schema_version": "1.1", "units": "cells/L",
+ "palette": {"type": "stops", "name": "rainbow",
+             "stops": {"value": [0, 10000, 250000, 1000000, 2000000, 3000000, 4000000],
+                       "color": ["#FFFFFF", "#E6F4FB", "#7BD389", "#F4E01E", "#F5961E", "#D7261E", "#8B0000"]},
+             "breaks": {"zero": 0, "eps": 1e-9, "first_band_top": 10000, "step": 10000, "last": 4000000}, "above": "#8B0000",
              "colors_hex": ["#FFFFFF", "<400 more>", "#8B0000"]},
+ "palettes": {"rainbow": "<the palette object above>", "red": "<the same keys for the red stops>"},
  "bands": {"breaks": [0, 1000, 10000, 100000, 1000000, "Inf"], "right_closed": true,
            "columns": ["n_le1k", "n_1k_10k", "n_10k_100k", "n_100k_1M", "n_gt1M"],
            "sample_columns": ["s_le1k", "s_1k_10k", "s_10k_100k", "s_100k_1M", "s_gt1M"],
@@ -294,5 +298,6 @@ The maps are produced by the WFS-FEM/RedTideMaps pipeline (Chagaris, Vilas, Harr
 | version | date | change | commit |
 |---|---|---|---|
 | 1.0 | 4 Nov 2026 | first version: the layout, conventions, files and definitions above (#23) | the first commit of this file in WFS-FEM/RedTideMaps |
+| 1.1 | 20 Nov 2026 | the palette is a list of color stops by value (`type` "stops"): the rainbow of issue #26 (whitish light blue at 10k, yellow at 1M, dark red at 4M+), zero white and one band 0 to 10k; `palettes` adds the monochrome `red`; `palette` stays the default. The files, the columns and the values are unchanged (the 90 data files are byte-identical to 1.0). Not purely additive: `palette.type` changes from `"ramp"` to `"stops"` and its `anchors` and `bias` keys go, so a reader of the 1.0 recipe must read `stops` (the one reader, WFS-Portal, is updated with it); `colors_hex` keeps its 402 colors | the commit of issue #26 that adds scripts/palettes.R |
 
 A minor version adds files, columns or keys (readers ignore unknown ones); a major version renames, removes or changes the meaning of anything (the band definition, the cell order, the layout, the meaning of a provenance key). A consumer accepts the major version it was written for and warns on a newer minor one.

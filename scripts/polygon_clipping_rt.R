@@ -332,17 +332,18 @@ make_redtide_ascii <- function(file_hull,
 #' @param file_stack Path (without extension) to the combined .grd stack.
 #' @param dir_plots Directory for the PDF.
 #' @return Invisibly returns the PDF path.
-fn.plot_redtide_stack <- function(file_stack, dir_plots) {
+fn.plot_redtide_stack <- function(file_stack, dir_plots, palette = c("rainbow", "red")) {
+  palette <- match.arg(palette)
   if (!dir.exists(dir_plots)) dir.create(dir_plots, recursive = TRUE)
   habstack <- stack(file_stack)
 
-  colv <- c("white","darkblue","blue","cyan","green","darkgreen","yellow","orange","red","darkred")
-  funpal <- colorRampPalette(colv, bias = 2)
-  # Upper break Inf so any cell value above 4M still renders darkred.
-  brks <- c(0, 1e4 - 1, seq(1e4, 4e6, 10000), Inf)
-  color <- c(funpal(length(brks) - 2), "darkred")
+  # The palette of palettes.R (issue #26): exact zero white, 0 to 10k one band, 10k steps, 4M+ dark red.
+  pal <- fn.redtide_palette(palette)
+  brks <- pal$breaks
+  color <- pal$colors
 
-  file_pdf <- file.path(dir_plots, paste0(basename(file_stack), ".pdf"))
+  suffix <- if (palette == "rainbow") "" else paste0("_", palette)
+  file_pdf <- file.path(dir_plots, paste0(basename(file_stack), suffix, ".pdf"))
   pdf(file_pdf, onefile = TRUE)
   par(mfrow = c(4, 3), mar = c(1, 1, 2, 0), oma = c(2, 2, 0, 6))
   for (i in seq_len(nlayers(habstack))) {
@@ -353,11 +354,8 @@ fn.plot_redtide_stack <- function(file_stack, dir_plots) {
     map(database = "state", region = "Florida", add = TRUE, fill = TRUE, col = "wheat")
     text(-86, 26, gsub("X", "", name_i), cex = 1.5)
     if (substr(name_i, 6, 7) == "12") {
-      par(mfrow = c(1, 1), mar = c(0, 0, 0, 0), oma = c(0, 0, 0, 1))
-      image.plot(hab_i, legend.only = TRUE,
-                 breaks = brks[-length(brks)], col = color[-1],
-                 add = TRUE, legend.width = 1, legend.mar = 4,
-                 legend.line = 3, legend.lab = "cells/L")
+      # the legend of the page, in the right outer margin: 0, 10k, 100k, 1M, 2M, 3M, 4M+ (palettes.R)
+      fn.draw_palette_legend(pal)
       par(mfrow = c(4, 3), mar = c(1, 1, 2, 0), oma = c(2, 2, 0, 6))
     }
   }
