@@ -14,7 +14,7 @@
 #'      -> combined stack.
 #'   7. Write per-month ASCII for Ecospace under out/<res>min/ecospace_ascii/.
 #'   8. Optionally export ASCII files to the external Ecospace ST drivers.
-#'   9. Write the data-only bundle for WFS-Portal under out/<res>min/bundle/ (tracked;
+#'   9. Write the data-only bundle for DataPortal under out/<res>min/bundle/ (tracked;
 #'      docs/issue23_portal-bundle/bundle-schema.md; issue #23).
 #'
 #' How to run:
@@ -95,7 +95,7 @@ cfg <- list(
   incremental_fit  = TRUE,    # skip months already fit (delete OM_month/<yyyymm>/ to force refit)
   fit_nb           = FALSE,   # set TRUE to also fit the NB2 model (only the log model is used downstream)
   export_ecospace  = FALSE,  # set TRUE (in config.local.R) to copy the ASCII drop to ecospace_root
-  write_bundle     = TRUE     # step 9: the data-only bundle for WFS-Portal, out/<res>min/bundle/ (tracked; docs/issue23_portal-bundle/bundle-schema.md)
+  write_bundle     = TRUE     # step 9: the data-only bundle for DataPortal, out/<res>min/bundle/ (tracked; docs/issue23_portal-bundle/bundle-schema.md)
 )
 
 # Local overrides (gitignored); see config.local.example.R
@@ -363,7 +363,7 @@ if (isTRUE(cfg$export_ecospace)) {
                      res           = paths$res)
 }
 
-# 9) Data bundle for WFS-Portal -------------------------------------------
+# 9) Data bundle for DataPortal -------------------------------------------
 # A tracked, data-only, text-only description of the delivered maps under
 # out/<res>min/bundle/ (docs/issue23_portal-bundle/bundle-schema.md; issue #23):
 # the values of every ASCII file, a per-month summary, the FWC samples, the
@@ -372,7 +372,7 @@ if (isTRUE(cfg$export_ecospace)) {
 # folder into place, so a failure leaves the previous bundle untouched. Commit
 # the bundle with the ASCII files it describes.
 if (isTRUE(cfg$write_bundle)) {
-  rt_log(paths, "Step 9: write the data bundle for WFS-Portal (out/<res>min/bundle/)")
+  rt_log(paths, "Step 9: write the data bundle for DataPortal (out/<res>min/bundle/)")
   bundle <- fn.write_bundle(
     dir_ascii       = paths$ecospace,
     file_depth      = paths$file_depth,
