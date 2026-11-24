@@ -1,4 +1,4 @@
-# write_bundle.R: the data bundle for WFS-Portal (step 9 of run_redtide_maps.R; issue #23).
+# write_bundle.R: the data bundle for DataPortal (step 9 of run_redtide_maps.R; issue #23).
 #
 # fn.write_bundle() writes out/<res>min/bundle/, a tracked, data-only, text-only description of
 # the delivered monthly maps: the values of every ASCII file reproduced text for text, a per-month

@@ -53,7 +53,7 @@ Each step is one function in `scripts/`:
 | Clip predictions to MODIS nFLH | `fn.clip_2_modis` | `process_MODIS.R` |
 | Combine + write ASCII | `make_redtide_ascii` | `polygon_clipping_rt.R` |
 | Copy to Ecospace drivers (opt-in) | `export_to_ecospace` | `polygon_clipping_rt.R` |
-| Write the data bundle for WFS-Portal | `fn.write_bundle` | `write_bundle.R` |
+| Write the data bundle for DataPortal | `fn.write_bundle` | `write_bundle.R` |
 
 ## Why the clipping cascade
 
@@ -92,7 +92,7 @@ The first run takes about 20 minutes at the default 5-min resolution. It will:
 4. Predict to the depth template grid.
 5. Run the clipping cascade.
 6. Write 12 ASCII files per year to `out/<res>min/ecospace_ascii/`.
-7. Write the data bundle for WFS-Portal to `out/<res>min/bundle/`.
+7. Write the data bundle for DataPortal to `out/<res>min/bundle/`.
 
 ## Monthly rerun
 
@@ -169,7 +169,7 @@ All knobs live in the `cfg` list at the top of `run_redtide_maps.R`. To change o
 | `viirs_nearshore` | `"mask5adj"` | Nearshore hybrid for the VIIRS months. `"mask5adj"` adds the buffered-hull footprint inside the nearshore set (VIIRS no-data mask, within 5 km of the coast, or touching a land cell; 189 cells at 5 arcmin), taking the cell-wise maximum there; `"mask5"` uses the set without the touching-land criterion (136 cells); `"none"` uses the VIIRS-clipped map as it is. The run log names the rule, the set and the months it changed. |
 | `modis_nearshore` | `"mask5adj"` | The same rule for the months served from MODIS nFLH polygons, with the same values (needs `use_viirs` and `use_modis`; both keys name the same set when both are on). |
 | `fwc_refresh` | `TRUE` | Set `FALSE` to reuse the local merged FWC CSV without querying FWC, so a rerun sees exactly the samples of the previous run (reproducibility checks). A first run still pulls everything. |
-| `write_bundle` | `TRUE` | Step 9: write the data bundle for WFS-Portal to `out/<res>min/bundle/` (tracked; `docs/issue23_portal-bundle/bundle-schema.md`). `FALSE` skips it on an experimental run whose maps will not be committed. |
+| `write_bundle` | `TRUE` | Step 9: write the data bundle for DataPortal to `out/<res>min/bundle/` (tracked; `docs/issue23_portal-bundle/bundle-schema.md`). `FALSE` skips it on an experimental run whose maps will not be committed. |
 
 ## Inputs
 
@@ -212,7 +212,7 @@ out/<res>min/
     *_clipped_combined.grd  # final merged stack (hybrid > VIIRS > hybrid_modis > MODIS > hull)
   ecospace_ascii/
     sdmTMB_log__<yyyymm>.asc  # one ASCII per month — the deliverable
-  bundle/                   # the data bundle for WFS-Portal (tracked; schema in docs/issue23_portal-bundle/bundle-schema.md)
+  bundle/                   # the data bundle for DataPortal (tracked; schema in docs/issue23_portal-bundle/bundle-schema.md)
     meta.json, style.json, grid.csv, months.csv, layers.csv, ascii_md5.csv, manifest.csv, SCHEMA.md
     values/redtide/<yyyy>.csv  # the positive cells of each month, text for text from the ASCII, on the Gulf domain
     summary/redtide.csv        # one row per month: exposure, the five FWC classes, thresholds, maximum, clip source, status, samples
@@ -230,9 +230,9 @@ out/<res>min/
 
 Each run regenerates the contents. Only the deliverables, `ecospace_ascii/`, `plots/` and `bundle/`, are tracked in git; the intermediates (`sdm/`, `clipped/`, `combined/`, run logs) are gitignored. Files named after an earlier FWC date range (`*_filtered.Rdata`, `*_hullpolys.Rdata`) or an earlier rule (`nearshore_mask_<rule>.grd`) are not removed by a later run.
 
-## Data bundle for WFS-Portal
+## Data bundle for DataPortal
 
-Step 9 of every run writes `out/<res>min/bundle/`, a tracked, data-only, text-only description of the delivered maps for the [WFS-Portal](https://github.com/WFS-FEM/WFS-Portal) application (the interactive viewer and data portal of the red tide maps, built in its own repository; issue [#23](https://github.com/WFS-FEM/RedTideMaps/issues/23)): the cells/L of every monthly ASCII file reproduced text for text, a per-month summary (total exposure, the cells in each FWC class written with k and M, the cells and km2 at or above 10k cells/L, the maximum, the clip source, the fit and VIIRS status, the FWC sample counts), the filtered FWC samples, the grid, the display facts of the product (the palette recipe, the band definition) and the provenance of the run (the commit of the maps, the run log, the configuration). The portal fetches the folder at a pinned commit; any reader of CSV and JSON can use it, and the specification travels inside it as `SCHEMA.md` (`docs/issue23_portal-bundle/bundle-schema.md`, schema 1.0).
+Step 9 of every run writes `out/<res>min/bundle/`, a tracked, data-only, text-only description of the delivered maps for the [DataPortal](https://github.com/WFS-FEM/DataPortal) application (the interactive viewer and data portal of the red tide maps, built in its own repository; issue [#23](https://github.com/WFS-FEM/RedTideMaps/issues/23)): the cells/L of every monthly ASCII file reproduced text for text, a per-month summary (total exposure, the cells in each FWC class written with k and M, the cells and km2 at or above 10k cells/L, the maximum, the clip source, the fit and VIIRS status, the FWC sample counts), the filtered FWC samples, the grid, the display facts of the product (the palette recipe, the band definition) and the provenance of the run (the commit of the maps, the run log, the configuration). The portal fetches the folder at a pinned commit; any reader of CSV and JSON can use it, and the specification travels inside it as `SCHEMA.md` (`docs/issue23_portal-bundle/bundle-schema.md`, schema 1.0).
 
 One rule of the project is applied in the bundle that the delivered maps do not yet apply: the Atlantic-side box (east of -82 E, north of 28.5 N), excluded from the nearshore set and the samples, carries no data in the bundle, so its values are omitted and every metric runs over the Gulf domain (the water outside the box). The delivered maps still carry values there in MODIS-served months; zeroing the box in the maps is a separate issue. The stage adds about 10 s to a run; `cfg$write_bundle <- FALSE` skips it. The bundle goes into the same commit as the ASCII files it describes (its `ascii_md5.csv` names them), and `docs/issue23_portal-bundle/check_bundle_issue23.R` verifies a bundle against the run on disk and the #18 tables.
 
